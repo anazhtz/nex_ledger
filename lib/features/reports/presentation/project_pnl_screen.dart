@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
+import 'package:nex_ledger/core/utils/excel_export_service.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 import 'package:nex_ledger/features/reports/providers/report_providers.dart';
 import 'package:nex_ledger/shared/widgets/stat_card.dart';
@@ -22,15 +23,48 @@ class ProjectPnlScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Project P&L Report',
-              style: theme.textTheme.headlineMedium
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            Text(
-              'Income − Expenses − Purchases − Labour = Net P&L',
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            Row(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Project P&L Report',
+                      style: theme.textTheme.headlineMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    Text(
+                      'Income − Expenses − Purchases − Labour = Net P&L',
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                if (selectedProjectId != null)
+                  FilledButton.icon(
+                    onPressed: () async {
+                      final pnl = await ref.read(projectPnlProvider(selectedProjectId).future);
+                      final path = await ExcelExportService.exportPnlReport(
+                        projectPnls: [pnl],
+                        singleProjectTitle: pnl.project.name,
+                      );
+                      if (path != null && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('P&L Report exported to Excel: $path'),
+                            backgroundColor: const Color(0xFF059669),
+                          ),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.table_chart_rounded, size: 18),
+                    label: const Text('Export P&L (.xlsx)'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF059669),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(height: 20),
 
@@ -39,11 +73,11 @@ class ProjectPnlScreen extends ConsumerWidget {
               loading: () => const LinearProgressIndicator(),
               error: (_, __) => const SizedBox.shrink(),
               data: (projects) => SizedBox(
-                width: 300,
+                width: 340,
                 child: DropdownButtonFormField<int?>(
                   value: selectedProjectId,
                   decoration:
-                      const InputDecoration(labelText: 'Select Project'),
+                      const InputDecoration(labelText: 'Select Target Project'),
                   items: [
                     const DropdownMenuItem(
                         value: null, child: Text('— Select a project —')),

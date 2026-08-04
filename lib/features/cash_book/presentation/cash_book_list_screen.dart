@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
+import 'package:nex_ledger/core/utils/excel_export_service.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
 import 'package:nex_ledger/features/cash_book/providers/cash_book_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
@@ -53,7 +54,23 @@ class CashBookListScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const Spacer(),
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    final txns = await ref.read(cashBookListProvider.future);
+                    final path = await ExcelExportService.exportCashBook(transactions: txns);
+                    if (path != null && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Cash Book exported to Excel: $path'),
+                          backgroundColor: const Color(0xFF059669),
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.table_chart_rounded, size: 18, color: Color(0xFF059669)),
+                  label: const Text('Export Excel (.xlsx)', style: TextStyle(color: Color(0xFF059669))),
+                ),
+                const SizedBox(width: 10),
                 FilledButton.icon(
                   onPressed: () => context.go('/cash-book/new'),
                   icon: const Icon(Icons.add, size: 18),

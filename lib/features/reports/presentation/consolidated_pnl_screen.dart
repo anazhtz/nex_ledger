@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
+import 'package:nex_ledger/core/utils/excel_export_service.dart';
 import 'package:nex_ledger/features/reports/data/report_repository.dart';
 import 'package:nex_ledger/features/reports/providers/report_providers.dart';
 import 'package:nex_ledger/shared/widgets/data_table_card.dart';
@@ -21,15 +22,44 @@ class ConsolidatedPnlScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Consolidated P&L',
-              style: theme.textTheme.headlineMedium
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            Text(
-              'All projects + Admin Overhead combined',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant),
+            Row(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Consolidated P&L',
+                      style: theme.textTheme.headlineMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    Text(
+                      'All projects + Admin Overhead combined',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                FilledButton.icon(
+                  onPressed: () async {
+                    final pnls = await ref.read(consolidatedPnlProvider.future);
+                    final path = await ExcelExportService.exportPnlReport(projectPnls: pnls);
+                    if (path != null && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Consolidated P&L exported to Excel: $path'),
+                          backgroundColor: const Color(0xFF059669),
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.table_chart_rounded, size: 18),
+                  label: const Text('Export Company P&L (.xlsx)'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF059669),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 24),
             Expanded(

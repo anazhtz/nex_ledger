@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
+import 'package:nex_ledger/core/utils/excel_export_service.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
 import 'package:nex_ledger/features/deposits/providers/deposit_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
@@ -36,15 +37,44 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Deposit Ledger',
-              style: theme.textTheme.headlineMedium
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            Text(
-              'Track received, adjusted, and refunded deposits per project',
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            Row(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Deposit Ledger',
+                      style: theme.textTheme.headlineMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    Text(
+                      'Track received, adjusted, and refunded deposits per project',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                FilledButton.icon(
+                  onPressed: () async {
+                    final deposits = await ref.read(depositListProvider.future);
+                    final path = await ExcelExportService.exportDeposits(deposits: deposits);
+                    if (path != null && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Deposit Ledger exported to Excel: $path'),
+                          backgroundColor: const Color(0xFF059669),
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.table_chart_rounded, size: 18),
+                  label: const Text('Export Deposits (.xlsx)'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF059669),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 20),
 
