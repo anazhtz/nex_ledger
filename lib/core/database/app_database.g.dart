@@ -464,6 +464,308 @@ class ProjectsCompanion extends UpdateCompanion<Project> {
   }
 }
 
+class $WorkersTable extends Workers with TableInfo<$WorkersTable, Worker> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WorkersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 200),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _workerCodeMeta =
+      const VerificationMeta('workerCode');
+  @override
+  late final GeneratedColumn<String> workerCode = GeneratedColumn<String>(
+      'worker_code', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _tradeMeta = const VerificationMeta('trade');
+  @override
+  late final GeneratedColumn<String> trade = GeneratedColumn<String>(
+      'trade', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _dailyRateMeta =
+      const VerificationMeta('dailyRate');
+  @override
+  late final GeneratedColumn<double> dailyRate = GeneratedColumn<double>(
+      'daily_rate', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, name, workerCode, trade, dailyRate];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'workers';
+  @override
+  VerificationContext validateIntegrity(Insertable<Worker> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('worker_code')) {
+      context.handle(
+          _workerCodeMeta,
+          workerCode.isAcceptableOrUnknown(
+              data['worker_code']!, _workerCodeMeta));
+    }
+    if (data.containsKey('trade')) {
+      context.handle(
+          _tradeMeta, trade.isAcceptableOrUnknown(data['trade']!, _tradeMeta));
+    }
+    if (data.containsKey('daily_rate')) {
+      context.handle(_dailyRateMeta,
+          dailyRate.isAcceptableOrUnknown(data['daily_rate']!, _dailyRateMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Worker map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Worker(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      workerCode: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}worker_code']),
+      trade: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}trade']),
+      dailyRate: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}daily_rate'])!,
+    );
+  }
+
+  @override
+  $WorkersTable createAlias(String alias) {
+    return $WorkersTable(attachedDatabase, alias);
+  }
+}
+
+class Worker extends DataClass implements Insertable<Worker> {
+  final int id;
+  final String name;
+  final String? workerCode;
+  final String? trade;
+  final double dailyRate;
+  const Worker(
+      {required this.id,
+      required this.name,
+      this.workerCode,
+      this.trade,
+      required this.dailyRate});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || workerCode != null) {
+      map['worker_code'] = Variable<String>(workerCode);
+    }
+    if (!nullToAbsent || trade != null) {
+      map['trade'] = Variable<String>(trade);
+    }
+    map['daily_rate'] = Variable<double>(dailyRate);
+    return map;
+  }
+
+  WorkersCompanion toCompanion(bool nullToAbsent) {
+    return WorkersCompanion(
+      id: Value(id),
+      name: Value(name),
+      workerCode: workerCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(workerCode),
+      trade:
+          trade == null && nullToAbsent ? const Value.absent() : Value(trade),
+      dailyRate: Value(dailyRate),
+    );
+  }
+
+  factory Worker.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Worker(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      workerCode: serializer.fromJson<String?>(json['workerCode']),
+      trade: serializer.fromJson<String?>(json['trade']),
+      dailyRate: serializer.fromJson<double>(json['dailyRate']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'workerCode': serializer.toJson<String?>(workerCode),
+      'trade': serializer.toJson<String?>(trade),
+      'dailyRate': serializer.toJson<double>(dailyRate),
+    };
+  }
+
+  Worker copyWith(
+          {int? id,
+          String? name,
+          Value<String?> workerCode = const Value.absent(),
+          Value<String?> trade = const Value.absent(),
+          double? dailyRate}) =>
+      Worker(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        workerCode: workerCode.present ? workerCode.value : this.workerCode,
+        trade: trade.present ? trade.value : this.trade,
+        dailyRate: dailyRate ?? this.dailyRate,
+      );
+  Worker copyWithCompanion(WorkersCompanion data) {
+    return Worker(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      workerCode:
+          data.workerCode.present ? data.workerCode.value : this.workerCode,
+      trade: data.trade.present ? data.trade.value : this.trade,
+      dailyRate: data.dailyRate.present ? data.dailyRate.value : this.dailyRate,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Worker(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('workerCode: $workerCode, ')
+          ..write('trade: $trade, ')
+          ..write('dailyRate: $dailyRate')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, workerCode, trade, dailyRate);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Worker &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.workerCode == this.workerCode &&
+          other.trade == this.trade &&
+          other.dailyRate == this.dailyRate);
+}
+
+class WorkersCompanion extends UpdateCompanion<Worker> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String?> workerCode;
+  final Value<String?> trade;
+  final Value<double> dailyRate;
+  const WorkersCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.workerCode = const Value.absent(),
+    this.trade = const Value.absent(),
+    this.dailyRate = const Value.absent(),
+  });
+  WorkersCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.workerCode = const Value.absent(),
+    this.trade = const Value.absent(),
+    this.dailyRate = const Value.absent(),
+  }) : name = Value(name);
+  static Insertable<Worker> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? workerCode,
+    Expression<String>? trade,
+    Expression<double>? dailyRate,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (workerCode != null) 'worker_code': workerCode,
+      if (trade != null) 'trade': trade,
+      if (dailyRate != null) 'daily_rate': dailyRate,
+    });
+  }
+
+  WorkersCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? name,
+      Value<String?>? workerCode,
+      Value<String?>? trade,
+      Value<double>? dailyRate}) {
+    return WorkersCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      workerCode: workerCode ?? this.workerCode,
+      trade: trade ?? this.trade,
+      dailyRate: dailyRate ?? this.dailyRate,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (workerCode.present) {
+      map['worker_code'] = Variable<String>(workerCode.value);
+    }
+    if (trade.present) {
+      map['trade'] = Variable<String>(trade.value);
+    }
+    if (dailyRate.present) {
+      map['daily_rate'] = Variable<double>(dailyRate.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkersCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('workerCode: $workerCode, ')
+          ..write('trade: $trade, ')
+          ..write('dailyRate: $dailyRate')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $TransactionsTable extends Transactions
     with TableInfo<$TransactionsTable, Transaction> {
   @override
@@ -488,6 +790,15 @@ class $TransactionsTable extends Transactions
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways(
           'REFERENCES projects (id) ON DELETE RESTRICT'));
+  static const VerificationMeta _workerIdMeta =
+      const VerificationMeta('workerId');
+  @override
+  late final GeneratedColumn<int> workerId = GeneratedColumn<int>(
+      'worker_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES workers (id) ON DELETE RESTRICT'));
   static const VerificationMeta _dateMeta = const VerificationMeta('date');
   @override
   late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
@@ -553,6 +864,7 @@ class $TransactionsTable extends Transactions
   List<GeneratedColumn> get $columns => [
         id,
         projectId,
+        workerId,
         date,
         type,
         affectsPnl,
@@ -581,6 +893,10 @@ class $TransactionsTable extends Transactions
           projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta));
     } else if (isInserting) {
       context.missing(_projectIdMeta);
+    }
+    if (data.containsKey('worker_id')) {
+      context.handle(_workerIdMeta,
+          workerId.isAcceptableOrUnknown(data['worker_id']!, _workerIdMeta));
     }
     if (data.containsKey('date')) {
       context.handle(
@@ -633,6 +949,8 @@ class $TransactionsTable extends Transactions
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       projectId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}project_id'])!,
+      workerId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}worker_id']),
       date: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}date'])!,
       type: $TransactionsTable.$convertertype.fromSql(attachedDatabase
@@ -673,6 +991,7 @@ class $TransactionsTable extends Transactions
 class Transaction extends DataClass implements Insertable<Transaction> {
   final int id;
   final int projectId;
+  final int? workerId;
   final DateTime date;
   final TransactionType type;
 
@@ -691,6 +1010,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   const Transaction(
       {required this.id,
       required this.projectId,
+      this.workerId,
       required this.date,
       required this.type,
       required this.affectsPnl,
@@ -705,6 +1025,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['project_id'] = Variable<int>(projectId);
+    if (!nullToAbsent || workerId != null) {
+      map['worker_id'] = Variable<int>(workerId);
+    }
     map['date'] = Variable<DateTime>(date);
     {
       map['type'] =
@@ -731,6 +1054,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     return TransactionsCompanion(
       id: Value(id),
       projectId: Value(projectId),
+      workerId: workerId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(workerId),
       date: Value(date),
       type: Value(type),
       affectsPnl: Value(affectsPnl),
@@ -755,6 +1081,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     return Transaction(
       id: serializer.fromJson<int>(json['id']),
       projectId: serializer.fromJson<int>(json['projectId']),
+      workerId: serializer.fromJson<int?>(json['workerId']),
       date: serializer.fromJson<DateTime>(json['date']),
       type: $TransactionsTable.$convertertype
           .fromJson(serializer.fromJson<String>(json['type'])),
@@ -774,6 +1101,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'projectId': serializer.toJson<int>(projectId),
+      'workerId': serializer.toJson<int?>(workerId),
       'date': serializer.toJson<DateTime>(date),
       'type': serializer
           .toJson<String>($TransactionsTable.$convertertype.toJson(type)),
@@ -791,6 +1119,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   Transaction copyWith(
           {int? id,
           int? projectId,
+          Value<int?> workerId = const Value.absent(),
           DateTime? date,
           TransactionType? type,
           bool? affectsPnl,
@@ -803,6 +1132,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       Transaction(
         id: id ?? this.id,
         projectId: projectId ?? this.projectId,
+        workerId: workerId.present ? workerId.value : this.workerId,
         date: date ?? this.date,
         type: type ?? this.type,
         affectsPnl: affectsPnl ?? this.affectsPnl,
@@ -817,6 +1147,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     return Transaction(
       id: data.id.present ? data.id.value : this.id,
       projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      workerId: data.workerId.present ? data.workerId.value : this.workerId,
       date: data.date.present ? data.date.value : this.date,
       type: data.type.present ? data.type.value : this.type,
       affectsPnl:
@@ -838,6 +1169,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     return (StringBuffer('Transaction(')
           ..write('id: $id, ')
           ..write('projectId: $projectId, ')
+          ..write('workerId: $workerId, ')
           ..write('date: $date, ')
           ..write('type: $type, ')
           ..write('affectsPnl: $affectsPnl, ')
@@ -852,14 +1184,26 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   }
 
   @override
-  int get hashCode => Object.hash(id, projectId, date, type, affectsPnl,
-      affectsCash, amount, paymentMode, narration, referenceNo, createdAt);
+  int get hashCode => Object.hash(
+      id,
+      projectId,
+      workerId,
+      date,
+      type,
+      affectsPnl,
+      affectsCash,
+      amount,
+      paymentMode,
+      narration,
+      referenceNo,
+      createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Transaction &&
           other.id == this.id &&
           other.projectId == this.projectId &&
+          other.workerId == this.workerId &&
           other.date == this.date &&
           other.type == this.type &&
           other.affectsPnl == this.affectsPnl &&
@@ -874,6 +1218,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
 class TransactionsCompanion extends UpdateCompanion<Transaction> {
   final Value<int> id;
   final Value<int> projectId;
+  final Value<int?> workerId;
   final Value<DateTime> date;
   final Value<TransactionType> type;
   final Value<bool> affectsPnl;
@@ -886,6 +1231,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   const TransactionsCompanion({
     this.id = const Value.absent(),
     this.projectId = const Value.absent(),
+    this.workerId = const Value.absent(),
     this.date = const Value.absent(),
     this.type = const Value.absent(),
     this.affectsPnl = const Value.absent(),
@@ -899,6 +1245,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   TransactionsCompanion.insert({
     this.id = const Value.absent(),
     required int projectId,
+    this.workerId = const Value.absent(),
     required DateTime date,
     required TransactionType type,
     this.affectsPnl = const Value.absent(),
@@ -915,6 +1262,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   static Insertable<Transaction> custom({
     Expression<int>? id,
     Expression<int>? projectId,
+    Expression<int>? workerId,
     Expression<DateTime>? date,
     Expression<String>? type,
     Expression<bool>? affectsPnl,
@@ -928,6 +1276,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (projectId != null) 'project_id': projectId,
+      if (workerId != null) 'worker_id': workerId,
       if (date != null) 'date': date,
       if (type != null) 'type': type,
       if (affectsPnl != null) 'affects_pnl': affectsPnl,
@@ -943,6 +1292,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   TransactionsCompanion copyWith(
       {Value<int>? id,
       Value<int>? projectId,
+      Value<int?>? workerId,
       Value<DateTime>? date,
       Value<TransactionType>? type,
       Value<bool>? affectsPnl,
@@ -955,6 +1305,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     return TransactionsCompanion(
       id: id ?? this.id,
       projectId: projectId ?? this.projectId,
+      workerId: workerId ?? this.workerId,
       date: date ?? this.date,
       type: type ?? this.type,
       affectsPnl: affectsPnl ?? this.affectsPnl,
@@ -975,6 +1326,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     }
     if (projectId.present) {
       map['project_id'] = Variable<int>(projectId.value);
+    }
+    if (workerId.present) {
+      map['worker_id'] = Variable<int>(workerId.value);
     }
     if (date.present) {
       map['date'] = Variable<DateTime>(date.value);
@@ -1013,6 +1367,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     return (StringBuffer('TransactionsCompanion(')
           ..write('id: $id, ')
           ..write('projectId: $projectId, ')
+          ..write('workerId: $workerId, ')
           ..write('date: $date, ')
           ..write('type: $type, ')
           ..write('affectsPnl: $affectsPnl, ')
@@ -1565,308 +1920,6 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
           ..write('vendorId: $vendorId, ')
           ..write('itemDescription: $itemDescription, ')
           ..write('paymentStatus: $paymentStatus')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $WorkersTable extends Workers with TableInfo<$WorkersTable, Worker> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $WorkersTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
-      additionalChecks:
-          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 200),
-      type: DriftSqlType.string,
-      requiredDuringInsert: true);
-  static const VerificationMeta _workerCodeMeta =
-      const VerificationMeta('workerCode');
-  @override
-  late final GeneratedColumn<String> workerCode = GeneratedColumn<String>(
-      'worker_code', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _tradeMeta = const VerificationMeta('trade');
-  @override
-  late final GeneratedColumn<String> trade = GeneratedColumn<String>(
-      'trade', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _dailyRateMeta =
-      const VerificationMeta('dailyRate');
-  @override
-  late final GeneratedColumn<double> dailyRate = GeneratedColumn<double>(
-      'daily_rate', aliasedName, false,
-      type: DriftSqlType.double,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(0.0));
-  @override
-  List<GeneratedColumn> get $columns =>
-      [id, name, workerCode, trade, dailyRate];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'workers';
-  @override
-  VerificationContext validateIntegrity(Insertable<Worker> instance,
-      {bool isInserting = false}) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    if (data.containsKey('worker_code')) {
-      context.handle(
-          _workerCodeMeta,
-          workerCode.isAcceptableOrUnknown(
-              data['worker_code']!, _workerCodeMeta));
-    }
-    if (data.containsKey('trade')) {
-      context.handle(
-          _tradeMeta, trade.isAcceptableOrUnknown(data['trade']!, _tradeMeta));
-    }
-    if (data.containsKey('daily_rate')) {
-      context.handle(_dailyRateMeta,
-          dailyRate.isAcceptableOrUnknown(data['daily_rate']!, _dailyRateMeta));
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  Worker map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Worker(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      workerCode: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}worker_code']),
-      trade: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}trade']),
-      dailyRate: attachedDatabase.typeMapping
-          .read(DriftSqlType.double, data['${effectivePrefix}daily_rate'])!,
-    );
-  }
-
-  @override
-  $WorkersTable createAlias(String alias) {
-    return $WorkersTable(attachedDatabase, alias);
-  }
-}
-
-class Worker extends DataClass implements Insertable<Worker> {
-  final int id;
-  final String name;
-  final String? workerCode;
-  final String? trade;
-  final double dailyRate;
-  const Worker(
-      {required this.id,
-      required this.name,
-      this.workerCode,
-      this.trade,
-      required this.dailyRate});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['name'] = Variable<String>(name);
-    if (!nullToAbsent || workerCode != null) {
-      map['worker_code'] = Variable<String>(workerCode);
-    }
-    if (!nullToAbsent || trade != null) {
-      map['trade'] = Variable<String>(trade);
-    }
-    map['daily_rate'] = Variable<double>(dailyRate);
-    return map;
-  }
-
-  WorkersCompanion toCompanion(bool nullToAbsent) {
-    return WorkersCompanion(
-      id: Value(id),
-      name: Value(name),
-      workerCode: workerCode == null && nullToAbsent
-          ? const Value.absent()
-          : Value(workerCode),
-      trade:
-          trade == null && nullToAbsent ? const Value.absent() : Value(trade),
-      dailyRate: Value(dailyRate),
-    );
-  }
-
-  factory Worker.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Worker(
-      id: serializer.fromJson<int>(json['id']),
-      name: serializer.fromJson<String>(json['name']),
-      workerCode: serializer.fromJson<String?>(json['workerCode']),
-      trade: serializer.fromJson<String?>(json['trade']),
-      dailyRate: serializer.fromJson<double>(json['dailyRate']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'name': serializer.toJson<String>(name),
-      'workerCode': serializer.toJson<String?>(workerCode),
-      'trade': serializer.toJson<String?>(trade),
-      'dailyRate': serializer.toJson<double>(dailyRate),
-    };
-  }
-
-  Worker copyWith(
-          {int? id,
-          String? name,
-          Value<String?> workerCode = const Value.absent(),
-          Value<String?> trade = const Value.absent(),
-          double? dailyRate}) =>
-      Worker(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        workerCode: workerCode.present ? workerCode.value : this.workerCode,
-        trade: trade.present ? trade.value : this.trade,
-        dailyRate: dailyRate ?? this.dailyRate,
-      );
-  Worker copyWithCompanion(WorkersCompanion data) {
-    return Worker(
-      id: data.id.present ? data.id.value : this.id,
-      name: data.name.present ? data.name.value : this.name,
-      workerCode:
-          data.workerCode.present ? data.workerCode.value : this.workerCode,
-      trade: data.trade.present ? data.trade.value : this.trade,
-      dailyRate: data.dailyRate.present ? data.dailyRate.value : this.dailyRate,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('Worker(')
-          ..write('id: $id, ')
-          ..write('name: $name, ')
-          ..write('workerCode: $workerCode, ')
-          ..write('trade: $trade, ')
-          ..write('dailyRate: $dailyRate')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, name, workerCode, trade, dailyRate);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Worker &&
-          other.id == this.id &&
-          other.name == this.name &&
-          other.workerCode == this.workerCode &&
-          other.trade == this.trade &&
-          other.dailyRate == this.dailyRate);
-}
-
-class WorkersCompanion extends UpdateCompanion<Worker> {
-  final Value<int> id;
-  final Value<String> name;
-  final Value<String?> workerCode;
-  final Value<String?> trade;
-  final Value<double> dailyRate;
-  const WorkersCompanion({
-    this.id = const Value.absent(),
-    this.name = const Value.absent(),
-    this.workerCode = const Value.absent(),
-    this.trade = const Value.absent(),
-    this.dailyRate = const Value.absent(),
-  });
-  WorkersCompanion.insert({
-    this.id = const Value.absent(),
-    required String name,
-    this.workerCode = const Value.absent(),
-    this.trade = const Value.absent(),
-    this.dailyRate = const Value.absent(),
-  }) : name = Value(name);
-  static Insertable<Worker> custom({
-    Expression<int>? id,
-    Expression<String>? name,
-    Expression<String>? workerCode,
-    Expression<String>? trade,
-    Expression<double>? dailyRate,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (name != null) 'name': name,
-      if (workerCode != null) 'worker_code': workerCode,
-      if (trade != null) 'trade': trade,
-      if (dailyRate != null) 'daily_rate': dailyRate,
-    });
-  }
-
-  WorkersCompanion copyWith(
-      {Value<int>? id,
-      Value<String>? name,
-      Value<String?>? workerCode,
-      Value<String?>? trade,
-      Value<double>? dailyRate}) {
-    return WorkersCompanion(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      workerCode: workerCode ?? this.workerCode,
-      trade: trade ?? this.trade,
-      dailyRate: dailyRate ?? this.dailyRate,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    if (workerCode.present) {
-      map['worker_code'] = Variable<String>(workerCode.value);
-    }
-    if (trade.present) {
-      map['trade'] = Variable<String>(trade.value);
-    }
-    if (dailyRate.present) {
-      map['daily_rate'] = Variable<double>(dailyRate.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('WorkersCompanion(')
-          ..write('id: $id, ')
-          ..write('name: $name, ')
-          ..write('workerCode: $workerCode, ')
-          ..write('trade: $trade, ')
-          ..write('dailyRate: $dailyRate')
           ..write(')'))
         .toString();
   }
@@ -2557,10 +2610,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $ProjectsTable projects = $ProjectsTable(this);
+  late final $WorkersTable workers = $WorkersTable(this);
   late final $TransactionsTable transactions = $TransactionsTable(this);
   late final $VendorsTable vendors = $VendorsTable(this);
   late final $PurchasesTable purchases = $PurchasesTable(this);
-  late final $WorkersTable workers = $WorkersTable(this);
   late final $AttendanceTable attendance = $AttendanceTable(this);
   late final $DepositsTable deposits = $DepositsTable(this);
   late final ProjectDao projectDao = ProjectDao(this as AppDatabase);
@@ -2575,10 +2628,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
         projects,
+        workers,
         transactions,
         vendors,
         purchases,
-        workers,
         attendance,
         deposits
       ];
@@ -3060,10 +3113,330 @@ typedef $$ProjectsTableProcessedTableManager = ProcessedTableManager<
     Project,
     PrefetchHooks Function(
         {bool transactionsRefs, bool attendanceRefs, bool depositsRefs})>;
+typedef $$WorkersTableCreateCompanionBuilder = WorkersCompanion Function({
+  Value<int> id,
+  required String name,
+  Value<String?> workerCode,
+  Value<String?> trade,
+  Value<double> dailyRate,
+});
+typedef $$WorkersTableUpdateCompanionBuilder = WorkersCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<String?> workerCode,
+  Value<String?> trade,
+  Value<double> dailyRate,
+});
+
+final class $$WorkersTableReferences
+    extends BaseReferences<_$AppDatabase, $WorkersTable, Worker> {
+  $$WorkersTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$TransactionsTable, List<Transaction>>
+      _transactionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+          db.transactions,
+          aliasName:
+              $_aliasNameGenerator(db.workers.id, db.transactions.workerId));
+
+  $$TransactionsTableProcessedTableManager get transactionsRefs {
+    final manager = $$TransactionsTableTableManager($_db, $_db.transactions)
+        .filter((f) => f.workerId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_transactionsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$AttendanceTable, List<AttendanceData>>
+      _attendanceRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.attendance,
+              aliasName:
+                  $_aliasNameGenerator(db.workers.id, db.attendance.workerId));
+
+  $$AttendanceTableProcessedTableManager get attendanceRefs {
+    final manager = $$AttendanceTableTableManager($_db, $_db.attendance)
+        .filter((f) => f.workerId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_attendanceRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
+class $$WorkersTableFilterComposer
+    extends Composer<_$AppDatabase, $WorkersTable> {
+  $$WorkersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get workerCode => $composableBuilder(
+      column: $table.workerCode, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get trade => $composableBuilder(
+      column: $table.trade, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get dailyRate => $composableBuilder(
+      column: $table.dailyRate, builder: (column) => ColumnFilters(column));
+
+  Expression<bool> transactionsRefs(
+      Expression<bool> Function($$TransactionsTableFilterComposer f) f) {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.transactions,
+        getReferencedColumn: (t) => t.workerId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableFilterComposer(
+              $db: $db,
+              $table: $db.transactions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> attendanceRefs(
+      Expression<bool> Function($$AttendanceTableFilterComposer f) f) {
+    final $$AttendanceTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.attendance,
+        getReferencedColumn: (t) => t.workerId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$AttendanceTableFilterComposer(
+              $db: $db,
+              $table: $db.attendance,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$WorkersTableOrderingComposer
+    extends Composer<_$AppDatabase, $WorkersTable> {
+  $$WorkersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get workerCode => $composableBuilder(
+      column: $table.workerCode, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get trade => $composableBuilder(
+      column: $table.trade, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get dailyRate => $composableBuilder(
+      column: $table.dailyRate, builder: (column) => ColumnOrderings(column));
+}
+
+class $$WorkersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WorkersTable> {
+  $$WorkersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get workerCode => $composableBuilder(
+      column: $table.workerCode, builder: (column) => column);
+
+  GeneratedColumn<String> get trade =>
+      $composableBuilder(column: $table.trade, builder: (column) => column);
+
+  GeneratedColumn<double> get dailyRate =>
+      $composableBuilder(column: $table.dailyRate, builder: (column) => column);
+
+  Expression<T> transactionsRefs<T extends Object>(
+      Expression<T> Function($$TransactionsTableAnnotationComposer a) f) {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.transactions,
+        getReferencedColumn: (t) => t.workerId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.transactions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> attendanceRefs<T extends Object>(
+      Expression<T> Function($$AttendanceTableAnnotationComposer a) f) {
+    final $$AttendanceTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.attendance,
+        getReferencedColumn: (t) => t.workerId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$AttendanceTableAnnotationComposer(
+              $db: $db,
+              $table: $db.attendance,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$WorkersTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $WorkersTable,
+    Worker,
+    $$WorkersTableFilterComposer,
+    $$WorkersTableOrderingComposer,
+    $$WorkersTableAnnotationComposer,
+    $$WorkersTableCreateCompanionBuilder,
+    $$WorkersTableUpdateCompanionBuilder,
+    (Worker, $$WorkersTableReferences),
+    Worker,
+    PrefetchHooks Function({bool transactionsRefs, bool attendanceRefs})> {
+  $$WorkersTableTableManager(_$AppDatabase db, $WorkersTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WorkersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WorkersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WorkersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String?> workerCode = const Value.absent(),
+            Value<String?> trade = const Value.absent(),
+            Value<double> dailyRate = const Value.absent(),
+          }) =>
+              WorkersCompanion(
+            id: id,
+            name: name,
+            workerCode: workerCode,
+            trade: trade,
+            dailyRate: dailyRate,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+            Value<String?> workerCode = const Value.absent(),
+            Value<String?> trade = const Value.absent(),
+            Value<double> dailyRate = const Value.absent(),
+          }) =>
+              WorkersCompanion.insert(
+            id: id,
+            name: name,
+            workerCode: workerCode,
+            trade: trade,
+            dailyRate: dailyRate,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) =>
+                  (e.readTable(table), $$WorkersTableReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: (
+              {transactionsRefs = false, attendanceRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (transactionsRefs) db.transactions,
+                if (attendanceRefs) db.attendance
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (transactionsRefs)
+                    await $_getPrefetchedData<Worker, $WorkersTable,
+                            Transaction>(
+                        currentTable: table,
+                        referencedTable:
+                            $$WorkersTableReferences._transactionsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$WorkersTableReferences(db, table, p0)
+                                .transactionsRefs,
+                        referencedItemsForCurrentItem: (item,
+                                referencedItems) =>
+                            referencedItems.where((e) => e.workerId == item.id),
+                        typedResults: items),
+                  if (attendanceRefs)
+                    await $_getPrefetchedData<Worker, $WorkersTable,
+                            AttendanceData>(
+                        currentTable: table,
+                        referencedTable:
+                            $$WorkersTableReferences._attendanceRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$WorkersTableReferences(db, table, p0)
+                                .attendanceRefs,
+                        referencedItemsForCurrentItem: (item,
+                                referencedItems) =>
+                            referencedItems.where((e) => e.workerId == item.id),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$WorkersTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $WorkersTable,
+    Worker,
+    $$WorkersTableFilterComposer,
+    $$WorkersTableOrderingComposer,
+    $$WorkersTableAnnotationComposer,
+    $$WorkersTableCreateCompanionBuilder,
+    $$WorkersTableUpdateCompanionBuilder,
+    (Worker, $$WorkersTableReferences),
+    Worker,
+    PrefetchHooks Function({bool transactionsRefs, bool attendanceRefs})>;
 typedef $$TransactionsTableCreateCompanionBuilder = TransactionsCompanion
     Function({
   Value<int> id,
   required int projectId,
+  Value<int?> workerId,
   required DateTime date,
   required TransactionType type,
   Value<bool> affectsPnl,
@@ -3078,6 +3451,7 @@ typedef $$TransactionsTableUpdateCompanionBuilder = TransactionsCompanion
     Function({
   Value<int> id,
   Value<int> projectId,
+  Value<int?> workerId,
   Value<DateTime> date,
   Value<TransactionType> type,
   Value<bool> affectsPnl,
@@ -3103,6 +3477,21 @@ final class $$TransactionsTableReferences
     final manager = $$ProjectsTableTableManager($_db, $_db.projects)
         .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $WorkersTable _workerIdTable(_$AppDatabase db) =>
+      db.workers.createAlias(
+          $_aliasNameGenerator(db.transactions.workerId, db.workers.id));
+
+  $$WorkersTableProcessedTableManager? get workerId {
+    final $_column = $_itemColumn<int>('worker_id');
+    if ($_column == null) return null;
+    final manager = $$WorkersTableTableManager($_db, $_db.workers)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_workerIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: [item]));
@@ -3194,6 +3583,26 @@ class $$TransactionsTableFilterComposer
             $$ProjectsTableFilterComposer(
               $db: $db,
               $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$WorkersTableFilterComposer get workerId {
+    final $$WorkersTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.workerId,
+        referencedTable: $db.workers,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WorkersTableFilterComposer(
+              $db: $db,
+              $table: $db.workers,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -3303,6 +3712,26 @@ class $$TransactionsTableOrderingComposer
             ));
     return composer;
   }
+
+  $$WorkersTableOrderingComposer get workerId {
+    final $$WorkersTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.workerId,
+        referencedTable: $db.workers,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WorkersTableOrderingComposer(
+              $db: $db,
+              $table: $db.workers,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 }
 
 class $$TransactionsTableAnnotationComposer
@@ -3357,6 +3786,26 @@ class $$TransactionsTableAnnotationComposer
             $$ProjectsTableAnnotationComposer(
               $db: $db,
               $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$WorkersTableAnnotationComposer get workerId {
+    final $$WorkersTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.workerId,
+        referencedTable: $db.workers,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WorkersTableAnnotationComposer(
+              $db: $db,
+              $table: $db.workers,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -3420,7 +3869,10 @@ class $$TransactionsTableTableManager extends RootTableManager<
     (Transaction, $$TransactionsTableReferences),
     Transaction,
     PrefetchHooks Function(
-        {bool projectId, bool purchasesRefs, bool depositsRefs})> {
+        {bool projectId,
+        bool workerId,
+        bool purchasesRefs,
+        bool depositsRefs})> {
   $$TransactionsTableTableManager(_$AppDatabase db, $TransactionsTable table)
       : super(TableManagerState(
           db: db,
@@ -3434,6 +3886,7 @@ class $$TransactionsTableTableManager extends RootTableManager<
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<int> projectId = const Value.absent(),
+            Value<int?> workerId = const Value.absent(),
             Value<DateTime> date = const Value.absent(),
             Value<TransactionType> type = const Value.absent(),
             Value<bool> affectsPnl = const Value.absent(),
@@ -3447,6 +3900,7 @@ class $$TransactionsTableTableManager extends RootTableManager<
               TransactionsCompanion(
             id: id,
             projectId: projectId,
+            workerId: workerId,
             date: date,
             type: type,
             affectsPnl: affectsPnl,
@@ -3460,6 +3914,7 @@ class $$TransactionsTableTableManager extends RootTableManager<
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required int projectId,
+            Value<int?> workerId = const Value.absent(),
             required DateTime date,
             required TransactionType type,
             Value<bool> affectsPnl = const Value.absent(),
@@ -3473,6 +3928,7 @@ class $$TransactionsTableTableManager extends RootTableManager<
               TransactionsCompanion.insert(
             id: id,
             projectId: projectId,
+            workerId: workerId,
             date: date,
             type: type,
             affectsPnl: affectsPnl,
@@ -3491,6 +3947,7 @@ class $$TransactionsTableTableManager extends RootTableManager<
               .toList(),
           prefetchHooksCallback: (
               {projectId = false,
+              workerId = false,
               purchasesRefs = false,
               depositsRefs = false}) {
             return PrefetchHooks(
@@ -3520,6 +3977,16 @@ class $$TransactionsTableTableManager extends RootTableManager<
                         $$TransactionsTableReferences._projectIdTable(db),
                     referencedColumn:
                         $$TransactionsTableReferences._projectIdTable(db).id,
+                  ) as T;
+                }
+                if (workerId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.workerId,
+                    referencedTable:
+                        $$TransactionsTableReferences._workerIdTable(db),
+                    referencedColumn:
+                        $$TransactionsTableReferences._workerIdTable(db).id,
                   ) as T;
                 }
 
@@ -3572,7 +4039,10 @@ typedef $$TransactionsTableProcessedTableManager = ProcessedTableManager<
     (Transaction, $$TransactionsTableReferences),
     Transaction,
     PrefetchHooks Function(
-        {bool projectId, bool purchasesRefs, bool depositsRefs})>;
+        {bool projectId,
+        bool workerId,
+        bool purchasesRefs,
+        bool depositsRefs})>;
 typedef $$VendorsTableCreateCompanionBuilder = VendorsCompanion Function({
   Value<int> id,
   required String name,
@@ -4135,251 +4605,6 @@ typedef $$PurchasesTableProcessedTableManager = ProcessedTableManager<
     (Purchase, $$PurchasesTableReferences),
     Purchase,
     PrefetchHooks Function({bool transactionId, bool vendorId})>;
-typedef $$WorkersTableCreateCompanionBuilder = WorkersCompanion Function({
-  Value<int> id,
-  required String name,
-  Value<String?> workerCode,
-  Value<String?> trade,
-  Value<double> dailyRate,
-});
-typedef $$WorkersTableUpdateCompanionBuilder = WorkersCompanion Function({
-  Value<int> id,
-  Value<String> name,
-  Value<String?> workerCode,
-  Value<String?> trade,
-  Value<double> dailyRate,
-});
-
-final class $$WorkersTableReferences
-    extends BaseReferences<_$AppDatabase, $WorkersTable, Worker> {
-  $$WorkersTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$AttendanceTable, List<AttendanceData>>
-      _attendanceRefsTable(_$AppDatabase db) =>
-          MultiTypedResultKey.fromTable(db.attendance,
-              aliasName:
-                  $_aliasNameGenerator(db.workers.id, db.attendance.workerId));
-
-  $$AttendanceTableProcessedTableManager get attendanceRefs {
-    final manager = $$AttendanceTableTableManager($_db, $_db.attendance)
-        .filter((f) => f.workerId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_attendanceRefsTable($_db));
-    return ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: cache));
-  }
-}
-
-class $$WorkersTableFilterComposer
-    extends Composer<_$AppDatabase, $WorkersTable> {
-  $$WorkersTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get workerCode => $composableBuilder(
-      column: $table.workerCode, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get trade => $composableBuilder(
-      column: $table.trade, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<double> get dailyRate => $composableBuilder(
-      column: $table.dailyRate, builder: (column) => ColumnFilters(column));
-
-  Expression<bool> attendanceRefs(
-      Expression<bool> Function($$AttendanceTableFilterComposer f) f) {
-    final $$AttendanceTableFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $db.attendance,
-        getReferencedColumn: (t) => t.workerId,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$AttendanceTableFilterComposer(
-              $db: $db,
-              $table: $db.attendance,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return f(composer);
-  }
-}
-
-class $$WorkersTableOrderingComposer
-    extends Composer<_$AppDatabase, $WorkersTable> {
-  $$WorkersTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get name => $composableBuilder(
-      column: $table.name, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get workerCode => $composableBuilder(
-      column: $table.workerCode, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get trade => $composableBuilder(
-      column: $table.trade, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<double> get dailyRate => $composableBuilder(
-      column: $table.dailyRate, builder: (column) => ColumnOrderings(column));
-}
-
-class $$WorkersTableAnnotationComposer
-    extends Composer<_$AppDatabase, $WorkersTable> {
-  $$WorkersTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  GeneratedColumn<String> get workerCode => $composableBuilder(
-      column: $table.workerCode, builder: (column) => column);
-
-  GeneratedColumn<String> get trade =>
-      $composableBuilder(column: $table.trade, builder: (column) => column);
-
-  GeneratedColumn<double> get dailyRate =>
-      $composableBuilder(column: $table.dailyRate, builder: (column) => column);
-
-  Expression<T> attendanceRefs<T extends Object>(
-      Expression<T> Function($$AttendanceTableAnnotationComposer a) f) {
-    final $$AttendanceTableAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.id,
-        referencedTable: $db.attendance,
-        getReferencedColumn: (t) => t.workerId,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            $$AttendanceTableAnnotationComposer(
-              $db: $db,
-              $table: $db.attendance,
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
-    return f(composer);
-  }
-}
-
-class $$WorkersTableTableManager extends RootTableManager<
-    _$AppDatabase,
-    $WorkersTable,
-    Worker,
-    $$WorkersTableFilterComposer,
-    $$WorkersTableOrderingComposer,
-    $$WorkersTableAnnotationComposer,
-    $$WorkersTableCreateCompanionBuilder,
-    $$WorkersTableUpdateCompanionBuilder,
-    (Worker, $$WorkersTableReferences),
-    Worker,
-    PrefetchHooks Function({bool attendanceRefs})> {
-  $$WorkersTableTableManager(_$AppDatabase db, $WorkersTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$WorkersTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$WorkersTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$WorkersTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> name = const Value.absent(),
-            Value<String?> workerCode = const Value.absent(),
-            Value<String?> trade = const Value.absent(),
-            Value<double> dailyRate = const Value.absent(),
-          }) =>
-              WorkersCompanion(
-            id: id,
-            name: name,
-            workerCode: workerCode,
-            trade: trade,
-            dailyRate: dailyRate,
-          ),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String name,
-            Value<String?> workerCode = const Value.absent(),
-            Value<String?> trade = const Value.absent(),
-            Value<double> dailyRate = const Value.absent(),
-          }) =>
-              WorkersCompanion.insert(
-            id: id,
-            name: name,
-            workerCode: workerCode,
-            trade: trade,
-            dailyRate: dailyRate,
-          ),
-          withReferenceMapper: (p0) => p0
-              .map((e) =>
-                  (e.readTable(table), $$WorkersTableReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: ({attendanceRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (attendanceRefs) db.attendance],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (attendanceRefs)
-                    await $_getPrefetchedData<Worker, $WorkersTable,
-                            AttendanceData>(
-                        currentTable: table,
-                        referencedTable:
-                            $$WorkersTableReferences._attendanceRefsTable(db),
-                        managerFromTypedResult: (p0) =>
-                            $$WorkersTableReferences(db, table, p0)
-                                .attendanceRefs,
-                        referencedItemsForCurrentItem: (item,
-                                referencedItems) =>
-                            referencedItems.where((e) => e.workerId == item.id),
-                        typedResults: items)
-                ];
-              },
-            );
-          },
-        ));
-}
-
-typedef $$WorkersTableProcessedTableManager = ProcessedTableManager<
-    _$AppDatabase,
-    $WorkersTable,
-    Worker,
-    $$WorkersTableFilterComposer,
-    $$WorkersTableOrderingComposer,
-    $$WorkersTableAnnotationComposer,
-    $$WorkersTableCreateCompanionBuilder,
-    $$WorkersTableUpdateCompanionBuilder,
-    (Worker, $$WorkersTableReferences),
-    Worker,
-    PrefetchHooks Function({bool attendanceRefs})>;
 typedef $$AttendanceTableCreateCompanionBuilder = AttendanceCompanion Function({
   Value<int> id,
   required int workerId,
@@ -5091,14 +5316,14 @@ class $AppDatabaseManager {
   $AppDatabaseManager(this._db);
   $$ProjectsTableTableManager get projects =>
       $$ProjectsTableTableManager(_db, _db.projects);
+  $$WorkersTableTableManager get workers =>
+      $$WorkersTableTableManager(_db, _db.workers);
   $$TransactionsTableTableManager get transactions =>
       $$TransactionsTableTableManager(_db, _db.transactions);
   $$VendorsTableTableManager get vendors =>
       $$VendorsTableTableManager(_db, _db.vendors);
   $$PurchasesTableTableManager get purchases =>
       $$PurchasesTableTableManager(_db, _db.purchases);
-  $$WorkersTableTableManager get workers =>
-      $$WorkersTableTableManager(_db, _db.workers);
   $$AttendanceTableTableManager get attendance =>
       $$AttendanceTableTableManager(_db, _db.attendance);
   $$DepositsTableTableManager get deposits =>

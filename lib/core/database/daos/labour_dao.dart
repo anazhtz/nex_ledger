@@ -14,12 +14,25 @@ class AttendanceWithWorker {
   AttendanceWithWorker(this.attendance, this.worker);
 }
 
-/// Summary of a worker's attendance for payment calculation.
+/// Summary of a worker's attendance for payment calculation using All-Time Running Balance.
 class WorkerPaymentSummary {
   final Worker worker;
-  final double effectiveDays; // present=1.0, halfDay=0.5
-  final double amountDue;
-  WorkerPaymentSummary(this.worker, this.effectiveDays, this.amountDue);
+  final double totalDaysWorked; // All-time effective days
+  final double totalEarnedWages; // All-time earned wages
+  final double totalPaymentsPaid; // All-time payments issued
+  final double amountDue; // Net running balance due
+  final double rangeDays; // Selected date range days (for display)
+
+  WorkerPaymentSummary({
+    required this.worker,
+    required this.totalDaysWorked,
+    required this.totalEarnedWages,
+    required this.totalPaymentsPaid,
+    required this.amountDue,
+    required this.rangeDays,
+  });
+
+  double get effectiveDays => rangeDays;
 }
 
 @DriftAccessor(tables: [Workers, Attendance, Projects])
@@ -77,7 +90,7 @@ class LabourDao extends DatabaseAccessor<AppDatabase> with _$LabourDaoMixin {
   Future<void> upsertAttendance(AttendanceCompanion entry) =>
       into(attendance).insertOnConflictUpdate(entry);
 
-  /// Calculate payment summary for a worker over a date range.
+  /// Calculate payment summary for a worker using ALL-TIME Running Balance (prevents double payments).
   Future<WorkerPaymentSummary> getWorkerPaymentSummary(
     int workerId,
     int projectId,
@@ -87,19 +100,53 @@ class LabourDao extends DatabaseAccessor<AppDatabase> with _$LabourDaoMixin {
     final worker = await getWorkerById(workerId);
     if (worker == null) throw StateError('Worker $workerId not found');
 
-    final rows = await (select(attendance)
+    // 1. All-Time Attendance
+    final allRows = await (select(attendance)
+          ..where((a) => a.workerId.equals(workerId))
+          ..where((a) => a.projectId.equals(projectId)))
+        .get();
+
+    double allTimeDays = 0.0;
+    for (final row in allRows) {
+      allTimeDays += row.status.payFraction;
+    }
+    final allTimeEarned = allTimeDays * worker.dailyRate;
+
+    // 2. Range Attendance (for UI display filter)
+    final rangeRows = await (select(attendance)
           ..where((a) => a.workerId.equals(workerId))
           ..where((a) => a.projectId.equals(projectId))
           ..where((a) => a.date.isBiggerOrEqualValue(from))
           ..where((a) => a.date.isSmallerOrEqualValue(to)))
         .get();
 
-    double effectiveDays = 0.0;
-    for (final row in rows) {
-      effectiveDays += row.status.payFraction;
+    double rangeDays = 0.0;
+    for (final row in rangeRows) {
+      rangeDays += row.status.payFraction;
     }
-    final amountDue = effectiveDays * worker.dailyRate;
-    return WorkerPaymentSummary(worker, effectiveDays, amountDue);
+
+    // 3. All-Time Payments Issued for this worker & project
+    final paidRows = await (select(db.transactions)
+          ..where((t) => t.projectId.equals(projectId))
+          ..where((t) => t.workerId.equals(workerId))
+          ..where((t) => t.type.equals(TransactionType.labourPayment.name)))
+        .get();
+
+    double totalPaid = 0.0;
+    for (final t in paidRows) {
+      totalPaid += t.amount;
+    }
+
+    final amountDue = (allTimeEarned - totalPaid) > 0 ? (allTimeEarned - totalPaid) : 0.0;
+
+    return WorkerPaymentSummary(
+      worker: worker,
+      totalDaysWorked: allTimeDays,
+      totalEarnedWages: allTimeEarned,
+      totalPaymentsPaid: totalPaid,
+      amountDue: amountDue,
+      rangeDays: rangeDays,
+    );
   }
 
   /// Get all attendance for a worker in a project for date range (for payment screen).

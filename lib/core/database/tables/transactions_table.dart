@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'projects_table.dart';
+import 'workers_table.dart';
 
 /// Unified transaction ledger — every money movement goes here.
 ///
@@ -10,6 +11,8 @@ class Transactions extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get projectId =>
       integer().references(Projects, #id, onDelete: KeyAction.restrict)();
+  IntColumn get workerId =>
+      integer().nullable().references(Workers, #id, onDelete: KeyAction.restrict)();
   DateTimeColumn get date => dateTime()();
   TextColumn get type => textEnum<TransactionType>()();
 

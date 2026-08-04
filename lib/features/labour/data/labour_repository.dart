@@ -82,6 +82,7 @@ class LabourRepository {
   /// Record a labour payment transaction.
   Future<void> recordPayment({
     required int projectId,
+    int? workerId,
     required DateTime date,
     required double amount,
     PaymentMode? paymentMode,
@@ -91,6 +92,7 @@ class LabourRepository {
       _transactionDao.insertTransaction(
         TransactionsCompanion.insert(
           projectId: projectId,
+          workerId: Value(workerId),
           date: date,
           type: TransactionType.labourPayment,
           affectsPnl: const Value(true),

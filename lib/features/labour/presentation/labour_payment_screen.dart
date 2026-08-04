@@ -63,6 +63,7 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
     try {
       await ref.read(labourRepositoryProvider).recordPayment(
             projectId: _selectedProject!,
+            workerId: _selectedWorker!,
             date: DateTime.now(),
             amount: _summary!.amountDue,
             paymentMode: _paymentMode,
@@ -234,25 +235,31 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                         const SizedBox(height: 24),
                         const Divider(),
                         const SizedBox(height: 16),
-                        Text('Payment Summary',
+                        Text('All-Time Running Balance Summary',
                             style: theme.textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w600)),
+                                ?.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 12),
                         _SummaryRow(
-                            label: 'Worker', value: _summary!.worker.name),
+                            label: 'Worker Name', value: _summary!.worker.name),
                         _SummaryRow(
-                            label: 'Daily Rate',
-                            value: CurrencyFormatter.format(
-                                _summary!.worker.dailyRate)),
+                            label: 'Daily Wage Rate',
+                            value: '${CurrencyFormatter.format(_summary!.worker.dailyRate)} / day'),
                         _SummaryRow(
-                            label: 'Effective Days',
-                            value: _summary!.effectiveDays.toStringAsFixed(1)),
+                            label: 'Total Days Worked (All-Time)',
+                            value: '${_summary!.totalDaysWorked.toStringAsFixed(1)} days'),
+                        _SummaryRow(
+                            label: 'Gross Earned Wages (All-Time)',
+                            value: CurrencyFormatter.format(_summary!.totalEarnedWages)),
+                        _SummaryRow(
+                            label: 'Less: Total Payments Disbursed (All-Time)',
+                            value: '-${CurrencyFormatter.format(_summary!.totalPaymentsPaid)}',
+                            valueColor: const Color(0xFFEF4444)),
                         const Divider(height: 24),
                         _SummaryRow(
-                          label: 'Amount Due',
+                          label: 'Net Outstanding Wage Balance Due',
                           value: CurrencyFormatter.format(_summary!.amountDue),
                           bold: true,
-                          valueColor: theme.colorScheme.primary,
+                          valueColor: const Color(0xFF4F46E5),
                         ),
                         const SizedBox(height: 16),
 
