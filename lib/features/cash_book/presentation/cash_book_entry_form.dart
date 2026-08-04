@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
@@ -102,178 +103,219 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
     final projectsAsync = ref.watch(projectListProvider);
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surfaceContainerLowest,
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(24.r),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 680.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => context.go('/cash-book'),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'New Cash Book Entry',
-                  style: theme.textTheme.headlineMedium
-                      ?.copyWith(fontWeight: FontWeight.w700),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560),
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
+                // Top Header Row
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back_rounded),
+                      onPressed: () => context.go('/cash-book'),
+                      tooltip: 'Back to Cash Book',
+                    ),
+                    SizedBox(width: 8.w),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Type toggle
-                        SegmentedButton<TransactionType>(
-                          segments: const [
-                            ButtonSegment(
-                              value: TransactionType.income,
-                              label: Text('Income'),
-                              icon: Icon(Icons.add_circle_outline),
-                            ),
-                            ButtonSegment(
-                              value: TransactionType.expense,
-                              label: Text('Expense'),
-                              icon: Icon(Icons.remove_circle_outline),
-                            ),
-                          ],
-                          selected: {_type},
-                          onSelectionChanged: (s) =>
-                              setState(() => _type = s.first),
+                        Text(
+                          'New Cash Book Entry',
+                          style: TextStyle(
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF0F172A),
+                          ),
                         ),
-                        const SizedBox(height: 16),
-
-                        // Project selector (Auto-assigned if active context locked)
-                        projectsAsync.when(
-                          loading: () => const LinearProgressIndicator(),
-                          error: (_, __) => const SizedBox.shrink(),
-                          data: (projects) {
-                            final globalId = ref.watch(selectedProjectIdProvider);
-                            return _buildProjectSelector(projects, globalId, theme);
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Date + Amount row
-                        Row(
-                          children: [
-                            Expanded(
-                              child: InkWell(
-                                onTap: _pickDate,
-                                child: InputDecorator(
-                                  decoration: const InputDecoration(
-                                    labelText: 'Date',
-                                    suffixIcon: Icon(
-                                        Icons.calendar_today_outlined,
-                                        size: 18),
-                                  ),
-                                  child: Text(
-                                    '${_date.day.toString().padLeft(2, '0')}/'
-                                    '${_date.month.toString().padLeft(2, '0')}/'
-                                    '${_date.year}',
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: TextFormField(
-                                controller: _amountCtrl,
-                                decoration: const InputDecoration(
-                                  labelText: 'Amount (₹) *',
-                                  prefixText: '₹ ',
-                                ),
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                validator: (v) {
-                                  if (v == null || v.isEmpty)
-                                    return 'Required';
-                                  if (double.tryParse(v) == null)
-                                    return 'Invalid amount';
-                                  return null;
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Payment mode
-                        DropdownButtonFormField<PaymentMode?>(
-                          value: _paymentMode,
-                          decoration: const InputDecoration(
-                              labelText: 'Payment Mode'),
-                          items: [
-                            const DropdownMenuItem(
-                                value: null, child: Text('— Select —')),
-                            ...PaymentMode.values.map(
-                              (m) => DropdownMenuItem(
-                                value: m,
-                                child: Text(m.displayName),
-                              ),
-                            ),
-                          ],
-                          onChanged: (v) =>
-                              setState(() => _paymentMode = v),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Narration
-                        TextFormField(
-                          controller: _narrationCtrl,
-                          decoration: const InputDecoration(
-                              labelText: 'Narration'),
-                          maxLines: 2,
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Reference no
-                        TextFormField(
-                          controller: _refCtrl,
-                          decoration: const InputDecoration(
-                              labelText: 'Reference / Voucher No.'),
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Actions
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            TextButton(
-                              onPressed: () => context.go('/cash-book'),
-                              child: const Text('Cancel'),
-                            ),
-                            const SizedBox(width: 12),
-                            FilledButton(
-                              onPressed: _loading ? null : _submit,
-                              child: _loading
-                                  ? const SizedBox(
-                                      width: 18,
-                                      height: 18,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2),
-                                    )
-                                  : const Text('Save Entry'),
-                            ),
-                          ],
+                        Text(
+                          'Record an income or expense transaction',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: const Color(0xFF64748B),
+                          ),
                         ),
                       ],
                     ),
+                  ],
+                ),
+                SizedBox(height: 20.h),
+
+                // Form Container Card
+                Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.r),
+                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(24.r),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Type toggle
+                          Center(
+                            child: SegmentedButton<TransactionType>(
+                              segments: const [
+                                ButtonSegment(
+                                  value: TransactionType.income,
+                                  label: Text('Income (+)', style: TextStyle(fontWeight: FontWeight.w600)),
+                                  icon: Icon(Icons.add_circle_rounded, color: Color(0xFF10B981)),
+                                ),
+                                ButtonSegment(
+                                  value: TransactionType.expense,
+                                  label: Text('Expense (−)', style: TextStyle(fontWeight: FontWeight.w600)),
+                                  icon: Icon(Icons.remove_circle_rounded, color: Color(0xFFEF4444)),
+                                ),
+                              ],
+                              selected: {_type},
+                              onSelectionChanged: (s) =>
+                                  setState(() => _type = s.first),
+                              style: ButtonStyle(
+                                visualDensity: VisualDensity.comfortable,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 20.h),
+
+                          // Project selector (Auto-assigned if active context locked)
+                          projectsAsync.when(
+                            loading: () => const LinearProgressIndicator(),
+                            error: (_, __) => const SizedBox.shrink(),
+                            data: (projects) {
+                              final globalId = ref.watch(selectedProjectIdProvider);
+                              return _buildProjectSelector(projects, globalId, theme);
+                            },
+                          ),
+                          SizedBox(height: 16.h),
+
+                          // Date + Amount row
+                          Row(
+                            children: [
+                              Expanded(
+                                child: InkWell(
+                                  onTap: _pickDate,
+                                  borderRadius: BorderRadius.circular(10.r),
+                                  child: InputDecorator(
+                                    decoration: const InputDecoration(
+                                      labelText: 'Transaction Date',
+                                      prefixIcon: Icon(Icons.calendar_month_rounded, size: 20),
+                                    ),
+                                    child: Text(
+                                      '${_date.day.toString().padLeft(2, '0')}/'
+                                      '${_date.month.toString().padLeft(2, '0')}/'
+                                      '${_date.year}',
+                                      style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 16.w),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: _amountCtrl,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Amount (₹) *',
+                                    prefixIcon: Icon(Icons.currency_rupee_rounded, size: 20),
+                                  ),
+                                  style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700),
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  validator: (v) {
+                                    if (v == null || v.isEmpty) return 'Required';
+                                    if (double.tryParse(v) == null)
+                                      return 'Invalid amount';
+                                    return null;
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 16.h),
+
+                          // Payment mode
+                          DropdownButtonFormField<PaymentMode?>(
+                            value: _paymentMode,
+                            decoration: const InputDecoration(
+                              labelText: 'Payment Mode',
+                              prefixIcon: Icon(Icons.payment_rounded, size: 20),
+                            ),
+                            items: [
+                              const DropdownMenuItem(
+                                  value: null, child: Text('— Select Payment Mode —')),
+                              ...PaymentMode.values.map(
+                                (m) => DropdownMenuItem(
+                                  value: m,
+                                  child: Text(m.displayName),
+                                ),
+                              ),
+                            ],
+                            onChanged: (v) =>
+                                setState(() => _paymentMode = v),
+                          ),
+                          SizedBox(height: 16.h),
+
+                          // Narration
+                          TextFormField(
+                            controller: _narrationCtrl,
+                            decoration: const InputDecoration(
+                              labelText: 'Narration / Particulars',
+                              prefixIcon: Icon(Icons.notes_rounded, size: 20),
+                            ),
+                            maxLines: 2,
+                          ),
+                          SizedBox(height: 16.h),
+
+                          // Reference no
+                          TextFormField(
+                            controller: _refCtrl,
+                            decoration: const InputDecoration(
+                              labelText: 'Reference / Voucher No.',
+                              prefixIcon: Icon(Icons.receipt_long_rounded, size: 20),
+                            ),
+                          ),
+                          SizedBox(height: 24.h),
+
+                          // Actions
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton(
+                                onPressed: () => context.go('/cash-book'),
+                                child: const Text('Cancel'),
+                              ),
+                              SizedBox(width: 12.w),
+                              FilledButton.icon(
+                                onPressed: _loading ? null : _submit,
+                                icon: _loading
+                                    ? SizedBox(
+                                        width: 16.w,
+                                        height: 16.h,
+                                        child: const CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : Icon(Icons.save_rounded, size: 18.sp),
+                                label: Text(_loading ? 'Saving...' : 'Save Cash Book Entry'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

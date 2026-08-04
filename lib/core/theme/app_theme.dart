@@ -1,144 +1,135 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-/// NexLedger Material 3 light theme.
-/// Uses a professional blue-slate seed for a corporate/finance aesthetic.
+/// NexLedger Super Modern Enterprise ERP Theme System.
+/// Uses tailored Slate (#0F172A), Indigo (#4F46E5), and Emerald (#10B981) palette.
 class AppTheme {
   AppTheme._();
 
-  static const Color _seed = Color(0xFF2563EB); // Tailwind blue-600
+  static const Color primaryIndigo = Color(0xFF4F46E5);
+  static const Color primaryDarkSlate = Color(0xFF0F172A);
+  static const Color surfaceBg = Color(0xFFF8FAFC);
+  static const Color cardBg = Colors.white;
+  static const Color borderColor = Color(0xFFE2E8F0);
+  static const Color textMain = Color(0xFF1E293B);
+  static const Color textMuted = Color(0xFF64748B);
 
   static ThemeData get light {
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: _seed,
+      seedColor: primaryIndigo,
+      primary: primaryIndigo,
+      surface: cardBg,
       brightness: Brightness.light,
     );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
+      scaffoldBackgroundColor: surfaceBg,
       fontFamily: 'Roboto',
 
       // AppBar
-      appBarTheme: AppBarTheme(
-        backgroundColor: colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: cardBg,
+        foregroundColor: textMain,
         elevation: 0,
         scrolledUnderElevation: 1,
         titleTextStyle: TextStyle(
           fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: colorScheme.onSurface,
+          fontWeight: FontWeight.w700,
+          color: textMain,
         ),
-      ),
-
-      // NavigationRail
-      navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: colorScheme.surfaceContainerLow,
-        selectedIconTheme: IconThemeData(color: colorScheme.primary),
-        unselectedIconTheme: IconThemeData(
-          color: colorScheme.onSurfaceVariant,
-        ),
-        selectedLabelTextStyle: TextStyle(
-          color: colorScheme.primary,
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
-        ),
-        unselectedLabelTextStyle: TextStyle(
-          color: colorScheme.onSurfaceVariant,
-          fontSize: 12,
-        ),
-        indicatorColor: colorScheme.primaryContainer,
       ),
 
       // Cards
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: colorScheme.outlineVariant),
+          borderRadius: BorderRadius.circular(14.r),
+          side: const BorderSide(color: borderColor, width: 1),
         ),
-        color: colorScheme.surface,
-        margin: const EdgeInsets.all(0),
+        color: cardBg,
+        margin: EdgeInsets.zero,
       ),
 
       // Input fields
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(10.r),
+          borderSide: const BorderSide(color: borderColor, width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10.r),
+          borderSide: const BorderSide(color: borderColor, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10.r),
+          borderSide: const BorderSide(color: primaryIndigo, width: 1.8),
         ),
         filled: true,
-        fillColor: colorScheme.surfaceContainerLowest,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
+        fillColor: cardBg,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 16.w,
+          vertical: 14.h,
         ),
         isDense: true,
+        labelStyle: const TextStyle(color: textMuted, fontWeight: FontWeight.w500),
+        hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
       ),
 
       // Data tables
       dataTableTheme: DataTableThemeData(
-        headingRowColor: WidgetStateProperty.all(
-          colorScheme.surfaceContainerLow,
-        ),
-        headingTextStyle: TextStyle(
-          fontWeight: FontWeight.w600,
-          color: colorScheme.onSurface,
+        headingRowColor: WidgetStateProperty.all(const Color(0xFFF1F5F9)),
+        headingTextStyle: const TextStyle(
+          fontWeight: FontWeight.w700,
+          color: textMain,
           fontSize: 13,
+          letterSpacing: 0.2,
         ),
-        dataTextStyle: const TextStyle(fontSize: 13),
+        dataTextStyle: const TextStyle(
+          fontSize: 13,
+          color: textMain,
+          fontWeight: FontWeight.w500,
+        ),
         dividerThickness: 1,
         columnSpacing: 24,
         horizontalMargin: 16,
       ),
 
-      // Chips
-      chipTheme: ChipThemeData(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-      ),
-
-      // Elevated button
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        ),
-      ),
-
-      // Filled button (same as elevated for consistency)
+      // Buttons
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
+          backgroundColor: primaryIndigo,
+          foregroundColor: Colors.white,
+          elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(10.r),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 14.h),
+          textStyle: TextStyle(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.2,
+          ),
         ),
       ),
 
-      // Text button
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
+          foregroundColor: textMuted,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(10.r),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          textStyle: TextStyle(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
 
-      // Floating action button
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: colorScheme.primary,
-        foregroundColor: colorScheme.onPrimary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
-
-      // Divider
-      dividerTheme: DividerThemeData(
-        color: colorScheme.outlineVariant,
+      dividerTheme: const DividerThemeData(
+        color: borderColor,
         thickness: 1,
         space: 1,
       ),

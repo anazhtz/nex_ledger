@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
+import 'package:nex_ledger/core/utils/currency_formatter.dart';
+import 'package:nex_ledger/features/cash_book/providers/cash_book_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 
 /// Navigation item model with section grouping
@@ -183,27 +185,44 @@ class _AppShellState extends ConsumerState<AppShell> {
     );
   }
 
-  /// Global Top Bar with Active Project Selector
+  /// Global Top Bar with Active Project Selector & Live Cash Balance Indicator
   Widget _buildTopProjectHeader(ThemeData theme) {
     final projectsAsync = ref.watch(projectListProvider);
     final selectedId = ref.watch(selectedProjectIdProvider);
+    final cashBalanceAsync = ref.watch(cashBalanceProvider);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+      height: 60.h,
+      padding: EdgeInsets.symmetric(horizontal: 24.w),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: Colors.white,
         border: Border(
           bottom: BorderSide(
-            color: theme.colorScheme.outlineVariant.withOpacity(0.6),
+            color: const Color(0xFFE2E8F0),
+            width: 1.h,
           ),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.domain_rounded,
-            size: 20.sp,
-            color: theme.colorScheme.primary,
+          Container(
+            padding: EdgeInsets.all(6.r),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEEF2FF),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Icon(
+              Icons.domain_rounded,
+              size: 18.sp,
+              color: const Color(0xFF4F46E5),
+            ),
           ),
           SizedBox(width: 8.w),
           Text(
@@ -211,7 +230,7 @@ class _AppShellState extends ConsumerState<AppShell> {
             style: TextStyle(
               fontSize: 12.sp,
               fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurfaceVariant,
+              color: const Color(0xFF64748B),
             ),
           ),
           SizedBox(width: 12.w),
@@ -219,8 +238,8 @@ class _AppShellState extends ConsumerState<AppShell> {
           // Global Active Project Selector Dropdown
           projectsAsync.when(
             loading: () => SizedBox(
-              width: 18.w,
-              height: 18.h,
+              width: 16.w,
+              height: 16.h,
               child: const CircularProgressIndicator(strokeWidth: 2),
             ),
             error: (_, __) => const SizedBox.shrink(),
@@ -228,10 +247,10 @@ class _AppShellState extends ConsumerState<AppShell> {
               return Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer.withOpacity(0.4),
+                  color: const Color(0xFFEEF2FF),
                   borderRadius: BorderRadius.circular(8.r),
                   border: Border.all(
-                    color: theme.colorScheme.primary.withOpacity(0.3),
+                    color: const Color(0xFFC7D2FE),
                   ),
                 ),
                 child: DropdownButtonHideUnderline(
@@ -240,13 +259,13 @@ class _AppShellState extends ConsumerState<AppShell> {
                     isDense: true,
                     icon: Icon(
                       Icons.keyboard_arrow_down_rounded,
-                      color: theme.colorScheme.primary,
+                      color: const Color(0xFF4F46E5),
                       size: 20.sp,
                     ),
                     style: TextStyle(
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w700,
-                      color: theme.colorScheme.primary,
+                      color: const Color(0xFF4F46E5),
                     ),
                     onChanged: (int? newId) {
                       ref.read(selectedProjectIdProvider.notifier).state = newId;
@@ -256,7 +275,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                         value: null,
                         child: Row(
                           children: [
-                            Icon(Icons.border_all_rounded, size: 16.sp, color: theme.colorScheme.primary),
+                            Icon(Icons.border_all_rounded, size: 16.sp, color: const Color(0xFF4F46E5)),
                             SizedBox(width: 6.w),
                             const Text('All Projects (Company Overview)'),
                           ],
@@ -270,7 +289,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                               Container(
                                 padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                                 decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary.withOpacity(0.1),
+                                  color: const Color(0xFF4F46E5).withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(4.r),
                                 ),
                                 child: Text(
@@ -278,7 +297,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                                   style: TextStyle(
                                     fontSize: 11.sp,
                                     fontWeight: FontWeight.bold,
-                                    color: theme.colorScheme.primary,
+                                    color: const Color(0xFF4F46E5),
                                   ),
                                 ),
                               ),
@@ -297,24 +316,73 @@ class _AppShellState extends ConsumerState<AppShell> {
 
           const Spacer(),
 
+          // Live Cash Balance Pill
+          cashBalanceAsync.when(
+            data: (bal) => Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: bal >= 0 ? const Color(0xFFECFDF5) : const Color(0xFFFEF2F2),
+                borderRadius: BorderRadius.circular(8.r),
+                border: Border.all(color: bal >= 0 ? const Color(0xFFA7F3D0) : const Color(0xFFFCA5A5)),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.account_balance_wallet_rounded,
+                    size: 15.sp,
+                    color: bal >= 0 ? const Color(0xFF059669) : const Color(0xFFDC2626),
+                  ),
+                  SizedBox(width: 6.w),
+                  Text(
+                    'Cash Balance: ',
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: const Color(0xFF64748B),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    CurrencyFormatter.format(bal),
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w700,
+                      color: bal >= 0 ? const Color(0xFF047857) : const Color(0xFFB91C1C),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
+
+          SizedBox(width: 14.w),
+
           // Status Badge
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
             decoration: BoxDecoration(
-              color: Colors.green.shade50,
-              borderRadius: BorderRadius.circular(6.r),
-              border: Border.all(color: Colors.green.shade200),
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(8.r),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
             child: Row(
               children: [
-                Icon(Icons.check_circle_rounded, size: 14.sp, color: Colors.green.shade700),
-                SizedBox(width: 4.w),
+                Container(
+                  width: 7.w,
+                  height: 7.h,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFF10B981),
+                  ),
+                ),
+                SizedBox(width: 6.w),
                 Text(
-                  selectedId == null ? 'All Entries Mode' : 'Project Filtered',
+                  selectedId == null ? 'All Entries' : 'Filtered',
                   style: TextStyle(
                     fontSize: 11.sp,
                     fontWeight: FontWeight.w600,
-                    color: Colors.green.shade800,
+                    color: const Color(0xFF475569),
                   ),
                 ),
               ],
