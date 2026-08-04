@@ -86,6 +86,81 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  /// Restore/Import database from a selected .db file (e.g. from colleague)
+  Future<void> _restoreDatabase() async {
+    final result = await FilePicker.platform.pickFiles(
+      dialogTitle: 'Select NexLedger Backup Database (.db or .sqlite) to Import',
+      type: FileType.custom,
+      allowedExtensions: ['db', 'sqlite'],
+    );
+
+    if (result == null || result.files.single.path == null) return;
+    final selectedFilePath = result.files.single.path!;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Color(0xFFEAB308)),
+            SizedBox(width: 10),
+            Text('Restore / Import Database?'),
+          ],
+        ),
+        content: const Text(
+          'Restoring this backup will replace your current local database with your colleague\'s financial records. Are you sure you want to proceed?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFDC2626)),
+            child: const Text('Yes, Import & Replace'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _backing = true);
+    try {
+      final destPath = await AppDatabase.getDatabasePath();
+      final backupFile = File(selectedFilePath);
+      final destFile = File(destPath);
+
+      if (!await backupFile.exists()) {
+        throw Exception('Selected backup file does not exist.');
+      }
+
+      await backupFile.copy(destPath);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Database successfully restored! Restart app to load updated records.'),
+            backgroundColor: Color(0xFF10B981),
+            duration: Duration(seconds: 6),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Restore Error: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _backing = false);
+    }
+  }
+
   void _showChangePinDialog() {
     final oldPinCtrl = TextEditingController();
     final newPinCtrl = TextEditingController();
@@ -395,7 +470,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                         SizedBox(height: 20.h),
 
-                        // Backup Action Buttons
+                        // Backup & Restore Action Buttons
                         Row(
                           children: [
                             Expanded(
@@ -411,16 +486,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                         ),
                                       )
                                     : Icon(Icons.folder_open_rounded, size: 18.sp),
-                                label: Text(_backing ? 'Exporting...' : 'Choose Folder & Backup'),
+                                label: Text(_backing ? 'Exporting...' : 'Export Backup Folder'),
                               ),
                             ),
-                            SizedBox(width: 12.w),
+                            SizedBox(width: 10.w),
                             Expanded(
                               child: OutlinedButton.icon(
                                 onPressed: _backing ? null : () => _backupDatabase(isQuick: true),
                                 icon: Icon(Icons.download_for_offline_rounded, size: 18.sp),
                                 label: const Text('Quick Export (Downloads)'),
                                 style: OutlinedButton.styleFrom(
+                                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.r),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 10.w),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _backing ? null : _restoreDatabase,
+                                icon: Icon(Icons.upload_file_rounded, size: 18.sp, color: const Color(0xFF4F46E5)),
+                                label: const Text('Import / Restore (.db)', style: TextStyle(color: Color(0xFF4F46E5))),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: Color(0xFF6366F1)),
                                   padding: EdgeInsets.symmetric(vertical: 14.h),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10.r),
