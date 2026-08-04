@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Wraps a DataTable in a themed Card with an optional title and action widget.
+/// Wraps a DataTable in a high-end ERP styled Card with header and empty state handling.
 class DataTableCard extends StatelessWidget {
   final String? title;
   final List<DataColumn> columns;
@@ -24,19 +24,32 @@ class DataTableCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
+      ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (title != null || action != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 12, 0),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+                ),
+              ),
               child: Row(
                 children: [
                   if (title != null)
                     Text(
                       title!,
                       style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF0F172A),
                       ),
                     ),
                   const Spacer(),
@@ -44,16 +57,22 @@ class DataTableCard extends StatelessWidget {
                 ],
               ),
             ),
-          if (title != null || action != null) const SizedBox(height: 8),
           if (rows.isEmpty)
             Padding(
-              padding: const EdgeInsets.all(32),
+              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
               child: Center(
-                child: Text(
-                  emptyMessage ?? 'No records found.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
+                child: Column(
+                  children: [
+                    const Icon(Icons.inbox_outlined, size: 40, color: Color(0xFF94A3B8)),
+                    const SizedBox(height: 10),
+                    Text(
+                      emptyMessage ?? 'No records found.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: const Color(0xFF64748B),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             )
@@ -61,8 +80,23 @@ class DataTableCard extends StatelessWidget {
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 400),
+                constraints: const BoxConstraints(minWidth: 500),
                 child: DataTable(
+                  headingRowColor: WidgetStateProperty.all(const Color(0xFFF1F5F9)),
+                  headingTextStyle: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF334155),
+                    fontSize: 12,
+                    letterSpacing: 0.3,
+                  ),
+                  dataTextStyle: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF0F172A),
+                    fontWeight: FontWeight.w500,
+                  ),
+                  dividerThickness: 1,
+                  columnSpacing: 28,
+                  horizontalMargin: 20,
                   columns: columns,
                   rows: rows,
                 ),
