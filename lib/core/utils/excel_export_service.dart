@@ -33,13 +33,18 @@ class ExcelExportService {
 
     // Fallback to Downloads folder if picker dismissed or restricted
     if (selectedPath == null) {
-      final downloadsDir = await getDownloadsDirectory();
-      if (downloadsDir != null) {
-        selectedPath = p.join(downloadsDir.path, defaultFileName);
-      } else {
-        final docsDir = await getApplicationSupportDirectory();
-        selectedPath = p.join(docsDir.path, defaultFileName);
+      String? targetDir;
+      if (Platform.isMacOS) {
+        final home = Platform.environment['HOME'] ?? '';
+        final realHome = home.split('/Library/Containers').first;
+        final userDownloads = p.join(realHome, 'Downloads');
+        if (Directory(userDownloads).existsSync()) {
+          targetDir = userDownloads;
+        }
       }
+      targetDir ??= (await getDownloadsDirectory())?.path;
+      targetDir ??= (await getApplicationSupportDirectory()).path;
+      selectedPath = p.join(targetDir, defaultFileName);
     }
 
     final file = File(selectedPath);

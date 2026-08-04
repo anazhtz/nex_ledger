@@ -26,9 +26,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       String? destDir;
 
       if (isQuick) {
-        Directory? target = await getDownloadsDirectory();
-        target ??= await getApplicationDocumentsDirectory();
-        destDir = target.path;
+        if (Platform.isMacOS) {
+          final home = Platform.environment['HOME'] ?? '';
+          final realHome = home.split('/Library/Containers').first;
+          final userDownloads = '$realHome/Downloads';
+          if (Directory(userDownloads).existsSync()) {
+            destDir = userDownloads;
+          }
+        }
+        destDir ??= (await getDownloadsDirectory())?.path;
+        destDir ??= (await getApplicationDocumentsDirectory())?.path;
       } else {
         destDir = await FilePicker.platform.getDirectoryPath(
           dialogTitle: 'Select Destination Folder for NexLedger Backup',
