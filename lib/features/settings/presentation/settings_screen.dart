@@ -1,18 +1,21 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
+import 'package:nex_ledger/features/auth/providers/auth_provider.dart';
 import 'package:path_provider/path_provider.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _backing = false;
   String? _lastBackupPath;
 
@@ -23,17 +26,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       String? destDir;
 
       if (isQuick) {
-        // Quick backup to Downloads or Documents
         Directory? target = await getDownloadsDirectory();
         target ??= await getApplicationDocumentsDirectory();
         destDir = target.path;
       } else {
-        // Custom folder picker
         destDir = await FilePicker.platform.getDirectoryPath(
           dialogTitle: 'Select Destination Folder for NexLedger Backup',
         );
 
-        // Fallback to Documents if picker was cancelled or unavailable
         if (destDir == null) {
           setState(() => _backing = false);
           return;
@@ -86,10 +86,85 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  void _showChangePinDialog() {
+    final oldPinCtrl = TextEditingController();
+    final newPinCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: const Row(
+          children: [
+            Icon(Icons.shield_rounded, color: Color(0xFF4F46E5)),
+            SizedBox(width: 10),
+            Text('Change Security PIN'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: oldPinCtrl,
+              obscureText: true,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Current Security PIN',
+                prefixIcon: Icon(Icons.lock_outline_rounded),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: newPinCtrl,
+              obscureText: true,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'New Security PIN',
+                prefixIcon: Icon(Icons.password_rounded),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              if (oldPinCtrl.text.isEmpty || newPinCtrl.text.isEmpty) return;
+              final success = await ref
+                  .read(authProvider.notifier)
+                  .changePin(oldPinCtrl.text, newPinCtrl.text);
+
+              if (mounted) {
+                Navigator.pop(context);
+                if (success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Security PIN successfully updated!'),
+                      backgroundColor: Color(0xFF10B981),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Incorrect current PIN. Change failed.'),
+                      backgroundColor: Color(0xFFEF4444),
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Save PIN'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: SingleChildScrollView(
@@ -101,7 +176,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Settings & Backup',
+                  'Settings & Security',
                   style: TextStyle(
                     fontSize: 22.sp,
                     fontWeight: FontWeight.bold,
@@ -109,10 +184,84 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 Text(
-                  'Manage offline database backups and system options',
+                  'Manage application security, master PIN, and database backups',
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: const Color(0xFF64748B),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+
+                // Master Security PIN Card
+                Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.r),
+                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(20.r),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(10.r),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEEF2FF),
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              child: Icon(
+                                Icons.shield_rounded,
+                                color: const Color(0xFF4F46E5),
+                                size: 22.sp,
+                              ),
+                            ),
+                            SizedBox(width: 14.w),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'App Security & Master PIN',
+                                    style: TextStyle(
+                                      fontSize: 15.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  Text(
+                                    'Protected with SHA-256 local encrypted PIN lock',
+                                    style: TextStyle(
+                                      fontSize: 11.sp,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            OutlinedButton.icon(
+                              onPressed: _showChangePinDialog,
+                              icon: const Icon(Icons.key_rounded, size: 16),
+                              label: const Text('Change PIN'),
+                            ),
+                            SizedBox(width: 8.w),
+                            FilledButton.icon(
+                              onPressed: () {
+                                ref.read(authProvider.notifier).lock();
+                                context.go('/login');
+                              },
+                              icon: const Icon(Icons.lock_rounded, size: 16),
+                              label: const Text('Lock App'),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: const Color(0xFF334155),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 SizedBox(height: 20.h),
@@ -324,7 +473,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                             ),
                             Text(
-                              'v1.0.0  •  Local SQLite Engine  •  Offline First Target',
+                              'v1.0.0  •  Local SQLite Engine  •  SHA-256 PIN Security',
                               style: TextStyle(
                                 fontSize: 11.sp,
                                 color: const Color(0xFF64748B),

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
+import 'package:nex_ledger/features/auth/providers/auth_provider.dart';
 import 'package:nex_ledger/features/cash_book/providers/cash_book_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 
@@ -388,6 +389,21 @@ class _AppShellState extends ConsumerState<AppShell> {
                 ),
               ],
             ),
+          ),
+          SizedBox(width: 8.w),
+
+          // Lock App Quick Button
+          IconButton(
+            onPressed: () {
+              ref.read(authProvider.notifier).lock();
+              context.go('/login');
+            },
+            icon: Icon(
+              Icons.lock_rounded,
+              size: 18.sp,
+              color: const Color(0xFF64748B),
+            ),
+            tooltip: 'Lock Financial Ledger (PIN Security)',
           ),
         ],
       ),
