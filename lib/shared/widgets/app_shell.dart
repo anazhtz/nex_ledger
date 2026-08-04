@@ -399,30 +399,13 @@ class _AppShellState extends ConsumerState<AppShell> {
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.h),
       child: Row(
         children: [
-          Container(
-            padding: EdgeInsets.all(8.r),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  theme.colorScheme.primary,
-                  theme.colorScheme.tertiary,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(10.r),
-              boxShadow: [
-                BoxShadow(
-                  color: theme.colorScheme.primary.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Icon(
-              Icons.account_balance,
-              color: Colors.white,
-              size: 22.sp,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10.r),
+            child: Image.asset(
+              'assets/images/app_logo.png',
+              width: 36.r,
+              height: 36.r,
+              fit: BoxFit.cover,
             ),
           ),
           if (!_isCollapsed) ...[
