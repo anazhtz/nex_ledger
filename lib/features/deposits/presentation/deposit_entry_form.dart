@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
+import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/features/deposits/providers/deposit_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 
@@ -141,23 +142,10 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
                         projectsAsync.when(
                           loading: () => const LinearProgressIndicator(),
                           error: (_, __) => const SizedBox.shrink(),
-                          data: (projects) =>
-                              DropdownButtonFormField<int>(
-                            value: _selectedProject,
-                            decoration:
-                                const InputDecoration(labelText: 'Project *'),
-                            items: projects
-                                .map((p) => DropdownMenuItem(
-                                      value: p.id,
-                                      child: Text(p.name,
-                                          overflow: TextOverflow.ellipsis),
-                                    ))
-                                .toList(),
-                            onChanged: (v) =>
-                                setState(() => _selectedProject = v),
-                            validator: (v) =>
-                                v == null ? 'Required' : null,
-                          ),
+                          data: (projects) {
+                            final globalId = ref.watch(selectedProjectIdProvider);
+                            return _buildProjectSelector(projects, globalId, theme);
+                          },
                         ),
                         const SizedBox(height: 16),
                         Row(
@@ -264,6 +252,82 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildProjectSelector(
+      List<Project> projects, int? globalId, ThemeData theme) {
+    if (globalId != null) {
+      final activeProject =
+          projects.where((p) => p.id == globalId).firstOrNull;
+      if (activeProject != null) {
+        _selectedProject = activeProject.id;
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primaryContainer.withOpacity(0.35),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: theme.colorScheme.primary.withOpacity(0.3),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.folder_special_rounded,
+                  color: theme.colorScheme.primary, size: 20),
+              const SizedBox(width: 10),
+              Text(
+                'Target Project: ',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              Text(
+                '${activeProject.code} — ${activeProject.name}',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'Auto-Assigned',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+
+    return DropdownButtonFormField<int>(
+      value: _selectedProject,
+      decoration:
+          const InputDecoration(labelText: 'Select Target Project *'),
+      items: projects
+          .map((p) => DropdownMenuItem(
+                value: p.id,
+                child: Text('${p.code} — ${p.name}',
+                    overflow: TextOverflow.ellipsis),
+              ))
+          .toList(),
+      onChanged: (v) => setState(() => _selectedProject = v),
+      validator: (v) => v == null ? 'Required' : null,
     );
   }
 }

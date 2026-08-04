@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
+import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
 import 'package:nex_ledger/features/labour/data/labour_repository.dart';
@@ -43,12 +44,13 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
     if (_selectedProject == null || _selectedWorker == null) return;
     setState(() => _loadingSummary = true);
     try {
-      final summary = await ref.read(labourRepositoryProvider).getPaymentSummary(
-            _selectedWorker!,
-            _selectedProject!,
-            _from,
-            _to,
-          );
+      final summary =
+          await ref.read(labourRepositoryProvider).getPaymentSummary(
+                _selectedWorker!,
+                _selectedProject!,
+                _from,
+                _to,
+              );
       setState(() => _summary = summary);
     } finally {
       setState(() => _loadingSummary = false);
@@ -99,8 +101,10 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
     );
     if (picked != null) {
       setState(() {
-        if (isFrom) _from = picked;
-        else _to = picked;
+        if (isFrom)
+          _from = picked;
+        else
+          _to = picked;
         _summary = null;
       });
     }
@@ -143,29 +147,15 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                               ?.copyWith(fontWeight: FontWeight.w600)),
                       const SizedBox(height: 16),
 
-                      // Project
+                      // Project (Auto-assigned if active context locked)
                       projectsAsync.when(
                         loading: () => const LinearProgressIndicator(),
                         error: (_, __) => const SizedBox.shrink(),
-                        data: (projects) =>
-                            DropdownButtonFormField<int?>(
-                          value: _selectedProject,
-                          decoration:
-                              const InputDecoration(labelText: 'Project'),
-                          items: [
-                            const DropdownMenuItem(
-                                value: null, child: Text('Select Project')),
-                            ...projects.map((p) => DropdownMenuItem(
-                                  value: p.id,
-                                  child: Text(p.name),
-                                )),
-                          ],
-                          onChanged: (v) =>
-                              setState(() {
-                                _selectedProject = v;
-                                _summary = null;
-                              }),
-                        ),
+                        data: (projects) {
+                          final globalId = ref.watch(selectedProjectIdProvider);
+                          return _buildProjectSelector(
+                              projects, globalId, theme);
+                        },
                       ),
                       const SizedBox(height: 16),
 
@@ -173,8 +163,7 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                       workersAsync.when(
                         loading: () => const LinearProgressIndicator(),
                         error: (_, __) => const SizedBox.shrink(),
-                        data: (workers) =>
-                            DropdownButtonFormField<int?>(
+                        data: (workers) => DropdownButtonFormField<int?>(
                           value: _selectedWorker,
                           decoration:
                               const InputDecoration(labelText: 'Worker'),
@@ -187,11 +176,10 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                       '${w.name} — ₹${w.dailyRate.toStringAsFixed(0)}/day'),
                                 )),
                           ],
-                          onChanged: (v) =>
-                              setState(() {
-                                _selectedWorker = v;
-                                _summary = null;
-                              }),
+                          onChanged: (v) => setState(() {
+                            _selectedWorker = v;
+                            _summary = null;
+                          }),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -251,21 +239,18 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                 ?.copyWith(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 12),
                         _SummaryRow(
-                            label: 'Worker',
-                            value: _summary!.worker.name),
+                            label: 'Worker', value: _summary!.worker.name),
                         _SummaryRow(
                             label: 'Daily Rate',
                             value: CurrencyFormatter.format(
                                 _summary!.worker.dailyRate)),
                         _SummaryRow(
                             label: 'Effective Days',
-                            value: _summary!.effectiveDays
-                                .toStringAsFixed(1)),
+                            value: _summary!.effectiveDays.toStringAsFixed(1)),
                         const Divider(height: 24),
                         _SummaryRow(
                           label: 'Amount Due',
-                          value: CurrencyFormatter.format(
-                              _summary!.amountDue),
+                          value: CurrencyFormatter.format(_summary!.amountDue),
                           bold: true,
                           valueColor: theme.colorScheme.primary,
                         ),
@@ -274,8 +259,8 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                         // Payment mode
                         DropdownButtonFormField<PaymentMode?>(
                           value: _paymentMode,
-                          decoration: const InputDecoration(
-                              labelText: 'Payment Mode'),
+                          decoration:
+                              const InputDecoration(labelText: 'Payment Mode'),
                           items: [
                             const DropdownMenuItem(
                                 value: null, child: Text('— Select —')),
@@ -286,8 +271,7 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                               ),
                             ),
                           ],
-                          onChanged: (v) =>
-                              setState(() => _paymentMode = v),
+                          onChanged: (v) => setState(() => _paymentMode = v),
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
@@ -299,10 +283,9 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: FilledButton.icon(
-                            onPressed:
-                                _paying || _summary!.amountDue <= 0
-                                    ? null
-                                    : _recordPayment,
+                            onPressed: _paying || _summary!.amountDue <= 0
+                                ? null
+                                : _recordPayment,
                             icon: const Icon(Icons.payments_outlined),
                             label: _paying
                                 ? const SizedBox(
@@ -324,6 +307,81 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildProjectSelector(
+      List<Project> projects, int? globalId, ThemeData theme) {
+    if (globalId != null) {
+      final activeProject = projects.where((p) => p.id == globalId).firstOrNull;
+      if (activeProject != null) {
+        _selectedProject = activeProject.id;
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primaryContainer.withOpacity(0.35),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: theme.colorScheme.primary.withOpacity(0.3),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.folder_special_rounded,
+                  color: theme.colorScheme.primary, size: 20),
+              const SizedBox(width: 10),
+              Text(
+                'Target Project: ',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              Text(
+                '${activeProject.code} — ${activeProject.name}',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'Auto-Assigned',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+
+    return DropdownButtonFormField<int?>(
+      value: _selectedProject,
+      decoration: const InputDecoration(labelText: 'Select Project'),
+      items: [
+        const DropdownMenuItem(value: null, child: Text('Select Project')),
+        ...projects.map((p) => DropdownMenuItem(
+              value: p.id,
+              child: Text(p.name),
+            )),
+      ],
+      onChanged: (v) => setState(() {
+        _selectedProject = v;
+        _summary = null;
+      }),
     );
   }
 }
