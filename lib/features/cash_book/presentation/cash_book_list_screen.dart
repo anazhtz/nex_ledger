@@ -35,25 +35,26 @@ class CashBookListScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Cash Book',
+                      'Cash Book Ledger',
                       style: theme.textTheme.headlineMedium
-                          ?.copyWith(fontWeight: FontWeight.w700),
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     cashBalanceAsync.when(
                       loading: () => const SizedBox.shrink(),
                       error: (_, __) => const SizedBox.shrink(),
                       data: (bal) => Text(
-                        'Balance: ${CurrencyFormatter.format(bal)}',
+                        'Total Cash Flow Balance: ${CurrencyFormatter.format(bal)}',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: bal >= 0
-                              ? Colors.green.shade700
-                              : Colors.red.shade700,
+                              ? const Color(0xFF047857)
+                              : const Color(0xFFDC2626),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   ],
                 ),
+                const Spacer(),
                 OutlinedButton.icon(
                   onPressed: () async {
                     final txns = await ref.read(cashBookListProvider.future);
@@ -68,13 +69,20 @@ class CashBookListScreen extends ConsumerWidget {
                     }
                   },
                   icon: const Icon(Icons.table_chart_rounded, size: 18, color: Color(0xFF059669)),
-                  label: const Text('Export Excel (.xlsx)', style: TextStyle(color: Color(0xFF059669))),
+                  label: const Text('Export Excel (.xlsx)', style: TextStyle(color: Color(0xFF059669), fontWeight: FontWeight.bold)),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFF059669)),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 FilledButton.icon(
                   onPressed: () => context.go('/cash-book/new'),
-                  icon: const Icon(Icons.add, size: 18),
+                  icon: const Icon(Icons.add_rounded, size: 18),
                   label: const Text('Add Entry'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  ),
                 ),
               ],
             ),
