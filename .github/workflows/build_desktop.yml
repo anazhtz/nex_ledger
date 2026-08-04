@@ -16,17 +16,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           cache: true
+
+      - name: Enable Windows Desktop
+        run: flutter config --enable-windows-desktop
 
       - name: Install dependencies
         run: flutter pub get
@@ -56,6 +53,9 @@ jobs:
         with:
           channel: 'stable'
           cache: true
+
+      - name: Enable macOS Desktop
+        run: flutter config --enable-macos-desktop
 
       - name: Install dependencies
         run: flutter pub get
