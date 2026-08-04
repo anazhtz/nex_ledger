@@ -86,12 +86,19 @@ class DepositRepository {
           referenceNo: Value(adjustmentReference),
         ),
       );
-      // Update the deposit liability status
+
+      // Fetch current deposit to accumulate total adjusted amount
+      final existing = await _depositDao.getDepositById(depositId);
+      final prevAdjusted = existing?.adjustedAmount ?? 0.0;
+      final newAdjusted = prevAdjusted + adjustedAmount;
+
+      // Update the deposit liability status & adjusted amount
       await _depositDao.updateDepositStatus(
         depositId,
         isFullyAdjusted
             ? DepositStatus.adjusted
             : DepositStatus.partiallyAdjusted,
+        adjustedAmount: newAdjusted,
         adjustmentReference: adjustmentReference,
       );
     });

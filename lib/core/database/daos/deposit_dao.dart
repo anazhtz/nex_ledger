@@ -62,13 +62,12 @@ class DepositDao extends DatabaseAccessor<AppDatabase> with _$DepositDaoMixin {
         );
   }
 
-  /// Watch total deposits still held (not fully refunded/adjusted).
+  /// Watch total deposits still held (subtracting any partial adjustments).
   Stream<double> watchTotalDepositsHeld() {
     final heldStatuses = [
       DepositStatus.held.name,
       DepositStatus.partiallyAdjusted.name,
     ];
-    // Get deposit transactions where deposit is still held
     final query = select(deposits).join([
       innerJoin(
           transactions, transactions.id.equalsExp(deposits.transactionId)),
@@ -77,7 +76,12 @@ class DepositDao extends DatabaseAccessor<AppDatabase> with _$DepositDaoMixin {
     return query.watch().map((rows) {
       return rows.fold<double>(
         0.0,
-        (sum, r) => sum + r.readTable(transactions).amount,
+        (sum, r) {
+          final original = r.readTable(transactions).amount;
+          final adjusted = r.readTable(deposits).adjustedAmount;
+          final remaining = original - adjusted;
+          return sum + (remaining > 0 ? remaining : 0.0);
+        },
       );
     });
   }
@@ -86,15 +90,19 @@ class DepositDao extends DatabaseAccessor<AppDatabase> with _$DepositDaoMixin {
   Future<int> insertDeposit(DepositsCompanion entry) =>
       into(deposits).insert(entry);
 
-  /// Update deposit status (called when adjusting or refunding).
+  /// Update deposit status & adjusted amount (called when adjusting or refunding).
   Future<int> updateDepositStatus(
     int depositId,
     DepositStatus status, {
+    double? adjustedAmount,
     String? adjustmentReference,
   }) =>
       (update(deposits)..where((d) => d.id.equals(depositId))).write(
         DepositsCompanion(
           status: Value(status),
+          adjustedAmount: adjustedAmount != null
+              ? Value(adjustedAmount)
+              : const Value.absent(),
           adjustmentReference: adjustmentReference != null
               ? Value(adjustmentReference)
               : const Value.absent(),

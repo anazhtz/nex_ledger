@@ -2137,6 +2137,14 @@ class $DepositsTable extends Deposits with TableInfo<$DepositsTable, Deposit> {
       GeneratedColumn<String>('status', aliasedName, false,
               type: DriftSqlType.string, requiredDuringInsert: true)
           .withConverter<DepositStatus>($DepositsTable.$converterstatus);
+  static const VerificationMeta _adjustedAmountMeta =
+      const VerificationMeta('adjustedAmount');
+  @override
+  late final GeneratedColumn<double> adjustedAmount = GeneratedColumn<double>(
+      'adjusted_amount', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
   static const VerificationMeta _adjustmentReferenceMeta =
       const VerificationMeta('adjustmentReference');
   @override
@@ -2144,8 +2152,14 @@ class $DepositsTable extends Deposits with TableInfo<$DepositsTable, Deposit> {
       GeneratedColumn<String>('adjustment_reference', aliasedName, true,
           type: DriftSqlType.string, requiredDuringInsert: false);
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, transactionId, projectId, status, adjustmentReference];
+  List<GeneratedColumn> get $columns => [
+        id,
+        transactionId,
+        projectId,
+        status,
+        adjustedAmount,
+        adjustmentReference
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2173,6 +2187,12 @@ class $DepositsTable extends Deposits with TableInfo<$DepositsTable, Deposit> {
     } else if (isInserting) {
       context.missing(_projectIdMeta);
     }
+    if (data.containsKey('adjusted_amount')) {
+      context.handle(
+          _adjustedAmountMeta,
+          adjustedAmount.isAcceptableOrUnknown(
+              data['adjusted_amount']!, _adjustedAmountMeta));
+    }
     if (data.containsKey('adjustment_reference')) {
       context.handle(
           _adjustmentReferenceMeta,
@@ -2197,6 +2217,8 @@ class $DepositsTable extends Deposits with TableInfo<$DepositsTable, Deposit> {
       status: $DepositsTable.$converterstatus.fromSql(attachedDatabase
           .typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}status'])!),
+      adjustedAmount: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}adjusted_amount'])!,
       adjustmentReference: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}adjustment_reference']),
     );
@@ -2217,6 +2239,9 @@ class Deposit extends DataClass implements Insertable<Deposit> {
   final int projectId;
   final DepositStatus status;
 
+  /// Total portion of this deposit adjusted to income so far.
+  final double adjustedAmount;
+
   /// Invoice / work-order reference the deposit was applied against.
   final String? adjustmentReference;
   const Deposit(
@@ -2224,6 +2249,7 @@ class Deposit extends DataClass implements Insertable<Deposit> {
       required this.transactionId,
       required this.projectId,
       required this.status,
+      required this.adjustedAmount,
       this.adjustmentReference});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2235,6 +2261,7 @@ class Deposit extends DataClass implements Insertable<Deposit> {
       map['status'] =
           Variable<String>($DepositsTable.$converterstatus.toSql(status));
     }
+    map['adjusted_amount'] = Variable<double>(adjustedAmount);
     if (!nullToAbsent || adjustmentReference != null) {
       map['adjustment_reference'] = Variable<String>(adjustmentReference);
     }
@@ -2247,6 +2274,7 @@ class Deposit extends DataClass implements Insertable<Deposit> {
       transactionId: Value(transactionId),
       projectId: Value(projectId),
       status: Value(status),
+      adjustedAmount: Value(adjustedAmount),
       adjustmentReference: adjustmentReference == null && nullToAbsent
           ? const Value.absent()
           : Value(adjustmentReference),
@@ -2262,6 +2290,7 @@ class Deposit extends DataClass implements Insertable<Deposit> {
       projectId: serializer.fromJson<int>(json['projectId']),
       status: $DepositsTable.$converterstatus
           .fromJson(serializer.fromJson<String>(json['status'])),
+      adjustedAmount: serializer.fromJson<double>(json['adjustedAmount']),
       adjustmentReference:
           serializer.fromJson<String?>(json['adjustmentReference']),
     );
@@ -2275,6 +2304,7 @@ class Deposit extends DataClass implements Insertable<Deposit> {
       'projectId': serializer.toJson<int>(projectId),
       'status': serializer
           .toJson<String>($DepositsTable.$converterstatus.toJson(status)),
+      'adjustedAmount': serializer.toJson<double>(adjustedAmount),
       'adjustmentReference': serializer.toJson<String?>(adjustmentReference),
     };
   }
@@ -2284,12 +2314,14 @@ class Deposit extends DataClass implements Insertable<Deposit> {
           int? transactionId,
           int? projectId,
           DepositStatus? status,
+          double? adjustedAmount,
           Value<String?> adjustmentReference = const Value.absent()}) =>
       Deposit(
         id: id ?? this.id,
         transactionId: transactionId ?? this.transactionId,
         projectId: projectId ?? this.projectId,
         status: status ?? this.status,
+        adjustedAmount: adjustedAmount ?? this.adjustedAmount,
         adjustmentReference: adjustmentReference.present
             ? adjustmentReference.value
             : this.adjustmentReference,
@@ -2302,6 +2334,9 @@ class Deposit extends DataClass implements Insertable<Deposit> {
           : this.transactionId,
       projectId: data.projectId.present ? data.projectId.value : this.projectId,
       status: data.status.present ? data.status.value : this.status,
+      adjustedAmount: data.adjustedAmount.present
+          ? data.adjustedAmount.value
+          : this.adjustedAmount,
       adjustmentReference: data.adjustmentReference.present
           ? data.adjustmentReference.value
           : this.adjustmentReference,
@@ -2315,14 +2350,15 @@ class Deposit extends DataClass implements Insertable<Deposit> {
           ..write('transactionId: $transactionId, ')
           ..write('projectId: $projectId, ')
           ..write('status: $status, ')
+          ..write('adjustedAmount: $adjustedAmount, ')
           ..write('adjustmentReference: $adjustmentReference')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, transactionId, projectId, status, adjustmentReference);
+  int get hashCode => Object.hash(id, transactionId, projectId, status,
+      adjustedAmount, adjustmentReference);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2331,6 +2367,7 @@ class Deposit extends DataClass implements Insertable<Deposit> {
           other.transactionId == this.transactionId &&
           other.projectId == this.projectId &&
           other.status == this.status &&
+          other.adjustedAmount == this.adjustedAmount &&
           other.adjustmentReference == this.adjustmentReference);
 }
 
@@ -2339,12 +2376,14 @@ class DepositsCompanion extends UpdateCompanion<Deposit> {
   final Value<int> transactionId;
   final Value<int> projectId;
   final Value<DepositStatus> status;
+  final Value<double> adjustedAmount;
   final Value<String?> adjustmentReference;
   const DepositsCompanion({
     this.id = const Value.absent(),
     this.transactionId = const Value.absent(),
     this.projectId = const Value.absent(),
     this.status = const Value.absent(),
+    this.adjustedAmount = const Value.absent(),
     this.adjustmentReference = const Value.absent(),
   });
   DepositsCompanion.insert({
@@ -2352,6 +2391,7 @@ class DepositsCompanion extends UpdateCompanion<Deposit> {
     required int transactionId,
     required int projectId,
     required DepositStatus status,
+    this.adjustedAmount = const Value.absent(),
     this.adjustmentReference = const Value.absent(),
   })  : transactionId = Value(transactionId),
         projectId = Value(projectId),
@@ -2361,6 +2401,7 @@ class DepositsCompanion extends UpdateCompanion<Deposit> {
     Expression<int>? transactionId,
     Expression<int>? projectId,
     Expression<String>? status,
+    Expression<double>? adjustedAmount,
     Expression<String>? adjustmentReference,
   }) {
     return RawValuesInsertable({
@@ -2368,6 +2409,7 @@ class DepositsCompanion extends UpdateCompanion<Deposit> {
       if (transactionId != null) 'transaction_id': transactionId,
       if (projectId != null) 'project_id': projectId,
       if (status != null) 'status': status,
+      if (adjustedAmount != null) 'adjusted_amount': adjustedAmount,
       if (adjustmentReference != null)
         'adjustment_reference': adjustmentReference,
     });
@@ -2378,12 +2420,14 @@ class DepositsCompanion extends UpdateCompanion<Deposit> {
       Value<int>? transactionId,
       Value<int>? projectId,
       Value<DepositStatus>? status,
+      Value<double>? adjustedAmount,
       Value<String?>? adjustmentReference}) {
     return DepositsCompanion(
       id: id ?? this.id,
       transactionId: transactionId ?? this.transactionId,
       projectId: projectId ?? this.projectId,
       status: status ?? this.status,
+      adjustedAmount: adjustedAmount ?? this.adjustedAmount,
       adjustmentReference: adjustmentReference ?? this.adjustmentReference,
     );
   }
@@ -2404,6 +2448,9 @@ class DepositsCompanion extends UpdateCompanion<Deposit> {
       map['status'] =
           Variable<String>($DepositsTable.$converterstatus.toSql(status.value));
     }
+    if (adjustedAmount.present) {
+      map['adjusted_amount'] = Variable<double>(adjustedAmount.value);
+    }
     if (adjustmentReference.present) {
       map['adjustment_reference'] = Variable<String>(adjustmentReference.value);
     }
@@ -2417,6 +2464,7 @@ class DepositsCompanion extends UpdateCompanion<Deposit> {
           ..write('transactionId: $transactionId, ')
           ..write('projectId: $projectId, ')
           ..write('status: $status, ')
+          ..write('adjustedAmount: $adjustedAmount, ')
           ..write('adjustmentReference: $adjustmentReference')
           ..write(')'))
         .toString();
@@ -4569,6 +4617,7 @@ typedef $$DepositsTableCreateCompanionBuilder = DepositsCompanion Function({
   required int transactionId,
   required int projectId,
   required DepositStatus status,
+  Value<double> adjustedAmount,
   Value<String?> adjustmentReference,
 });
 typedef $$DepositsTableUpdateCompanionBuilder = DepositsCompanion Function({
@@ -4576,6 +4625,7 @@ typedef $$DepositsTableUpdateCompanionBuilder = DepositsCompanion Function({
   Value<int> transactionId,
   Value<int> projectId,
   Value<DepositStatus> status,
+  Value<double> adjustedAmount,
   Value<String?> adjustmentReference,
 });
 
@@ -4629,6 +4679,10 @@ class $$DepositsTableFilterComposer
       get status => $composableBuilder(
           column: $table.status,
           builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<double> get adjustedAmount => $composableBuilder(
+      column: $table.adjustedAmount,
+      builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get adjustmentReference => $composableBuilder(
       column: $table.adjustmentReference,
@@ -4690,6 +4744,10 @@ class $$DepositsTableOrderingComposer
   ColumnOrderings<String> get status => $composableBuilder(
       column: $table.status, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<double> get adjustedAmount => $composableBuilder(
+      column: $table.adjustedAmount,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get adjustmentReference => $composableBuilder(
       column: $table.adjustmentReference,
       builder: (column) => ColumnOrderings(column));
@@ -4749,6 +4807,9 @@ class $$DepositsTableAnnotationComposer
 
   GeneratedColumnWithTypeConverter<DepositStatus, String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<double> get adjustedAmount => $composableBuilder(
+      column: $table.adjustedAmount, builder: (column) => column);
 
   GeneratedColumn<String> get adjustmentReference => $composableBuilder(
       column: $table.adjustmentReference, builder: (column) => column);
@@ -4821,6 +4882,7 @@ class $$DepositsTableTableManager extends RootTableManager<
             Value<int> transactionId = const Value.absent(),
             Value<int> projectId = const Value.absent(),
             Value<DepositStatus> status = const Value.absent(),
+            Value<double> adjustedAmount = const Value.absent(),
             Value<String?> adjustmentReference = const Value.absent(),
           }) =>
               DepositsCompanion(
@@ -4828,6 +4890,7 @@ class $$DepositsTableTableManager extends RootTableManager<
             transactionId: transactionId,
             projectId: projectId,
             status: status,
+            adjustedAmount: adjustedAmount,
             adjustmentReference: adjustmentReference,
           ),
           createCompanionCallback: ({
@@ -4835,6 +4898,7 @@ class $$DepositsTableTableManager extends RootTableManager<
             required int transactionId,
             required int projectId,
             required DepositStatus status,
+            Value<double> adjustedAmount = const Value.absent(),
             Value<String?> adjustmentReference = const Value.absent(),
           }) =>
               DepositsCompanion.insert(
@@ -4842,6 +4906,7 @@ class $$DepositsTableTableManager extends RootTableManager<
             transactionId: transactionId,
             projectId: projectId,
             status: status,
+            adjustedAmount: adjustedAmount,
             adjustmentReference: adjustmentReference,
           ),
           withReferenceMapper: (p0) => p0

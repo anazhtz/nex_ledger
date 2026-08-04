@@ -96,7 +96,7 @@ class ReportRepository {
   Future<List<DepositDetail>> getDepositLedger(int projectId) =>
       _depositDao.watchDepositsByProject(projectId).first;
 
-  /// Helper: sum deposits held for a project.
+  /// Helper: sum net remaining deposits held for a project.
   Future<double> _getProjectDepositsHeld(int projectId) async {
     final deposits =
         await _depositDao.watchDepositsByProject(projectId).first;
@@ -104,7 +104,12 @@ class ReportRepository {
     for (final d in deposits) {
       if (d.deposit.status == DepositStatus.held ||
           d.deposit.status == DepositStatus.partiallyAdjusted) {
-        held += d.transaction.amount;
+        final original = d.transaction.amount;
+        final adjusted = d.deposit.adjustedAmount;
+        final remaining = original - adjusted;
+        if (remaining > 0) {
+          held += remaining;
+        }
       }
     }
     return held;
