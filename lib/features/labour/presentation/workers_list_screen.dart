@@ -14,6 +14,7 @@ class WorkersListScreen extends ConsumerStatefulWidget {
 class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
   final _nameCtrl = TextEditingController();
   final _codeCtrl = TextEditingController();
+  final _tradeCtrl = TextEditingController();
   final _rateCtrl = TextEditingController();
   int? _editingId;
   bool _showForm = false;
@@ -22,15 +23,17 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
   void dispose() {
     _nameCtrl.dispose();
     _codeCtrl.dispose();
+    _tradeCtrl.dispose();
     _rateCtrl.dispose();
     super.dispose();
   }
 
-  void _openForm({int? id, String? name, String? code, double? rate}) {
+  void _openForm({int? id, String? name, String? code, String? trade, double? rate}) {
     setState(() {
       _editingId = id;
       _nameCtrl.text = name ?? '';
       _codeCtrl.text = code ?? '';
+      _tradeCtrl.text = trade ?? '';
       _rateCtrl.text = rate?.toStringAsFixed(0) ?? '';
       _showForm = true;
     });
@@ -42,6 +45,7 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
       _editingId = null;
       _nameCtrl.clear();
       _codeCtrl.clear();
+      _tradeCtrl.clear();
       _rateCtrl.clear();
     });
   }
@@ -55,12 +59,14 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
         id: _editingId!,
         name: _nameCtrl.text,
         workerCode: _codeCtrl.text.isNotEmpty ? _codeCtrl.text : null,
+        trade: _tradeCtrl.text.isNotEmpty ? _tradeCtrl.text : null,
         dailyRate: rate,
       );
     } else {
       await repo.addWorker(
         name: _nameCtrl.text,
         workerCode: _codeCtrl.text.isNotEmpty ? _codeCtrl.text : null,
+        trade: _tradeCtrl.text.isNotEmpty ? _tradeCtrl.text : null,
         dailyRate: rate,
       );
     }
@@ -73,7 +79,7 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
     final workersAsync = ref.watch(workerListProvider);
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surfaceContainerLowest,
+      backgroundColor: const Color(0xFFF8FAFC),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Row(
@@ -86,10 +92,20 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
                 children: [
                   Row(
                     children: [
-                      Text(
-                        'Workers',
-                        style: theme.textTheme.headlineMedium
-                            ?.copyWith(fontWeight: FontWeight.w700),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Workers Master',
+                            style: theme.textTheme.headlineMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          Text(
+                            'Manage site workers, trade skills, and daily wage rates',
+                            style: theme.textTheme.bodyMedium
+                                ?.copyWith(color: const Color(0xFF64748B)),
+                          ),
+                        ],
                       ),
                       const Spacer(),
                       FilledButton.icon(
@@ -99,7 +115,7 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Expanded(
                     child: workersAsync.when(
                       loading: () =>
@@ -107,22 +123,39 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
                       error: (e, _) => Center(child: Text('Error: $e')),
                       data: (workers) => DataTableCard(
                         emptyMessage:
-                            'No workers yet. Add your first worker.',
+                            'No workers registered yet. Click "Add Worker" to create your master list.',
                         columns: const [
-                          DataColumn(label: Text('Name')),
                           DataColumn(label: Text('Code')),
+                          DataColumn(label: Text('Worker Name')),
+                          DataColumn(label: Text('Trade / Work Type')),
                           DataColumn(
-                              label: Text('Daily Rate (₹)'), numeric: true),
+                              label: Text('Daily Wage Rate (₹)'), numeric: true),
                           DataColumn(label: Text('Actions')),
                         ],
                         rows: workers.map((w) {
                           return DataRow(cells: [
+                            DataCell(Text(
+                              w.workerCode ?? '—',
+                              style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF4F46E5)),
+                            )),
                             DataCell(Text(w.name,
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.w500))),
-                            DataCell(Text(w.workerCode ?? '—')),
+                                    fontWeight: FontWeight.w600))),
+                            DataCell(Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF1F5F9),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                w.trade ?? 'General Helper',
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                              ),
+                            )),
                             DataCell(Text(
-                                '₹${w.dailyRate.toStringAsFixed(0)}')),
+                              '₹${w.dailyRate.toStringAsFixed(0)} / day',
+                              style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF059669)),
+                            )),
                             DataCell(Row(
                               children: [
                                 IconButton(
@@ -133,6 +166,7 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
                                     id: w.id,
                                     name: w.name,
                                     code: w.workerCode,
+                                    trade: w.trade,
                                     rate: w.dailyRate,
                                   ),
                                 ),
@@ -172,8 +206,13 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
             if (_showForm) ...[
               const SizedBox(width: 24),
               SizedBox(
-                width: 300,
+                width: 320,
                 child: Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(20),
                     child: Column(
@@ -182,28 +221,34 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
                       children: [
                         Text(
                           _editingId != null
-                              ? 'Edit Worker'
-                              : 'New Worker',
+                              ? 'Edit Worker Details'
+                              : 'New Worker Master',
                           style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600),
+                              fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _nameCtrl,
                           decoration:
-                              const InputDecoration(labelText: 'Name *'),
+                              const InputDecoration(labelText: 'Worker Full Name *'),
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _codeCtrl,
                           decoration: const InputDecoration(
-                              labelText: 'Worker Code'),
+                              labelText: 'Worker Code (e.g. WRK-001)'),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _tradeCtrl,
+                          decoration: const InputDecoration(
+                              labelText: 'Trade / Work (e.g. Mason, Helper, Carpenter)'),
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _rateCtrl,
                           decoration: const InputDecoration(
-                            labelText: 'Daily Rate (₹)',
+                            labelText: 'Daily Wage Rate (₹) *',
                             prefixText: '₹ ',
                           ),
                           keyboardType:
@@ -221,8 +266,8 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
                             FilledButton(
                               onPressed: _save,
                               child: Text(_editingId != null
-                                  ? 'Save'
-                                  : 'Add'),
+                                  ? 'Save Changes'
+                                  : 'Add Worker'),
                             ),
                           ],
                         ),

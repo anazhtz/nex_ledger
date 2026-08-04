@@ -16,12 +16,14 @@ class LabourRepository {
   Future<int> addWorker({
     required String name,
     String? workerCode,
+    String? trade,
     required double dailyRate,
   }) =>
       _labourDao.insertWorker(
         WorkersCompanion.insert(
           name: name.trim(),
           workerCode: Value(workerCode?.trim()),
+          trade: Value(trade?.trim()),
           dailyRate: Value(dailyRate),
         ),
       );
@@ -30,6 +32,7 @@ class LabourRepository {
     required int id,
     required String name,
     String? workerCode,
+    String? trade,
     required double dailyRate,
   }) =>
       _labourDao.updateWorker(
@@ -37,6 +40,7 @@ class LabourRepository {
           id: Value(id),
           name: Value(name.trim()),
           workerCode: Value(workerCode?.trim()),
+          trade: Value(trade?.trim()),
           dailyRate: Value(dailyRate),
         ),
       );

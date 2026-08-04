@@ -1598,6 +1598,11 @@ class $WorkersTable extends Workers with TableInfo<$WorkersTable, Worker> {
   late final GeneratedColumn<String> workerCode = GeneratedColumn<String>(
       'worker_code', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _tradeMeta = const VerificationMeta('trade');
+  @override
+  late final GeneratedColumn<String> trade = GeneratedColumn<String>(
+      'trade', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _dailyRateMeta =
       const VerificationMeta('dailyRate');
   @override
@@ -1607,7 +1612,8 @@ class $WorkersTable extends Workers with TableInfo<$WorkersTable, Worker> {
       requiredDuringInsert: false,
       defaultValue: const Constant(0.0));
   @override
-  List<GeneratedColumn> get $columns => [id, name, workerCode, dailyRate];
+  List<GeneratedColumn> get $columns =>
+      [id, name, workerCode, trade, dailyRate];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1633,6 +1639,10 @@ class $WorkersTable extends Workers with TableInfo<$WorkersTable, Worker> {
           workerCode.isAcceptableOrUnknown(
               data['worker_code']!, _workerCodeMeta));
     }
+    if (data.containsKey('trade')) {
+      context.handle(
+          _tradeMeta, trade.isAcceptableOrUnknown(data['trade']!, _tradeMeta));
+    }
     if (data.containsKey('daily_rate')) {
       context.handle(_dailyRateMeta,
           dailyRate.isAcceptableOrUnknown(data['daily_rate']!, _dailyRateMeta));
@@ -1652,6 +1662,8 @@ class $WorkersTable extends Workers with TableInfo<$WorkersTable, Worker> {
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       workerCode: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}worker_code']),
+      trade: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}trade']),
       dailyRate: attachedDatabase.typeMapping
           .read(DriftSqlType.double, data['${effectivePrefix}daily_rate'])!,
     );
@@ -1667,11 +1679,13 @@ class Worker extends DataClass implements Insertable<Worker> {
   final int id;
   final String name;
   final String? workerCode;
+  final String? trade;
   final double dailyRate;
   const Worker(
       {required this.id,
       required this.name,
       this.workerCode,
+      this.trade,
       required this.dailyRate});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1680,6 +1694,9 @@ class Worker extends DataClass implements Insertable<Worker> {
     map['name'] = Variable<String>(name);
     if (!nullToAbsent || workerCode != null) {
       map['worker_code'] = Variable<String>(workerCode);
+    }
+    if (!nullToAbsent || trade != null) {
+      map['trade'] = Variable<String>(trade);
     }
     map['daily_rate'] = Variable<double>(dailyRate);
     return map;
@@ -1692,6 +1709,8 @@ class Worker extends DataClass implements Insertable<Worker> {
       workerCode: workerCode == null && nullToAbsent
           ? const Value.absent()
           : Value(workerCode),
+      trade:
+          trade == null && nullToAbsent ? const Value.absent() : Value(trade),
       dailyRate: Value(dailyRate),
     );
   }
@@ -1703,6 +1722,7 @@ class Worker extends DataClass implements Insertable<Worker> {
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       workerCode: serializer.fromJson<String?>(json['workerCode']),
+      trade: serializer.fromJson<String?>(json['trade']),
       dailyRate: serializer.fromJson<double>(json['dailyRate']),
     );
   }
@@ -1713,6 +1733,7 @@ class Worker extends DataClass implements Insertable<Worker> {
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'workerCode': serializer.toJson<String?>(workerCode),
+      'trade': serializer.toJson<String?>(trade),
       'dailyRate': serializer.toJson<double>(dailyRate),
     };
   }
@@ -1721,11 +1742,13 @@ class Worker extends DataClass implements Insertable<Worker> {
           {int? id,
           String? name,
           Value<String?> workerCode = const Value.absent(),
+          Value<String?> trade = const Value.absent(),
           double? dailyRate}) =>
       Worker(
         id: id ?? this.id,
         name: name ?? this.name,
         workerCode: workerCode.present ? workerCode.value : this.workerCode,
+        trade: trade.present ? trade.value : this.trade,
         dailyRate: dailyRate ?? this.dailyRate,
       );
   Worker copyWithCompanion(WorkersCompanion data) {
@@ -1734,6 +1757,7 @@ class Worker extends DataClass implements Insertable<Worker> {
       name: data.name.present ? data.name.value : this.name,
       workerCode:
           data.workerCode.present ? data.workerCode.value : this.workerCode,
+      trade: data.trade.present ? data.trade.value : this.trade,
       dailyRate: data.dailyRate.present ? data.dailyRate.value : this.dailyRate,
     );
   }
@@ -1744,13 +1768,14 @@ class Worker extends DataClass implements Insertable<Worker> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('workerCode: $workerCode, ')
+          ..write('trade: $trade, ')
           ..write('dailyRate: $dailyRate')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, workerCode, dailyRate);
+  int get hashCode => Object.hash(id, name, workerCode, trade, dailyRate);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1758,6 +1783,7 @@ class Worker extends DataClass implements Insertable<Worker> {
           other.id == this.id &&
           other.name == this.name &&
           other.workerCode == this.workerCode &&
+          other.trade == this.trade &&
           other.dailyRate == this.dailyRate);
 }
 
@@ -1765,29 +1791,34 @@ class WorkersCompanion extends UpdateCompanion<Worker> {
   final Value<int> id;
   final Value<String> name;
   final Value<String?> workerCode;
+  final Value<String?> trade;
   final Value<double> dailyRate;
   const WorkersCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.workerCode = const Value.absent(),
+    this.trade = const Value.absent(),
     this.dailyRate = const Value.absent(),
   });
   WorkersCompanion.insert({
     this.id = const Value.absent(),
     required String name,
     this.workerCode = const Value.absent(),
+    this.trade = const Value.absent(),
     this.dailyRate = const Value.absent(),
   }) : name = Value(name);
   static Insertable<Worker> custom({
     Expression<int>? id,
     Expression<String>? name,
     Expression<String>? workerCode,
+    Expression<String>? trade,
     Expression<double>? dailyRate,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (workerCode != null) 'worker_code': workerCode,
+      if (trade != null) 'trade': trade,
       if (dailyRate != null) 'daily_rate': dailyRate,
     });
   }
@@ -1796,11 +1827,13 @@ class WorkersCompanion extends UpdateCompanion<Worker> {
       {Value<int>? id,
       Value<String>? name,
       Value<String?>? workerCode,
+      Value<String?>? trade,
       Value<double>? dailyRate}) {
     return WorkersCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       workerCode: workerCode ?? this.workerCode,
+      trade: trade ?? this.trade,
       dailyRate: dailyRate ?? this.dailyRate,
     );
   }
@@ -1817,6 +1850,9 @@ class WorkersCompanion extends UpdateCompanion<Worker> {
     if (workerCode.present) {
       map['worker_code'] = Variable<String>(workerCode.value);
     }
+    if (trade.present) {
+      map['trade'] = Variable<String>(trade.value);
+    }
     if (dailyRate.present) {
       map['daily_rate'] = Variable<double>(dailyRate.value);
     }
@@ -1829,6 +1865,7 @@ class WorkersCompanion extends UpdateCompanion<Worker> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('workerCode: $workerCode, ')
+          ..write('trade: $trade, ')
           ..write('dailyRate: $dailyRate')
           ..write(')'))
         .toString();
@@ -4102,12 +4139,14 @@ typedef $$WorkersTableCreateCompanionBuilder = WorkersCompanion Function({
   Value<int> id,
   required String name,
   Value<String?> workerCode,
+  Value<String?> trade,
   Value<double> dailyRate,
 });
 typedef $$WorkersTableUpdateCompanionBuilder = WorkersCompanion Function({
   Value<int> id,
   Value<String> name,
   Value<String?> workerCode,
+  Value<String?> trade,
   Value<double> dailyRate,
 });
 
@@ -4148,6 +4187,9 @@ class $$WorkersTableFilterComposer
 
   ColumnFilters<String> get workerCode => $composableBuilder(
       column: $table.workerCode, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get trade => $composableBuilder(
+      column: $table.trade, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<double> get dailyRate => $composableBuilder(
       column: $table.dailyRate, builder: (column) => ColumnFilters(column));
@@ -4192,6 +4234,9 @@ class $$WorkersTableOrderingComposer
   ColumnOrderings<String> get workerCode => $composableBuilder(
       column: $table.workerCode, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get trade => $composableBuilder(
+      column: $table.trade, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<double> get dailyRate => $composableBuilder(
       column: $table.dailyRate, builder: (column) => ColumnOrderings(column));
 }
@@ -4213,6 +4258,9 @@ class $$WorkersTableAnnotationComposer
 
   GeneratedColumn<String> get workerCode => $composableBuilder(
       column: $table.workerCode, builder: (column) => column);
+
+  GeneratedColumn<String> get trade =>
+      $composableBuilder(column: $table.trade, builder: (column) => column);
 
   GeneratedColumn<double> get dailyRate =>
       $composableBuilder(column: $table.dailyRate, builder: (column) => column);
@@ -4265,24 +4313,28 @@ class $$WorkersTableTableManager extends RootTableManager<
             Value<int> id = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<String?> workerCode = const Value.absent(),
+            Value<String?> trade = const Value.absent(),
             Value<double> dailyRate = const Value.absent(),
           }) =>
               WorkersCompanion(
             id: id,
             name: name,
             workerCode: workerCode,
+            trade: trade,
             dailyRate: dailyRate,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required String name,
             Value<String?> workerCode = const Value.absent(),
+            Value<String?> trade = const Value.absent(),
             Value<double> dailyRate = const Value.absent(),
           }) =>
               WorkersCompanion.insert(
             id: id,
             name: name,
             workerCode: workerCode,
+            trade: trade,
             dailyRate: dailyRate,
           ),
           withReferenceMapper: (p0) => p0
