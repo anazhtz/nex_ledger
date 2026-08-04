@@ -114,7 +114,7 @@ class _AppShellState extends ConsumerState<AppShell> {
   Widget build(BuildContext context) {
     final selectedIdx = _selectedIndex(context);
     final theme = Theme.of(context);
-    final sidebarWidth = _isCollapsed ? 76.w : 250.w;
+    final sidebarWidth = _isCollapsed ? 76.0 : 250.0;
 
     return Scaffold(
       body: Row(
@@ -192,20 +192,19 @@ class _AppShellState extends ConsumerState<AppShell> {
     final cashBalanceAsync = ref.watch(cashBalanceProvider);
 
     return Container(
-      height: 60.h,
-      padding: EdgeInsets.symmetric(horizontal: 24.w),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
+        border: const Border(
           bottom: BorderSide(
-            color: const Color(0xFFE2E8F0),
-            width: 1.h,
+            color: Color(0xFFE2E8F0),
+            width: 1,
           ),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 6,
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
@@ -244,28 +243,30 @@ class _AppShellState extends ConsumerState<AppShell> {
             ),
             error: (_, __) => const SizedBox.shrink(),
             data: (projects) {
+              final validSelectedId = projects.any((p) => p.id == selectedId) ? selectedId : null;
+
               return Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFFEEF2FF),
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: const Color(0xFFC7D2FE),
                   ),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<int?>(
-                    value: selectedId,
+                    value: validSelectedId,
                     isDense: true,
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.keyboard_arrow_down_rounded,
-                      color: const Color(0xFF4F46E5),
-                      size: 20.sp,
+                      color: Color(0xFF4F46E5),
+                      size: 20,
                     ),
-                    style: TextStyle(
-                      fontSize: 13.sp,
+                    style: const TextStyle(
+                      fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF4F46E5),
+                      color: Color(0xFF4F46E5),
                     ),
                     onChanged: (int? newId) {
                       ref.read(selectedProjectIdProvider.notifier).state = newId;
