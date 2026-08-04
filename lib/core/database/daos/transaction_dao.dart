@@ -102,13 +102,15 @@ class TransactionDao extends DatabaseAccessor<AppDatabase>
     final amount = transactions.amount;
     final type = transactions.type;
 
-    // Build streams for credits and debits separately
+    // Build streams for credits and debits separately (filtering WHERE affectsCash = true)
     final creditQuery = selectOnly(transactions)
       ..addColumns([amount.sum()])
-      ..where(type.isIn(creditTypes));
+      ..where(type.isIn(creditTypes))
+      ..where(transactions.affectsCash.equals(true));
     final debitQuery = selectOnly(transactions)
       ..addColumns([amount.sum()])
-      ..where(type.isIn(debitTypes));
+      ..where(type.isIn(debitTypes))
+      ..where(transactions.affectsCash.equals(true));
 
     // Combine both streams
     return creditQuery.watchSingle().asyncExpand((creditRow) {

@@ -80,6 +80,7 @@ class DepositRepository {
           date: date,
           type: TransactionType.income,
           affectsPnl: const Value(true), // This IS income now
+          affectsCash: const Value(false), // CRITICAL: money was received in step 1, adjusting does NOT move cash
           amount: adjustedAmount,
           narration: Value(
               narration ?? 'Deposit adjusted to income${adjustmentReference != null ? ' - $adjustmentReference' : ''}'),

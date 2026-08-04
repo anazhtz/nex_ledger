@@ -508,6 +508,16 @@ class $TransactionsTable extends Transactions
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('CHECK ("affects_pnl" IN (0, 1))'),
       defaultValue: const Constant(true));
+  static const VerificationMeta _affectsCashMeta =
+      const VerificationMeta('affectsCash');
+  @override
+  late final GeneratedColumn<bool> affectsCash = GeneratedColumn<bool>(
+      'affects_cash', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("affects_cash" IN (0, 1))'),
+      defaultValue: const Constant(true));
   static const VerificationMeta _amountMeta = const VerificationMeta('amount');
   @override
   late final GeneratedColumn<double> amount = GeneratedColumn<double>(
@@ -546,6 +556,7 @@ class $TransactionsTable extends Transactions
         date,
         type,
         affectsPnl,
+        affectsCash,
         amount,
         paymentMode,
         narration,
@@ -582,6 +593,12 @@ class $TransactionsTable extends Transactions
           _affectsPnlMeta,
           affectsPnl.isAcceptableOrUnknown(
               data['affects_pnl']!, _affectsPnlMeta));
+    }
+    if (data.containsKey('affects_cash')) {
+      context.handle(
+          _affectsCashMeta,
+          affectsCash.isAcceptableOrUnknown(
+              data['affects_cash']!, _affectsCashMeta));
     }
     if (data.containsKey('amount')) {
       context.handle(_amountMeta,
@@ -623,6 +640,8 @@ class $TransactionsTable extends Transactions
           .read(DriftSqlType.string, data['${effectivePrefix}type'])!),
       affectsPnl: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}affects_pnl'])!,
+      affectsCash: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}affects_cash'])!,
       amount: attachedDatabase.typeMapping
           .read(DriftSqlType.double, data['${effectivePrefix}amount'])!,
       paymentMode: $TransactionsTable.$converterpaymentModen.fromSql(
@@ -660,6 +679,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   /// FALSE for deposit / depositRefund transactions — they are liabilities,
   /// not income. TRUE for income/expense/purchase/labourPayment.
   final bool affectsPnl;
+
+  /// FALSE for internal adjustments (e.g. deposit adjusted to income) that do NOT move physical cash.
+  /// TRUE for physical cash inflows/outflows.
+  final bool affectsCash;
   final double amount;
   final PaymentMode? paymentMode;
   final String? narration;
@@ -671,6 +694,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       required this.date,
       required this.type,
       required this.affectsPnl,
+      required this.affectsCash,
       required this.amount,
       this.paymentMode,
       this.narration,
@@ -687,6 +711,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           Variable<String>($TransactionsTable.$convertertype.toSql(type));
     }
     map['affects_pnl'] = Variable<bool>(affectsPnl);
+    map['affects_cash'] = Variable<bool>(affectsCash);
     map['amount'] = Variable<double>(amount);
     if (!nullToAbsent || paymentMode != null) {
       map['payment_mode'] = Variable<String>(
@@ -709,6 +734,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       date: Value(date),
       type: Value(type),
       affectsPnl: Value(affectsPnl),
+      affectsCash: Value(affectsCash),
       amount: Value(amount),
       paymentMode: paymentMode == null && nullToAbsent
           ? const Value.absent()
@@ -733,6 +759,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       type: $TransactionsTable.$convertertype
           .fromJson(serializer.fromJson<String>(json['type'])),
       affectsPnl: serializer.fromJson<bool>(json['affectsPnl']),
+      affectsCash: serializer.fromJson<bool>(json['affectsCash']),
       amount: serializer.fromJson<double>(json['amount']),
       paymentMode: $TransactionsTable.$converterpaymentModen
           .fromJson(serializer.fromJson<String?>(json['paymentMode'])),
@@ -751,6 +778,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       'type': serializer
           .toJson<String>($TransactionsTable.$convertertype.toJson(type)),
       'affectsPnl': serializer.toJson<bool>(affectsPnl),
+      'affectsCash': serializer.toJson<bool>(affectsCash),
       'amount': serializer.toJson<double>(amount),
       'paymentMode': serializer.toJson<String?>(
           $TransactionsTable.$converterpaymentModen.toJson(paymentMode)),
@@ -766,6 +794,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           DateTime? date,
           TransactionType? type,
           bool? affectsPnl,
+          bool? affectsCash,
           double? amount,
           Value<PaymentMode?> paymentMode = const Value.absent(),
           Value<String?> narration = const Value.absent(),
@@ -777,6 +806,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
         date: date ?? this.date,
         type: type ?? this.type,
         affectsPnl: affectsPnl ?? this.affectsPnl,
+        affectsCash: affectsCash ?? this.affectsCash,
         amount: amount ?? this.amount,
         paymentMode: paymentMode.present ? paymentMode.value : this.paymentMode,
         narration: narration.present ? narration.value : this.narration,
@@ -791,6 +821,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       type: data.type.present ? data.type.value : this.type,
       affectsPnl:
           data.affectsPnl.present ? data.affectsPnl.value : this.affectsPnl,
+      affectsCash:
+          data.affectsCash.present ? data.affectsCash.value : this.affectsCash,
       amount: data.amount.present ? data.amount.value : this.amount,
       paymentMode:
           data.paymentMode.present ? data.paymentMode.value : this.paymentMode,
@@ -809,6 +841,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ..write('date: $date, ')
           ..write('type: $type, ')
           ..write('affectsPnl: $affectsPnl, ')
+          ..write('affectsCash: $affectsCash, ')
           ..write('amount: $amount, ')
           ..write('paymentMode: $paymentMode, ')
           ..write('narration: $narration, ')
@@ -819,8 +852,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   }
 
   @override
-  int get hashCode => Object.hash(id, projectId, date, type, affectsPnl, amount,
-      paymentMode, narration, referenceNo, createdAt);
+  int get hashCode => Object.hash(id, projectId, date, type, affectsPnl,
+      affectsCash, amount, paymentMode, narration, referenceNo, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -830,6 +863,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           other.date == this.date &&
           other.type == this.type &&
           other.affectsPnl == this.affectsPnl &&
+          other.affectsCash == this.affectsCash &&
           other.amount == this.amount &&
           other.paymentMode == this.paymentMode &&
           other.narration == this.narration &&
@@ -843,6 +877,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   final Value<DateTime> date;
   final Value<TransactionType> type;
   final Value<bool> affectsPnl;
+  final Value<bool> affectsCash;
   final Value<double> amount;
   final Value<PaymentMode?> paymentMode;
   final Value<String?> narration;
@@ -854,6 +889,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.date = const Value.absent(),
     this.type = const Value.absent(),
     this.affectsPnl = const Value.absent(),
+    this.affectsCash = const Value.absent(),
     this.amount = const Value.absent(),
     this.paymentMode = const Value.absent(),
     this.narration = const Value.absent(),
@@ -866,6 +902,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     required DateTime date,
     required TransactionType type,
     this.affectsPnl = const Value.absent(),
+    this.affectsCash = const Value.absent(),
     required double amount,
     this.paymentMode = const Value.absent(),
     this.narration = const Value.absent(),
@@ -881,6 +918,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Expression<DateTime>? date,
     Expression<String>? type,
     Expression<bool>? affectsPnl,
+    Expression<bool>? affectsCash,
     Expression<double>? amount,
     Expression<String>? paymentMode,
     Expression<String>? narration,
@@ -893,6 +931,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       if (date != null) 'date': date,
       if (type != null) 'type': type,
       if (affectsPnl != null) 'affects_pnl': affectsPnl,
+      if (affectsCash != null) 'affects_cash': affectsCash,
       if (amount != null) 'amount': amount,
       if (paymentMode != null) 'payment_mode': paymentMode,
       if (narration != null) 'narration': narration,
@@ -907,6 +946,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       Value<DateTime>? date,
       Value<TransactionType>? type,
       Value<bool>? affectsPnl,
+      Value<bool>? affectsCash,
       Value<double>? amount,
       Value<PaymentMode?>? paymentMode,
       Value<String?>? narration,
@@ -918,6 +958,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       date: date ?? this.date,
       type: type ?? this.type,
       affectsPnl: affectsPnl ?? this.affectsPnl,
+      affectsCash: affectsCash ?? this.affectsCash,
       amount: amount ?? this.amount,
       paymentMode: paymentMode ?? this.paymentMode,
       narration: narration ?? this.narration,
@@ -944,6 +985,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     }
     if (affectsPnl.present) {
       map['affects_pnl'] = Variable<bool>(affectsPnl.value);
+    }
+    if (affectsCash.present) {
+      map['affects_cash'] = Variable<bool>(affectsCash.value);
     }
     if (amount.present) {
       map['amount'] = Variable<double>(amount.value);
@@ -972,6 +1016,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
           ..write('date: $date, ')
           ..write('type: $type, ')
           ..write('affectsPnl: $affectsPnl, ')
+          ..write('affectsCash: $affectsCash, ')
           ..write('amount: $amount, ')
           ..write('paymentMode: $paymentMode, ')
           ..write('narration: $narration, ')
@@ -2985,6 +3030,7 @@ typedef $$TransactionsTableCreateCompanionBuilder = TransactionsCompanion
   required DateTime date,
   required TransactionType type,
   Value<bool> affectsPnl,
+  Value<bool> affectsCash,
   required double amount,
   Value<PaymentMode?> paymentMode,
   Value<String?> narration,
@@ -2998,6 +3044,7 @@ typedef $$TransactionsTableUpdateCompanionBuilder = TransactionsCompanion
   Value<DateTime> date,
   Value<TransactionType> type,
   Value<bool> affectsPnl,
+  Value<bool> affectsCash,
   Value<double> amount,
   Value<PaymentMode?> paymentMode,
   Value<String?> narration,
@@ -3077,6 +3124,9 @@ class $$TransactionsTableFilterComposer
 
   ColumnFilters<bool> get affectsPnl => $composableBuilder(
       column: $table.affectsPnl, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get affectsCash => $composableBuilder(
+      column: $table.affectsCash, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<double> get amount => $composableBuilder(
       column: $table.amount, builder: (column) => ColumnFilters(column));
@@ -3179,6 +3229,9 @@ class $$TransactionsTableOrderingComposer
   ColumnOrderings<bool> get affectsPnl => $composableBuilder(
       column: $table.affectsPnl, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<bool> get affectsCash => $composableBuilder(
+      column: $table.affectsCash, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<double> get amount => $composableBuilder(
       column: $table.amount, builder: (column) => ColumnOrderings(column));
 
@@ -3235,6 +3288,9 @@ class $$TransactionsTableAnnotationComposer
 
   GeneratedColumn<bool> get affectsPnl => $composableBuilder(
       column: $table.affectsPnl, builder: (column) => column);
+
+  GeneratedColumn<bool> get affectsCash => $composableBuilder(
+      column: $table.affectsCash, builder: (column) => column);
 
   GeneratedColumn<double> get amount =>
       $composableBuilder(column: $table.amount, builder: (column) => column);
@@ -3344,6 +3400,7 @@ class $$TransactionsTableTableManager extends RootTableManager<
             Value<DateTime> date = const Value.absent(),
             Value<TransactionType> type = const Value.absent(),
             Value<bool> affectsPnl = const Value.absent(),
+            Value<bool> affectsCash = const Value.absent(),
             Value<double> amount = const Value.absent(),
             Value<PaymentMode?> paymentMode = const Value.absent(),
             Value<String?> narration = const Value.absent(),
@@ -3356,6 +3413,7 @@ class $$TransactionsTableTableManager extends RootTableManager<
             date: date,
             type: type,
             affectsPnl: affectsPnl,
+            affectsCash: affectsCash,
             amount: amount,
             paymentMode: paymentMode,
             narration: narration,
@@ -3368,6 +3426,7 @@ class $$TransactionsTableTableManager extends RootTableManager<
             required DateTime date,
             required TransactionType type,
             Value<bool> affectsPnl = const Value.absent(),
+            Value<bool> affectsCash = const Value.absent(),
             required double amount,
             Value<PaymentMode?> paymentMode = const Value.absent(),
             Value<String?> narration = const Value.absent(),
@@ -3380,6 +3439,7 @@ class $$TransactionsTableTableManager extends RootTableManager<
             date: date,
             type: type,
             affectsPnl: affectsPnl,
+            affectsCash: affectsCash,
             amount: amount,
             paymentMode: paymentMode,
             narration: narration,

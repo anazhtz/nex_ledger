@@ -70,6 +70,7 @@ class AppDatabase extends _$AppDatabase {
         onUpgrade: (m, from, to) async {
           if (from < 2) {
             await m.addColumn(deposits, deposits.adjustedAmount);
+            await m.addColumn(transactions, transactions.affectsCash);
           }
         },
       );

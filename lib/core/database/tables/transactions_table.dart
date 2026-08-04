@@ -17,6 +17,10 @@ class Transactions extends Table {
   /// not income. TRUE for income/expense/purchase/labourPayment.
   BoolColumn get affectsPnl => boolean().withDefault(const Constant(true))();
 
+  /// FALSE for internal adjustments (e.g. deposit adjusted to income) that do NOT move physical cash.
+  /// TRUE for physical cash inflows/outflows.
+  BoolColumn get affectsCash => boolean().withDefault(const Constant(true))();
+
   RealColumn get amount => real()();
   TextColumn get paymentMode => textEnum<PaymentMode>().nullable()();
   TextColumn get narration => text().nullable()();

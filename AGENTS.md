@@ -182,3 +182,36 @@ enum DepositStatus { held, adjusted, partiallyAdjusted, refunded }
 - All 7 screens functional: Dashboard, Projects, Cash Book, Purchase, Labour (Attendance + Payment), Deposits, Reports (Project P&L, Deposit Ledger, Consolidated P&L)
 - Deposit/P&L rule in Section 6 correctly implemented and verified with at least one manual test case per transaction type
 - Settings > Backup Database button works (copies local SQLite file to a user-chosen folder)
+- Section 11 verification test case below passes exactly
+
+## 11. Verification Test Case (run this after build to confirm correctness)
+
+Create a project `PRJ-2026-001` ("Luxury Villa Renovation") and enter these
+5 transactions in order. After each step, the running totals must match
+exactly — use this to catch any bug in the deposit/P&L logic before calling
+the build done.
+
+1. **Deposit received:** ₹5,00,000
+   → Cash Balance: ₹5,00,000 | Deposit Liability Held: ₹5,00,000 | P&L: ₹0
+2. **Purchase:** materials, ₹1,20,000
+   → Cash Balance: ₹3,80,000 | Project Purchases: ₹1,20,000
+3. **Labour Payment:** 10 days @ ₹1,000/day = ₹10,000
+   → Cash Balance: ₹3,70,000 | Project Labour Cost: ₹10,000
+4. **Expense:** fuel/transport, ₹5,000
+   → Cash Balance: ₹3,65,000 | Project Expenses: ₹5,000
+5. **Adjust Deposit to Income:** ₹3,00,000
+   → Cash Balance: unchanged at ₹3,65,000 (money was already received in
+   step 1 — adjusting does NOT move cash again)
+   → Deposit Liability Held: ₹2,00,000 (₹5,00,000 − ₹3,00,000)
+   → Project Income: ₹3,00,000 (this now hits P&L)
+
+**Final expected numbers for `PRJ-2026-001`:**
+- Total Recognized Income: ₹3,00,000
+- Total Costs (Purchases + Labour + Expenses): ₹1,35,000 (₹1,20,000 + ₹10,000 + ₹5,000)
+- **Net Project P&L: ₹1,65,000 profit** (₹3,00,000 − ₹1,35,000)
+- Deposit Balance Held (liability, separate from P&L): ₹2,00,000
+- Physical Cash in Bank/Hand: ₹3,65,000
+
+If any of these five numbers don't match after entering the 5 steps above,
+the deposit/P&L separation (Section 6) has a bug — do not consider the
+build complete until they match exactly.
