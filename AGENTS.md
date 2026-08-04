@@ -213,6 +213,10 @@ enum DepositStatus { held, adjusted, partiallyAdjusted, refunded }
 - Settings > Backup Database button works (copies local SQLite file to a user-chosen folder)
 - Section 11 verification test case below passes exactly
 
+# NexLedger — Testing & Labour Module Rules
+
+(Referenced from AGENTS.md — read this alongside it.)
+
 ## 11. Verification Test Case (run this after build to confirm correctness)
 
 Create a project `PRJ-2026-001` ("Luxury Villa Renovation") and enter these
@@ -244,3 +248,55 @@ the build done.
 If any of these five numbers don't match after entering the 5 steps above,
 the deposit/P&L separation (Section 6) has a bug — do not consider the
 build complete until they match exactly.
+
+## 12. Labour Module Rules
+
+### 12a. Worker Master
+Fields: Worker Name, Worker Code (unique), Trade/Skill (Mason, Carpenter,
+Electrician, Plumber, Welder, Tile Layer, General Helper — free-select from
+a fixed list), Daily Wage Rate.
+
+### 12b. Attendance Entry
+Per date + project, show a grid of all workers (Code, Name, Trade badge,
+Daily Rate) with a per-worker status toggle:
+- Present = 1.0 effective day
+- Half Day = 0.5 effective day
+- Absent = 0.0 effective day
+
+Include "All Present" and "All Absent" batch buttons to mark everyone at
+once. Show a live running total: `Estimated Wage Cost Today = Σ (effective
+days today × daily rate)`.
+
+### 12c. Labour Pay — Net Amount Due (CRITICAL — running balance, not range-based)
+
+Do NOT calculate Net Amount Due by subtracting all-time payments from a
+date-range-specific gross wage figure — this creates a double-payment risk
+if payments are ever made out of order or ranges overlap.
+
+Instead, always use an **all-time running balance per worker**:
+
+```
+Total Effective Days Worked (all-time, this worker)  = Σ effective days from Attendance table
+Total Gross Wages Earned (all-time, this worker)      = Total Effective Days × Daily Wage Rate
+Total Payments Already Issued (all-time, this worker)  = Σ labourPayment transactions for this worker
+Net Amount Due (this worker)                          = Total Gross Wages Earned − Total Payments Already Issued
+```
+
+The date range picker in the UI is for display purposes only (labeling what
+period a payment covers on the receipt/record) — it must NOT be used to
+scope the due-amount calculation itself. The due amount is always the
+worker's current all-time running balance.
+
+On "Record Payment": post `Transaction(type: labourPayment, affectsPnl:
+true, affectsCash: true)`, linked to the worker and project. Cash decreases,
+Labour Cost/Expense recorded under that project.
+
+### 12d. Known Design Trade-off — Cash-Basis Labour Cost (accept for v1, don't "fix" silently)
+
+Labour cost only hits P&L when a payment is actually recorded, not when the
+attendance/work happens. This means unpaid labour for a period is invisible
+in that period's P&L until it's paid — a cash-basis treatment. This is
+intentionally accepted for v1 simplicity. Do not attempt to "fix" this by
+accruing cost at attendance-time without being asked — that would be a
+different accounting model (accrual-basis) and needs to be a deliberate
+decision, not a silent change.
