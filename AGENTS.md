@@ -139,13 +139,42 @@ lib/
 
 A deposit is a **liability**, never income, at the moment it's received.
 
-- **Deposit received** → insert `Transaction(type: deposit, affectsPnl: false)`. Cash balance increases. P&L unaffected.
-- **Deposit adjusted to income** → insert a NEW `Transaction(type: income, affectsPnl: true)` for the adjusted amount, and update the linked `Deposit.status` to `adjusted` or `partiallyAdjusted`. Never mutate the original deposit transaction — always add a new linked row so the audit trail is preserved.
-- **Deposit refunded** → insert `Transaction(type: depositRefund, affectsPnl: false)`. Cash decreases, deposit liability decreases, P&L still unaffected.
+`Transactions` table has TWO independent boolean flags — do not collapse
+these into one:
+- `affectsPnl` — does this row count in Income/Expense reports?
+- `affectsCash` — does this row move physical cash in/out?
 
-All P&L report queries must filter `WHERE affectsPnl = true`. This is the
-single most important rule in the whole app — get it wrong and every report
-is incorrect.
+These are independent because a deposit adjustment moves money from
+"liability" to "income" on paper, but the cash was already received earlier
+— it must not be counted as a cash movement a second time.
+
+- **Deposit received** → insert `Transaction(type: deposit, affectsPnl: false, affectsCash: true)`. Cash balance increases. P&L unaffected.
+- **Deposit adjusted to income** → insert a NEW `Transaction(type: income, affectsPnl: true, affectsCash: false)` for the adjusted amount, and update the linked `Deposit.status` to `adjusted` or `partiallyAdjusted`. Never mutate the original deposit transaction — always add a new linked row so the audit trail is preserved. `affectsCash: false` here is what prevents double-counting cash that was already received in step 1.
+- **Deposit refunded** → insert `Transaction(type: depositRefund, affectsPnl: false, affectsCash: true)`. Cash decreases, deposit liability decreases, P&L still unaffected.
+- All ordinary Income/Expense/Purchase/Labour transactions → `affectsPnl: true, affectsCash: true` (both flags true, since real money changed hands and it counts toward profit).
+
+All P&L report queries must filter `WHERE affectsPnl = true`.
+All Cash Balance queries must filter `WHERE affectsCash = true`.
+This is the single most important rule in the whole app — get it wrong and
+every report is incorrect.
+
+## 6a. Local Database Storage Location (do not skip this)
+
+The SQLite database file must NOT be stored next to the app executable or
+inside the app bundle/install folder — it must live in the OS's persistent
+app-data directory, using the `path_provider` package:
+
+```dart
+final appDocDir = await getApplicationSupportDirectory();
+// Windows: C:\Users\<user>\AppData\Roaming\NexLedger\nexledger.db
+// macOS:   ~/Library/Application Support/NexLedger/nexledger.db
+```
+
+Reason: when a new build is installed over an old one (bug fix / update),
+the app files get replaced — but the database must survive untouched. If
+the DB is stored inside the app folder, an update will wipe the user's
+data. Verify this is correctly implemented before shipping the first
+update to a real user.
 
 ## 7. Enums (core/constants/enums.dart)
 
