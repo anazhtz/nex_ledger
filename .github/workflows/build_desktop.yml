@@ -1,0 +1,73 @@
+name: NexLedger Desktop Builds
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: Build Windows Desktop App (.exe)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run financial verification tests
+        run: flutter test test/verification_test.dart
+
+      - name: Build Windows release executable
+        run: flutter build windows --release
+
+      - name: Archive Windows build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexLedger_Windows_Release
+          path: build/windows/x64/runner/Release/
+
+  build-macos:
+    name: Build macOS Desktop App (.app)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run financial verification tests
+        run: flutter test test/verification_test.dart
+
+      - name: Build macOS release app
+        run: flutter build macos --release
+
+      - name: Archive macOS build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexLedger_macOS_Release
+          path: build/macos/Build/Products/Release/nex_ledger.app
