@@ -62,6 +62,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       bindings: {
         const SingleActivator(LogicalKeyboardKey.enter): _submitPin,
         const SingleActivator(LogicalKeyboardKey.numpadEnter): _submitPin,
+        const SingleActivator(LogicalKeyboardKey.backspace): _deleteNum,
+        const SingleActivator(LogicalKeyboardKey.digit0): () => _appendNum('0'),
+        const SingleActivator(LogicalKeyboardKey.digit1): () => _appendNum('1'),
+        const SingleActivator(LogicalKeyboardKey.digit2): () => _appendNum('2'),
+        const SingleActivator(LogicalKeyboardKey.digit3): () => _appendNum('3'),
+        const SingleActivator(LogicalKeyboardKey.digit4): () => _appendNum('4'),
+        const SingleActivator(LogicalKeyboardKey.digit5): () => _appendNum('5'),
+        const SingleActivator(LogicalKeyboardKey.digit6): () => _appendNum('6'),
+        const SingleActivator(LogicalKeyboardKey.digit7): () => _appendNum('7'),
+        const SingleActivator(LogicalKeyboardKey.digit8): () => _appendNum('8'),
+        const SingleActivator(LogicalKeyboardKey.digit9): () => _appendNum('9'),
+        const SingleActivator(LogicalKeyboardKey.numpad0): () =>
+            _appendNum('0'),
+        const SingleActivator(LogicalKeyboardKey.numpad1): () =>
+            _appendNum('1'),
+        const SingleActivator(LogicalKeyboardKey.numpad2): () =>
+            _appendNum('2'),
+        const SingleActivator(LogicalKeyboardKey.numpad3): () =>
+            _appendNum('3'),
+        const SingleActivator(LogicalKeyboardKey.numpad4): () =>
+            _appendNum('4'),
+        const SingleActivator(LogicalKeyboardKey.numpad5): () =>
+            _appendNum('5'),
+        const SingleActivator(LogicalKeyboardKey.numpad6): () =>
+            _appendNum('6'),
+        const SingleActivator(LogicalKeyboardKey.numpad7): () =>
+            _appendNum('7'),
+        const SingleActivator(LogicalKeyboardKey.numpad8): () =>
+            _appendNum('8'),
+        const SingleActivator(LogicalKeyboardKey.numpad9): () =>
+            _appendNum('9'),
       },
       child: Focus(
         autofocus: true,
@@ -132,6 +163,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         TextField(
                           controller: _pinCtrl,
                           obscureText: _obscure,
+                          readOnly: true,
                           keyboardType: TextInputType.number,
                           textAlign: TextAlign.center,
                           autofocus: true,

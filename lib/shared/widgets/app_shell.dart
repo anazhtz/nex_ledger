@@ -672,12 +672,16 @@ class _AppShellState extends ConsumerState<AppShell> {
                         ),
                       ),
                       SizedBox(width: 6.w),
-                      Text(
-                        'Offline Mode',
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.onSurfaceVariant,
+                      Expanded(
+                        child: Text(
+                          'Offline Mode',
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                       ),
                     ],
@@ -688,6 +692,8 @@ class _AppShellState extends ConsumerState<AppShell> {
                       fontSize: 10.sp,
                       color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
                     ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ],
               ),

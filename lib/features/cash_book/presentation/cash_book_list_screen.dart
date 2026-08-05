@@ -29,7 +29,11 @@ class CashBookListScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
-            Row(
+            Wrap(
+              spacing: 16,
+              runSpacing: 12,
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,35 +58,39 @@ class CashBookListScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const Spacer(),
-                OutlinedButton.icon(
-                  onPressed: () async {
-                    final txns = await ref.read(cashBookListProvider.future);
-                    final path = await ExcelExportService.exportCashBook(transactions: txns);
-                    if (path != null && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Cash Book exported to Excel: $path'),
-                          backgroundColor: const Color(0xFF059669),
-                        ),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.table_chart_rounded, size: 18, color: Color(0xFF059669)),
-                  label: const Text('Export Excel (.xlsx)', style: TextStyle(color: Color(0xFF059669), fontWeight: FontWeight.bold)),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFF059669)),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                FilledButton.icon(
-                  onPressed: () => context.go('/cash-book/new'),
-                  icon: const Icon(Icons.add_rounded, size: 18),
-                  label: const Text('Add Entry'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  ),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        final txns = await ref.read(cashBookListProvider.future);
+                        final path = await ExcelExportService.exportCashBook(transactions: txns);
+                        if (path != null && context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Cash Book exported to Excel: $path'),
+                              backgroundColor: const Color(0xFF059669),
+                            ),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.table_chart_rounded, size: 18, color: Color(0xFF059669)),
+                      label: const Text('Export Excel (.xlsx)', style: TextStyle(color: Color(0xFF059669), fontWeight: FontWeight.bold)),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFF059669)),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      ),
+                    ),
+                    FilledButton.icon(
+                      onPressed: () => context.go('/cash-book/new'),
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: const Text('Add Entry'),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
