@@ -135,9 +135,11 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
-              child: Card(
+            Expanded(
+              child: SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600),
+                  child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: Column(
@@ -311,10 +313,12 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                 ),
               ),
             ),
-          ],
+          ),
         ),
-      ),
-    );
+      ],
+    ),
+  ),
+);
   }
 
   Widget _buildProjectSelector(

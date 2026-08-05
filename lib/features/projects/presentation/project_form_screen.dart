@@ -152,9 +152,10 @@ class _ProjectFormScreenState extends ConsumerState<ProjectFormScreen> {
             if (isLoading)
               const Center(child: CircularProgressIndicator())
             else
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 560),
-                child: Card(
+              SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560),
+                  child: Card(
                   child: Padding(
                     padding: const EdgeInsets.all(24),
                     child: Form(
@@ -302,6 +303,7 @@ class _ProjectFormScreenState extends ConsumerState<ProjectFormScreen> {
                   ),
                 ),
               ),
+            ),
           ],
         ),
       ),

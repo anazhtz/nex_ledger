@@ -48,41 +48,59 @@ class DashboardScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
 
-              // Stat cards row
-              Row(
-                children: [
-                  Expanded(
-                    child: StatCard(
-                      label: 'Cash Balance',
-                      value: CurrencyFormatter.format(summary.cashBalance),
-                      icon: Icons.account_balance_wallet_outlined,
-                      iconColor: summary.cashBalance >= 0
-                          ? Colors.green.shade700
-                          : Colors.red.shade700,
-                      valueColor: summary.cashBalance >= 0
-                          ? Colors.green.shade700
-                          : Colors.red.shade700,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: StatCard(
-                      label: 'Deposits Held',
-                      value: CurrencyFormatter.format(summary.totalDepositsHeld),
-                      icon: Icons.savings_outlined,
-                      iconColor: Colors.orange.shade700,
-                      subtitle: 'Liability — not income',
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: StatCard(
-                      label: 'Active Projects',
-                      value: summary.activeProjects.length.toString(),
-                      icon: Icons.folder_open_outlined,
-                    ),
-                  ),
-                ],
+              // Stat cards row (Responsive)
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isMobileOrSmallLaptop = constraints.maxWidth < 800;
+
+                  final stat1 = StatCard(
+                    label: 'Cash Balance',
+                    value: CurrencyFormatter.format(summary.cashBalance),
+                    icon: Icons.account_balance_wallet_outlined,
+                    iconColor: summary.cashBalance >= 0
+                        ? Colors.green.shade700
+                        : Colors.red.shade700,
+                    valueColor: summary.cashBalance >= 0
+                        ? Colors.green.shade700
+                        : Colors.red.shade700,
+                  );
+
+                  final stat2 = StatCard(
+                    label: 'Deposits Held',
+                    value: CurrencyFormatter.format(summary.totalDepositsHeld),
+                    icon: Icons.savings_outlined,
+                    iconColor: Colors.orange.shade700,
+                    subtitle: 'Liability — not income',
+                  );
+
+                  final stat3 = StatCard(
+                    label: 'Active Projects',
+                    value: summary.activeProjects.length.toString(),
+                    icon: Icons.folder_open_outlined,
+                  );
+
+                  if (isMobileOrSmallLaptop) {
+                    return Column(
+                      children: [
+                        stat1,
+                        const SizedBox(height: 12),
+                        stat2,
+                        const SizedBox(height: 12),
+                        stat3,
+                      ],
+                    );
+                  }
+
+                  return Row(
+                    children: [
+                      Expanded(child: stat1),
+                      const SizedBox(width: 16),
+                      Expanded(child: stat2),
+                      const SizedBox(width: 16),
+                      Expanded(child: stat3),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 24),
 

@@ -210,8 +210,10 @@ class _AppShellState extends ConsumerState<AppShell> {
           ),
         ],
       ),
-      child: Row(
-        children: [
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
           Container(
             padding: EdgeInsets.all(6.r),
             decoration: BoxDecoration(
@@ -407,7 +409,8 @@ class _AppShellState extends ConsumerState<AppShell> {
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildHeader(ThemeData theme) {

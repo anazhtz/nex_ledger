@@ -122,65 +122,93 @@ class ProjectPnlScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Summary cards
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: StatCard(
-                                    label: 'Total Income',
-                                    value: CurrencyFormatter.format(pnl.income),
-                                    icon: Icons.add_circle_outline,
-                                    iconColor: Colors.green.shade700,
-                                    valueColor: Colors.green.shade700,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: StatCard(
-                                    label: 'Expenses',
-                                    value: CurrencyFormatter.format(pnl.expenses),
-                                    icon: Icons.remove_circle_outline,
-                                    iconColor: Colors.red.shade700,
-                                    valueColor: Colors.red.shade700,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: StatCard(
-                                    label: 'Purchases',
-                                    value: CurrencyFormatter.format(pnl.purchases),
-                                    icon: Icons.shopping_cart_outlined,
-                                    iconColor: Colors.orange.shade700,
-                                    valueColor: Colors.orange.shade700,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: StatCard(
-                                    label: 'Labour',
-                                    value: CurrencyFormatter.format(pnl.labourCosts),
-                                    icon: Icons.people_outline,
-                                    iconColor: Colors.purple.shade700,
-                                    valueColor: Colors.purple.shade700,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: StatCard(
-                                    label: 'Net P&L',
-                                    value: CurrencyFormatter.format(pnl.netPnl),
-                                    icon: pnl.netPnl >= 0
-                                        ? Icons.trending_up
-                                        : Icons.trending_down,
-                                    iconColor: pnl.netPnl >= 0
-                                        ? Colors.green.shade700
-                                        : Colors.red.shade700,
-                                    valueColor: pnl.netPnl >= 0
-                                        ? Colors.green.shade700
-                                        : Colors.red.shade700,
-                                    subtitle: 'Deposits held: ${CurrencyFormatter.format(pnl.depositsHeld)}',
-                                  ),
-                                ),
-                              ],
+                            // Summary cards (Responsive)
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                final isCompact = constraints.maxWidth < 1100;
+
+                                final c1 = StatCard(
+                                  label: 'Total Income',
+                                  value: CurrencyFormatter.format(pnl.income),
+                                  icon: Icons.add_circle_outline,
+                                  iconColor: Colors.green.shade700,
+                                  valueColor: Colors.green.shade700,
+                                );
+                                final c2 = StatCard(
+                                  label: 'Expenses',
+                                  value: CurrencyFormatter.format(pnl.expenses),
+                                  icon: Icons.remove_circle_outline,
+                                  iconColor: Colors.red.shade700,
+                                  valueColor: Colors.red.shade700,
+                                );
+                                final c3 = StatCard(
+                                  label: 'Purchases',
+                                  value: CurrencyFormatter.format(pnl.purchases),
+                                  icon: Icons.shopping_cart_outlined,
+                                  iconColor: Colors.orange.shade700,
+                                  valueColor: Colors.orange.shade700,
+                                );
+                                final c4 = StatCard(
+                                  label: 'Labour',
+                                  value: CurrencyFormatter.format(pnl.labourCosts),
+                                  icon: Icons.people_outline,
+                                  iconColor: Colors.purple.shade700,
+                                  valueColor: Colors.purple.shade700,
+                                );
+                                final c5 = StatCard(
+                                  label: 'Net P&L',
+                                  value: CurrencyFormatter.format(pnl.netPnl),
+                                  icon: pnl.netPnl >= 0
+                                      ? Icons.trending_up
+                                      : Icons.trending_down,
+                                  iconColor: pnl.netPnl >= 0
+                                      ? Colors.green.shade700
+                                      : Colors.red.shade700,
+                                  valueColor: pnl.netPnl >= 0
+                                      ? Colors.green.shade700
+                                      : Colors.red.shade700,
+                                  subtitle:
+                                      'Deposits held: ${CurrencyFormatter.format(pnl.depositsHeld)}',
+                                );
+
+                                if (isCompact) {
+                                  return Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(child: c1),
+                                          const SizedBox(width: 12),
+                                          Expanded(child: c2),
+                                          const SizedBox(width: 12),
+                                          Expanded(child: c3),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        children: [
+                                          Expanded(child: c4),
+                                          const SizedBox(width: 12),
+                                          Expanded(child: c5),
+                                        ],
+                                      ),
+                                    ],
+                                  );
+                                }
+
+                                return Row(
+                                  children: [
+                                    Expanded(child: c1),
+                                    const SizedBox(width: 12),
+                                    Expanded(child: c2),
+                                    const SizedBox(width: 12),
+                                    Expanded(child: c3),
+                                    const SizedBox(width: 12),
+                                    Expanded(child: c4),
+                                    const SizedBox(width: 12),
+                                    Expanded(child: c5),
+                                  ],
+                                );
+                              },
                             ),
                             const SizedBox(height: 24),
 

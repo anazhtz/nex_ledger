@@ -135,33 +135,49 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
 
                       return Column(
                         children: [
-                          // Summary row
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _SummaryCard(
-                                  label: 'Total Received',
-                                  value: totalReceived,
-                                  color: Colors.blue.shade700,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _SummaryCard(
-                                  label: 'Currently Held',
-                                  value: totalHeld,
-                                  color: Colors.orange.shade700,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _SummaryCard(
-                                  label: 'Adjusted / Released',
-                                  value: totalReceived - totalHeld,
-                                  color: Colors.green.shade700,
-                                ),
-                              ),
-                            ],
+                          // Summary row (Responsive)
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final isCompact = constraints.maxWidth < 750;
+
+                              final s1 = _SummaryCard(
+                                label: 'Total Received',
+                                value: totalReceived,
+                                color: Colors.blue.shade700,
+                              );
+                              final s2 = _SummaryCard(
+                                label: 'Currently Held',
+                                value: totalHeld,
+                                color: Colors.orange.shade700,
+                              );
+                              final s3 = _SummaryCard(
+                                label: 'Adjusted / Released',
+                                value: totalReceived - totalHeld,
+                                color: Colors.green.shade700,
+                              );
+
+                              if (isCompact) {
+                                return Column(
+                                  children: [
+                                    s1,
+                                    const SizedBox(height: 8),
+                                    s2,
+                                    const SizedBox(height: 8),
+                                    s3,
+                                  ],
+                                );
+                              }
+
+                              return Row(
+                                children: [
+                                  Expanded(child: s1),
+                                  const SizedBox(width: 12),
+                                  Expanded(child: s2),
+                                  const SizedBox(width: 12),
+                                  Expanded(child: s3),
+                                ],
+                              );
+                            },
                           ),
                           const SizedBox(height: 16),
                           Expanded(

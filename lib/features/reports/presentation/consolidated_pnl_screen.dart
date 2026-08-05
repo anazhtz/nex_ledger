@@ -110,28 +110,28 @@ class ConsolidatedPnlScreen extends ConsumerWidget {
                                     ?.copyWith(fontWeight: FontWeight.w600),
                               ),
                               const SizedBox(height: 16),
-                              Row(
+                              Wrap(
+                                spacing: 20,
+                                runSpacing: 12,
+                                alignment: WrapAlignment.start,
+                                crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
                                   _TotalChip(
                                       'Income',
                                       totalIncome,
                                       Colors.green.shade700),
-                                  const SizedBox(width: 16),
                                   _TotalChip(
                                       'Expenses',
                                       totalExpenses,
                                       Colors.red.shade700),
-                                  const SizedBox(width: 16),
                                   _TotalChip(
                                       'Purchases',
                                       totalPurchases,
                                       Colors.orange.shade700),
-                                  const SizedBox(width: 16),
                                   _TotalChip(
                                       'Labour',
                                       totalLabour,
                                       Colors.purple.shade700),
-                                  const SizedBox(width: 16),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 16, vertical: 12),

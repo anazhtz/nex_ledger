@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// A premium enterprise metric summary card for the dashboard.
 class StatCard extends StatelessWidget {
@@ -27,57 +28,64 @@ class StatCard extends StatelessWidget {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(18.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: EdgeInsets.all(10.r),
                   decoration: BoxDecoration(
-                    color: effectiveIconColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    color: effectiveIconColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
-                  child: Icon(icon, size: 22, color: effectiveIconColor),
+                  child: Icon(icon, size: 22.sp, color: effectiveIconColor),
                 ),
                 const Spacer(),
               ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              value,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: valueColor ?? const Color(0xFF0F172A),
-                letterSpacing: -0.5,
+            SizedBox(height: 14.h),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 22.sp,
+                  color: valueColor ?? const Color(0xFF0F172A),
+                  letterSpacing: -0.5,
+                ),
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             Text(
               label,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: const Color(0xFF64748B),
+                fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),
             if (subtitle != null) ...[
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(6.r),
                 ),
                 child: Text(
                   subtitle!,
-                  style: const TextStyle(
-                    color: Color(0xFF475569),
-                    fontSize: 11,
+                  style: TextStyle(
+                    color: const Color(0xFF475569),
+                    fontSize: 11.sp,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

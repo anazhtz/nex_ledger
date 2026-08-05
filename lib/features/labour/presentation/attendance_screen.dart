@@ -209,69 +209,72 @@ class AttendanceScreen extends ConsumerWidget {
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: const Color(0xFFE2E8F0)),
                               ),
-                              child: Row(
-                                children: [
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.payments_rounded, color: Color(0xFF10B981), size: 20),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        'Estimated Labour Wage Today: ',
-                                        style: TextStyle(fontSize: 12, color: const Color(0xFF64748B), fontWeight: FontWeight.w500),
-                                      ),
-                                      Text(
-                                        CurrencyFormatter.format(totalDailyWage),
-                                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF047857)),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF1F5F9),
-                                      borderRadius: BorderRadius.circular(6),
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.payments_rounded, color: Color(0xFF10B981), size: 20),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'Estimated Labour Wage Today: ',
+                                          style: TextStyle(fontSize: 12, color: const Color(0xFF64748B), fontWeight: FontWeight.w500),
+                                        ),
+                                        Text(
+                                          CurrencyFormatter.format(totalDailyWage),
+                                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF047857)),
+                                        ),
+                                      ],
                                     ),
-                                    child: Text(
-                                      '$presentCount Present  •  $halfCount Half-Day  •  $absentCount Absent',
-                                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
+                                    const SizedBox(width: 16),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF1F5F9),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        '$presentCount Present  •  $halfCount Half-Day  •  $absentCount Absent',
+                                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
+                                      ),
                                     ),
-                                  ),
-                                  const Spacer(),
+                                    const SizedBox(width: 24),
 
-                                  // Quick Batch Action Buttons
-                                  OutlinedButton.icon(
-                                    onPressed: () async {
-                                      final repo = ref.read(labourRepositoryProvider);
-                                      for (final w in workers) {
-                                        await repo.markAttendance(
-                                          workerId: w.id,
-                                          projectId: selectedProject,
-                                          date: selectedDate,
-                                          status: AttendanceStatus.present,
-                                        );
-                                      }
-                                    },
-                                    icon: const Icon(Icons.done_all_rounded, size: 16, color: Color(0xFF10B981)),
-                                    label: const Text('All Present', style: TextStyle(fontSize: 12)),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  OutlinedButton.icon(
-                                    onPressed: () async {
-                                      final repo = ref.read(labourRepositoryProvider);
-                                      for (final w in workers) {
-                                        await repo.markAttendance(
-                                          workerId: w.id,
-                                          projectId: selectedProject,
-                                          date: selectedDate,
-                                          status: AttendanceStatus.absent,
-                                        );
-                                      }
-                                    },
-                                    icon: const Icon(Icons.clear_all_rounded, size: 16, color: Color(0xFFEF4444)),
-                                    label: const Text('All Absent', style: TextStyle(fontSize: 12)),
-                                  ),
-                                ],
+                                    // Quick Batch Action Buttons
+                                    OutlinedButton.icon(
+                                      onPressed: () async {
+                                        final repo = ref.read(labourRepositoryProvider);
+                                        for (final w in workers) {
+                                          await repo.markAttendance(
+                                            workerId: w.id,
+                                            projectId: selectedProject,
+                                            date: selectedDate,
+                                            status: AttendanceStatus.present,
+                                          );
+                                        }
+                                      },
+                                      icon: const Icon(Icons.done_all_rounded, size: 16, color: Color(0xFF10B981)),
+                                      label: const Text('All Present', style: TextStyle(fontSize: 12)),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    OutlinedButton.icon(
+                                      onPressed: () async {
+                                        final repo = ref.read(labourRepositoryProvider);
+                                        for (final w in workers) {
+                                          await repo.markAttendance(
+                                            workerId: w.id,
+                                            projectId: selectedProject,
+                                            date: selectedDate,
+                                            status: AttendanceStatus.absent,
+                                          );
+                                        }
+                                      },
+                                      icon: const Icon(Icons.clear_all_rounded, size: 16, color: Color(0xFFEF4444)),
+                                      label: const Text('All Absent', style: TextStyle(fontSize: 12)),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                             const SizedBox(height: 12),
