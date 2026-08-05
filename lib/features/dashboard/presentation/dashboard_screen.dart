@@ -51,7 +51,7 @@ class DashboardScreen extends ConsumerWidget {
               // Stat cards row (Responsive)
               LayoutBuilder(
                 builder: (context, constraints) {
-                  final isMobileOrSmallLaptop = constraints.maxWidth < 800;
+                  final isNarrow = constraints.maxWidth < 600;
 
                   final stat1 = StatCard(
                     label: 'Cash Balance',
@@ -79,7 +79,7 @@ class DashboardScreen extends ConsumerWidget {
                     icon: Icons.folder_open_outlined,
                   );
 
-                  if (isMobileOrSmallLaptop) {
+                  if (isNarrow) {
                     return Column(
                       children: [
                         stat1,

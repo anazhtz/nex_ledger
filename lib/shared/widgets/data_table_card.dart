@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -39,6 +40,22 @@ class DataTableCard extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final hasBoundedHeight = constraints.hasBoundedHeight;
+          final cardWidth = constraints.maxWidth;
+
+          // Calculate dynamic column spacing so table columns span 100% of card width without trailing empty space
+          double computedSpacing = 24.w;
+          final numCols = columns.length;
+          if (numCols > 1 && cardWidth.isFinite && cardWidth > 0) {
+            final targetWidth = math.max(minWidth ?? 0.0, cardWidth);
+            final double approxColWidth = 100.w;
+            final double totalContentWidth = numCols * approxColWidth;
+            final double totalMargins = 32.w;
+            final double spaceForGaps =
+                targetWidth - totalContentWidth - totalMargins;
+            if (spaceForGaps > 0) {
+              computedSpacing = math.max(24.w, spaceForGaps / (numCols - 1));
+            }
+          }
 
           Widget tableContent;
           if (rows.isEmpty) {
@@ -66,7 +83,8 @@ class DataTableCard extends StatelessWidget {
             tableContent = SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: ConstrainedBox(
-                constraints: BoxConstraints(minWidth: minWidth ?? 600.w),
+                constraints: BoxConstraints(
+                    minWidth: math.max(minWidth ?? 600.w, cardWidth)),
                 child: DataTable(
                   headingRowColor:
                       WidgetStateProperty.all(const Color(0xFFF1F5F9)),
@@ -82,7 +100,7 @@ class DataTableCard extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                   dividerThickness: 1,
-                  columnSpacing: 24.w,
+                  columnSpacing: computedSpacing,
                   horizontalMargin: 16.w,
                   columns: columns,
                   rows: rows,
