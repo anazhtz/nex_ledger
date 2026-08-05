@@ -116,9 +116,10 @@ class DataTableCard extends StatelessWidget {
                     ),
                   ),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       if (title != null)
-                        Expanded(
+                        Flexible(
                           child: Text(
                             title!,
                             style: theme.textTheme.titleMedium?.copyWith(
@@ -128,7 +129,10 @@ class DataTableCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                      if (action != null) action!,
+                      if (action != null) ...[
+                        SizedBox(width: 8.w),
+                        action!,
+                      ],
                     ],
                   ),
                 ),

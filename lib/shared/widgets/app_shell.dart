@@ -115,7 +115,10 @@ class _AppShellState extends ConsumerState<AppShell> {
   Widget build(BuildContext context) {
     final selectedIdx = _selectedIndex(context);
     final theme = Theme.of(context);
-    final sidebarWidth = _isCollapsed ? 76.0 : 250.0;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isAutoCollapsed = screenWidth < 900;
+    final effectiveCollapsed = _isCollapsed || isAutoCollapsed;
+    final sidebarWidth = effectiveCollapsed ? 76.0 : 250.0;
 
     return Scaffold(
       body: Row(
@@ -143,7 +146,7 @@ class _AppShellState extends ConsumerState<AppShell> {
             child: Column(
               children: [
                 // App Logo & Header
-                _buildHeader(theme),
+                _buildHeader(theme, effectiveCollapsed),
 
                 const Divider(height: 1),
 
@@ -154,14 +157,15 @@ class _AppShellState extends ConsumerState<AppShell> {
                       vertical: 12.h,
                       horizontal: 10.w,
                     ),
-                    children: _buildNavGroups(context, selectedIdx, theme),
+                    children: _buildNavGroups(
+                        context, selectedIdx, theme, effectiveCollapsed),
                   ),
                 ),
 
                 const Divider(height: 1),
 
                 // Sidebar Footer (Collapse Toggle & Status)
-                _buildFooter(theme),
+                _buildFooter(theme, effectiveCollapsed),
               ],
             ),
           ),
@@ -453,7 +457,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     );
   }
 
-  Widget _buildHeader(ThemeData theme) {
+  Widget _buildHeader(ThemeData theme, bool isCollapsed) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.h),
       child: Row(
@@ -467,7 +471,7 @@ class _AppShellState extends ConsumerState<AppShell> {
               fit: BoxFit.cover,
             ),
           ),
-          if (!_isCollapsed) ...[
+          if (!isCollapsed) ...[
             SizedBox(width: 12.w),
             Expanded(
               child: Column(
@@ -503,6 +507,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     BuildContext context,
     int selectedIdx,
     ThemeData theme,
+    bool isCollapsed,
   ) {
     final List<Widget> widgets = [];
     String? currentSection;
@@ -514,7 +519,7 @@ class _AppShellState extends ConsumerState<AppShell> {
       // Add section header when section changes
       if (item.section != currentSection) {
         currentSection = item.section;
-        if (!_isCollapsed) {
+        if (!isCollapsed) {
           widgets.add(
             Padding(
               padding: EdgeInsets.fromLTRB(12.w, 14.h, 12.w, 6.h),
@@ -541,6 +546,7 @@ class _AppShellState extends ConsumerState<AppShell> {
           item: item,
           isSelected: isSelected,
           theme: theme,
+          isCollapsed: isCollapsed,
         ),
       );
     }
@@ -553,6 +559,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     required NavItem item,
     required bool isSelected,
     required ThemeData theme,
+    required bool isCollapsed,
   }) {
     final activeBg = theme.colorScheme.primaryContainer.withOpacity(0.6);
     final activeFg = theme.colorScheme.primary;
@@ -561,7 +568,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 3.h),
       child: Tooltip(
-        message: _isCollapsed ? item.label : '',
+        message: isCollapsed ? item.label : '',
         waitDuration: const Duration(milliseconds: 300),
         child: Material(
           color: Colors.transparent,
@@ -574,7 +581,7 @@ class _AppShellState extends ConsumerState<AppShell> {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
               padding: EdgeInsets.symmetric(
-                horizontal: _isCollapsed ? 12.w : 14.w,
+                horizontal: isCollapsed ? 12.w : 14.w,
                 vertical: 10.h,
               ),
               decoration: BoxDecoration(
@@ -593,7 +600,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                     size: 20.sp,
                     color: isSelected ? activeFg : inactiveFg,
                   ),
-                  if (!_isCollapsed) ...[
+                  if (!isCollapsed) ...[
                     SizedBox(width: 12.w),
                     Expanded(
                       child: Text(
@@ -628,7 +635,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     );
   }
 
-  Widget _buildFooter(ThemeData theme) {
+  Widget _buildFooter(ThemeData theme, bool isCollapsed) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
       child: Row(
@@ -640,15 +647,15 @@ class _AppShellState extends ConsumerState<AppShell> {
               });
             },
             icon: Icon(
-              _isCollapsed
+              isCollapsed
                   ? Icons.chevron_right_rounded
                   : Icons.chevron_left_rounded,
               color: theme.colorScheme.onSurfaceVariant,
               size: 22.sp,
             ),
-            tooltip: _isCollapsed ? 'Expand Menu' : 'Collapse Menu',
+            tooltip: isCollapsed ? 'Expand Menu' : 'Collapse Menu',
           ),
-          if (!_isCollapsed) ...[
+          if (!isCollapsed) ...[
             SizedBox(width: 6.w),
             Expanded(
               child: Column(

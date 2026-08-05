@@ -69,6 +69,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           backgroundColor: const Color(0xFF0F172A), // Enterprise Dark Slate
           body: Center(
             child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 420),
                 child: Card(
