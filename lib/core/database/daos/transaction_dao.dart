@@ -87,39 +87,15 @@ class TransactionDao extends DatabaseAccessor<AppDatabase>
   /// Sum of all cash-affecting amounts (credits - debits) = cash balance.
   /// Credits: income, deposit. Debits: expense, purchase, labourPayment, depositRefund.
   Stream<double> watchCashBalance() {
-    // Use a custom expression to sum signed amounts.
-    final creditTypes = [
-      TransactionType.income.name,
-      TransactionType.deposit.name,
-    ];
-    final debitTypes = [
-      TransactionType.expense.name,
-      TransactionType.purchase.name,
-      TransactionType.labourPayment.name,
-      TransactionType.depositRefund.name,
-    ];
+    final balanceExp = CustomExpression<double>(
+      "SUM(CASE WHEN type IN ('income', 'deposit') THEN amount ELSE -amount END)"
+    );
 
-    final amount = transactions.amount;
-    final type = transactions.type;
-
-    // Build streams for credits and debits separately (filtering WHERE affectsCash = true)
-    final creditQuery = selectOnly(transactions)
-      ..addColumns([amount.sum()])
-      ..where(type.isIn(creditTypes))
-      ..where(transactions.affectsCash.equals(true));
-    final debitQuery = selectOnly(transactions)
-      ..addColumns([amount.sum()])
-      ..where(type.isIn(debitTypes))
+    final query = selectOnly(transactions)
+      ..addColumns([balanceExp])
       ..where(transactions.affectsCash.equals(true));
 
-    // Combine both streams
-    return creditQuery.watchSingle().asyncExpand((creditRow) {
-      final credit = creditRow.read(amount.sum()) ?? 0.0;
-      return debitQuery.watchSingle().map((debitRow) {
-        final debit = debitRow.read(amount.sum()) ?? 0.0;
-        return credit - debit;
-      });
-    });
+    return query.watchSingle().map((row) => row.read(balanceExp) ?? 0.0);
   }
 
   /// Sum of amount for a project filtered by type and affectsPnl flag.
