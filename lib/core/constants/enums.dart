@@ -48,7 +48,7 @@ extension TransactionTypeX on TransactionType {
         TransactionType.expense => 'Expense',
         TransactionType.purchase => 'Purchase',
         TransactionType.labourPayment => 'Labour Payment',
-        TransactionType.deposit => 'Deposit Received',
+        TransactionType.deposit => 'Security Deposit',
         TransactionType.depositRefund => 'Deposit Refund',
         TransactionType.depositAdjustment => 'Deposit Adjustment',
       };

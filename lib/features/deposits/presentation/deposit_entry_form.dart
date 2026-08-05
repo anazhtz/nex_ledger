@@ -101,7 +101,7 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Record Deposit Received',
+                  'Record Security Deposit',
                   style: theme.textTheme.headlineMedium
                       ?.copyWith(fontWeight: FontWeight.w700),
                 ),
@@ -239,7 +239,7 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
                                       child: CircularProgressIndicator(
                                           strokeWidth: 2),
                                     )
-                                  : const Text('Record Deposit'),
+                                  : const Text('Record Security Deposit'),
                             ),
                           ],
                         ),
