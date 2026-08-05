@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/core/utils/excel_export_service.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
@@ -343,30 +344,74 @@ class _ExpenseCategoryBreakdownCardState
     final theme = Theme.of(context);
     final groups = widget.breakdown.keys.toList();
 
+    // Calculate grand total of all categorized expenses
+    double grandTotal = 0.0;
+    for (final group in groups) {
+      final subs = widget.breakdown[group]!;
+      grandTotal += subs.values.fold(0.0, (a, b) => a + b);
+    }
+
     return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.r),
+        side: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(Icons.label_rounded,
-                    color: Colors.orange.shade700, size: 20),
-                const SizedBox(width: 8),
+                Container(
+                  padding: EdgeInsets.all(8.r),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF3C7),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Icon(Icons.pie_chart_rounded,
+                      color: const Color(0xFFD97706), size: 20.sp),
+                ),
+                SizedBox(width: 10.w),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Expense Category Breakdown',
+                      style: theme.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      'Categorized breakdown of project expenses',
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
                 Text(
-                  'Expense Breakdown by Category',
-                  style: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w600),
+                  'Total: ${CurrencyFormatter.format(grandTotal)}',
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFFDC2626),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 16.h),
+            const Divider(height: 1),
+            SizedBox(height: 12.h),
+
             ...groups.map((group) {
               final subs = widget.breakdown[group]!;
               final groupTotal =
                   subs.values.fold(0.0, (a, b) => a + b);
-              final isOpen = _expanded[group] ?? false;
+              final groupPercent = grandTotal > 0 ? (groupTotal / grandTotal) : 0.0;
+              final isOpen = _expanded[group] ?? true;
 
               return Column(
                 children: [
@@ -374,23 +419,23 @@ class _ExpenseCategoryBreakdownCardState
                   InkWell(
                     onTap: () =>
                         setState(() => _expanded[group] = !isOpen),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      padding: EdgeInsets.symmetric(vertical: 8.h),
                       child: Row(
                         children: [
                           Icon(
                             isOpen
                                 ? Icons.expand_less_rounded
                                 : Icons.expand_more_rounded,
-                            size: 18,
-                            color: Colors.orange.shade700,
+                            size: 20.sp,
+                            color: const Color(0xFFD97706),
                           ),
-                          const SizedBox(width: 6),
+                          SizedBox(width: 8.w),
                           Text(
                             group,
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.bold,
                               color: const Color(0xFF0F172A),
                             ),
                           ),
@@ -398,41 +443,60 @@ class _ExpenseCategoryBreakdownCardState
                           Text(
                             CurrencyFormatter.format(groupTotal),
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: Colors.red.shade700,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFFDC2626),
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
+
+                  // Visual Bar for Group proportion
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4.r),
+                    child: LinearProgressIndicator(
+                      value: groupPercent,
+                      minHeight: 5.h,
+                      backgroundColor: const Color(0xFFF1F5F9),
+                      color: const Color(0xFFD97706),
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+
                   // Sub-category rows (visible when expanded)
                   if (isOpen)
-                    ...subs.entries.map(
-                      (entry) => Padding(
-                        padding: const EdgeInsets.only(left: 28, bottom: 4),
-                        child: Row(
+                    ...subs.entries.map((entry) {
+                      return Padding(
+                        padding: EdgeInsets.only(left: 28.w, bottom: 6.h, top: 2.h),
+                        child: Column(
                           children: [
-                            const Icon(Icons.subdirectory_arrow_right_rounded,
-                                size: 14, color: Color(0xFF94A3B8)),
-                            const SizedBox(width: 6),
-                            Text(
-                              entry.key,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                  color: const Color(0xFF475569)),
-                            ),
-                            const Spacer(),
-                            Text(
-                              CurrencyFormatter.format(entry.value),
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: Colors.red.shade600,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            Row(
+                              children: [
+                                const Icon(Icons.subdirectory_arrow_right_rounded,
+                                    size: 14, color: Color(0xFF94A3B8)),
+                                SizedBox(width: 6.w),
+                                Text(
+                                  entry.key,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                      color: const Color(0xFF334155),
+                                      fontWeight: FontWeight.w600),
+                                ),
+                                const Spacer(),
+                                Text(
+                                  CurrencyFormatter.format(entry.value),
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: const Color(0xFFDC2626),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ),
-                    ),
+                      );
+                    }),
+                  SizedBox(height: 8.h),
                   const Divider(height: 1),
                 ],
               );
