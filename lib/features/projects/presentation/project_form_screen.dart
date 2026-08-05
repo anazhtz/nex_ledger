@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
@@ -127,8 +128,16 @@ class _ProjectFormScreenState extends ConsumerState<ProjectFormScreen> {
     final theme = Theme.of(context);
     final isLoading = _isEditing && !_dataLoaded;
 
-    return Scaffold(
-      backgroundColor: theme.colorScheme.surfaceContainerLowest,
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.enter, control: true): _submit,
+        const SingleActivator(LogicalKeyboardKey.enter, meta: true): _submit,
+        const SingleActivator(LogicalKeyboardKey.escape): () => context.go('/projects'),
+      },
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
+          backgroundColor: theme.colorScheme.surfaceContainerLowest,
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -307,6 +316,8 @@ class _ProjectFormScreenState extends ConsumerState<ProjectFormScreen> {
           ],
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 }

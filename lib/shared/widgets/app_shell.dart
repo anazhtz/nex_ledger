@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter/services.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/features/auth/providers/auth_provider.dart';
 import 'package:nex_ledger/features/cash_book/providers/cash_book_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
+import 'package:nex_ledger/shared/widgets/keyboard_shortcuts_dialog.dart';
 
 /// Navigation item model with section grouping
 class NavItem {
@@ -120,72 +122,102 @@ class _AppShellState extends ConsumerState<AppShell> {
     final effectiveCollapsed = _isCollapsed || isAutoCollapsed;
     final sidebarWidth = effectiveCollapsed ? 76.0 : 250.0;
 
-    return Scaffold(
-      body: Row(
-        children: [
-          // Modern Sidebar
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
-            width: sidebarWidth,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              border: Border(
-                right: BorderSide(
-                  color: theme.colorScheme.outlineVariant.withOpacity(0.6),
+    void lockApp() {
+      ref.read(authProvider.notifier).lock();
+      context.go('/login');
+    }
+
+    return CallbackShortcuts(
+      bindings: {
+        // Quick Entry Actions
+        const SingleActivator(LogicalKeyboardKey.keyN, alt: true): () => context.go('/cash-book/new'),
+        const SingleActivator(LogicalKeyboardKey.keyN, meta: true): () => context.go('/cash-book/new'),
+        const SingleActivator(LogicalKeyboardKey.keyP, alt: true): () => context.go('/purchase'),
+        const SingleActivator(LogicalKeyboardKey.keyA, alt: true): () => context.go('/labour/attendance'),
+        const SingleActivator(LogicalKeyboardKey.keyW, alt: true): () => context.go('/labour/payment'),
+        const SingleActivator(LogicalKeyboardKey.keyJ, alt: true): () => context.go('/projects/new'),
+
+        // Gateway Navigation
+        const SingleActivator(LogicalKeyboardKey.keyD, alt: true): () => context.go('/'),
+        const SingleActivator(LogicalKeyboardKey.keyC, alt: true): () => context.go('/cash-book'),
+        const SingleActivator(LogicalKeyboardKey.keyR, alt: true): () => context.go('/reports/pnl'),
+        const SingleActivator(LogicalKeyboardKey.keyS, alt: true): () => context.go('/settings'),
+
+        // Security & Help
+        const SingleActivator(LogicalKeyboardKey.keyL, control: true): lockApp,
+        const SingleActivator(LogicalKeyboardKey.keyL, meta: true): lockApp,
+        const SingleActivator(LogicalKeyboardKey.f1): () => KeyboardShortcutsDialog.show(context),
+      },
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
+          body: Row(
+            children: [
+              // Modern Sidebar
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                width: sidebarWidth,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  border: Border(
+                    right: BorderSide(
+                      color: theme.colorScheme.outlineVariant.withOpacity(0.6),
+                    ),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.02),
+                      blurRadius: 10,
+                      offset: const Offset(2, 0),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // App Logo & Header
+                    _buildHeader(theme, effectiveCollapsed),
+
+                    const Divider(height: 1),
+
+                    // Navigation List
+                    Expanded(
+                      child: ListView(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 12.h,
+                          horizontal: 10.w,
+                        ),
+                        children: _buildNavGroups(
+                            context, selectedIdx, theme, effectiveCollapsed),
+                      ),
+                    ),
+
+                    const Divider(height: 1),
+
+                    // Sidebar Footer (Collapse Toggle & Status)
+                    _buildFooter(theme, effectiveCollapsed),
+                  ],
                 ),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
-                  blurRadius: 10,
-                  offset: const Offset(2, 0),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                // App Logo & Header
-                _buildHeader(theme, effectiveCollapsed),
 
-                const Divider(height: 1),
+              // Main Page Content Area with Global Active Project Top Bar
+              Expanded(
+                child: Container(
+                  color: theme.colorScheme.surfaceContainerLowest,
+                  child: Column(
+                    children: [
+                      // Top Global Active Project Context Bar
+                      _buildTopProjectHeader(theme),
 
-                // Navigation List
-                Expanded(
-                  child: ListView(
-                    padding: EdgeInsets.symmetric(
-                      vertical: 12.h,
-                      horizontal: 10.w,
-                    ),
-                    children: _buildNavGroups(
-                        context, selectedIdx, theme, effectiveCollapsed),
+                      // Active Screen Child
+                      Expanded(child: widget.child),
+                    ],
                   ),
                 ),
-
-                const Divider(height: 1),
-
-                // Sidebar Footer (Collapse Toggle & Status)
-                _buildFooter(theme, effectiveCollapsed),
-              ],
-            ),
-          ),
-
-          // Main Page Content Area with Global Active Project Top Bar
-          Expanded(
-            child: Container(
-              color: theme.colorScheme.surfaceContainerLowest,
-              child: Column(
-                children: [
-                  // Top Global Active Project Context Bar
-                  _buildTopProjectHeader(theme),
-
-                  // Active Screen Child
-                  Expanded(child: widget.child),
-                ],
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -432,6 +464,18 @@ class _AppShellState extends ConsumerState<AppShell> {
                         ),
                       ),
                       SizedBox(width: 8.w),
+
+                      // Keyboard Shortcuts Guide Button
+                      IconButton(
+                        onPressed: () => KeyboardShortcutsDialog.show(context),
+                        icon: Icon(
+                          Icons.keyboard_rounded,
+                          size: 18.sp,
+                          color: const Color(0xFF64748B),
+                        ),
+                        tooltip: 'Tally Keyboard Shortcuts (F1)',
+                      ),
+                      SizedBox(width: 4.w),
 
                       // Lock App Quick Button
                       IconButton(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -104,8 +105,16 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
     final projectsAsync = ref.watch(projectListProvider);
     final categoriesAsync = ref.watch(expenseCategoryListProvider);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.enter, control: true): _submit,
+        const SingleActivator(LogicalKeyboardKey.enter, meta: true): _submit,
+        const SingleActivator(LogicalKeyboardKey.escape): () => context.go('/cash-book'),
+      },
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF8FAFC),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(24.r),
         child: Center(
@@ -327,7 +336,9 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
           ),
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 
   /// Single-dropdown expense category picker (flat 18-category list).

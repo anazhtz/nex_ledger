@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
+import 'package:nex_ledger/features/cash_book/providers/cash_book_providers.dart';
 import 'package:nex_ledger/features/labour/data/labour_repository.dart';
 import 'package:nex_ledger/features/labour/providers/labour_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
@@ -51,41 +54,51 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                 _from,
                 _to,
               );
-      setState(() => _summary = summary);
+      if (mounted) setState(() => _summary = summary);
     } finally {
-      setState(() => _loadingSummary = false);
+      if (mounted) setState(() => _loadingSummary = false);
     }
   }
 
   Future<void> _recordPayment() async {
-    if (_summary == null || _selectedProject == null) return;
+    if (_summary == null || _selectedProject == null || _selectedWorker == null) {
+      return;
+    }
+
+    if (_summary!.amountDue <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('No outstanding wage balance due for this worker.')),
+      );
+      return;
+    }
+
     setState(() => _paying = true);
     try {
       await ref.read(labourRepositoryProvider).recordPayment(
-            projectId: _selectedProject!,
             workerId: _selectedWorker!,
+            projectId: _selectedProject!,
             date: DateTime.now(),
             amount: _summary!.amountDue,
-            paymentMode: _paymentMode,
-            narration: _narrationCtrl.text.isNotEmpty
-                ? _narrationCtrl.text
-                : 'Labour payment — ${_summary!.worker.name}',
+            paymentMode: _paymentMode ?? PaymentMode.cash,
+            narration: _narrationCtrl.text.isEmpty ? null : _narrationCtrl.text,
           );
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Payment of ${CurrencyFormatter.format(_summary!.amountDue)} recorded for ${_summary!.worker.name}',
-            ),
-            backgroundColor: Colors.green.shade700,
+                'Labour payment of ${CurrencyFormatter.format(_summary!.amountDue)} recorded!'),
+            backgroundColor: const Color(0xFF059669),
           ),
         );
-        setState(() => _summary = null);
+        ref.invalidate(cashBalanceProvider);
+        await _loadSummary();
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('Error recording payment: $e')),
         );
       }
     } finally {
@@ -98,14 +111,15 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
       context: context,
       initialDate: isFrom ? _from : _to,
       firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
+      lastDate: DateTime(2030),
     );
     if (picked != null) {
       setState(() {
-        if (isFrom)
+        if (isFrom) {
           _from = picked;
-        else
+        } else {
           _to = picked;
+        }
         _summary = null;
       });
     }
@@ -117,208 +131,218 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
     final projectsAsync = ref.watch(activeProjectsProvider);
     final workersAsync = ref.watch(workerListProvider);
 
-    return Scaffold(
-      backgroundColor: theme.colorScheme.surfaceContainerLowest,
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Labour Payment',
-              style: theme.textTheme.headlineMedium
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            Text(
-              'Calculate and record worker payments based on attendance',
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-            ),
-            const SizedBox(height: 24),
-            Expanded(
-              child: SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 600),
-                  child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Select Worker & Period',
-                          style: theme.textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 16),
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.enter, control: true): _recordPayment,
+        const SingleActivator(LogicalKeyboardKey.enter, meta: true): _recordPayment,
+        const SingleActivator(LogicalKeyboardKey.escape): () => context.go('/labour/attendance'),
+      },
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
+          backgroundColor: theme.colorScheme.surfaceContainerLowest,
+          body: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Labour Payment',
+                  style: theme.textTheme.headlineMedium
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  'Calculate and record worker payments based on attendance',
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 600),
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Select Worker & Period',
+                                  style: theme.textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.w600)),
+                              const SizedBox(height: 16),
 
-                      // Project (Auto-assigned if active context locked)
-                      projectsAsync.when(
-                        loading: () => const LinearProgressIndicator(),
-                        error: (_, __) => const SizedBox.shrink(),
-                        data: (projects) {
-                          final globalId = ref.watch(selectedProjectIdProvider);
-                          return _buildProjectSelector(
-                              projects, globalId, theme);
-                        },
-                      ),
-                      const SizedBox(height: 16),
+                              // Project (Auto-assigned if active context locked)
+                              projectsAsync.when(
+                                loading: () => const LinearProgressIndicator(),
+                                error: (_, __) => const SizedBox.shrink(),
+                                data: (projects) {
+                                  final globalId = ref.watch(selectedProjectIdProvider);
+                                  return _buildProjectSelector(
+                                      projects, globalId, theme);
+                                },
+                              ),
+                              const SizedBox(height: 16),
 
-                      // Worker
-                      workersAsync.when(
-                        loading: () => const LinearProgressIndicator(),
-                        error: (_, __) => const SizedBox.shrink(),
-                        data: (workers) => DropdownButtonFormField<int?>(
-                          value: _selectedWorker,
-                          decoration:
-                              const InputDecoration(labelText: 'Worker'),
-                          items: [
-                            const DropdownMenuItem(
-                                value: null, child: Text('Select Worker')),
-                            ...workers.map((w) => DropdownMenuItem(
-                                  value: w.id,
-                                  child: Text(
-                                      '${w.name} — ₹${w.dailyRate.toStringAsFixed(0)}/day'),
-                                )),
-                          ],
-                          onChanged: (v) => setState(() {
-                            _selectedWorker = v;
-                            _summary = null;
-                          }),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Date range
-                      Row(
-                        children: [
-                          Expanded(
-                            child: InkWell(
-                              onTap: () => _pickDate(true),
-                              child: InputDecorator(
-                                decoration: const InputDecoration(
-                                  labelText: 'From',
-                                  suffixIcon: Icon(
-                                      Icons.calendar_today_outlined,
-                                      size: 16),
+                              // Worker
+                              workersAsync.when(
+                                loading: () => const LinearProgressIndicator(),
+                                error: (_, __) => const SizedBox.shrink(),
+                                data: (workers) => DropdownButtonFormField<int?>(
+                                  value: _selectedWorker,
+                                  decoration:
+                                      const InputDecoration(labelText: 'Worker'),
+                                  items: [
+                                    const DropdownMenuItem(
+                                        value: null, child: Text('Select Worker')),
+                                    ...workers.map((w) => DropdownMenuItem(
+                                          value: w.id,
+                                          child: Text(
+                                              '${w.name} — ₹${w.dailyRate.toStringAsFixed(0)}/day'),
+                                        )),
+                                  ],
+                                  onChanged: (v) => setState(() {
+                                    _selectedWorker = v;
+                                    _summary = null;
+                                  }),
                                 ),
-                                child: Text(DateFormatter.format(_from)),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: InkWell(
-                              onTap: () => _pickDate(false),
-                              child: InputDecorator(
-                                decoration: const InputDecoration(
-                                  labelText: 'To',
-                                  suffixIcon: Icon(
-                                      Icons.calendar_today_outlined,
-                                      size: 16),
+                              const SizedBox(height: 16),
+
+                              // Date range
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: InkWell(
+                                      onTap: () => _pickDate(true),
+                                      child: InputDecorator(
+                                        decoration: const InputDecoration(
+                                          labelText: 'From',
+                                          suffixIcon: Icon(
+                                              Icons.calendar_today_outlined,
+                                              size: 16),
+                                        ),
+                                        child: Text(DateFormatter.format(_from)),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: InkWell(
+                                      onTap: () => _pickDate(false),
+                                      child: InputDecorator(
+                                        decoration: const InputDecoration(
+                                          labelText: 'To',
+                                          suffixIcon: Icon(
+                                              Icons.calendar_today_outlined,
+                                              size: 16),
+                                        ),
+                                        child: Text(DateFormatter.format(_to)),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  FilledButton.tonal(
+                                    onPressed: _loadSummary,
+                                    child: const Text('Calculate'),
+                                  ),
+                                ],
+                              ),
+
+                              if (_loadingSummary)
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 16),
+                                  child: LinearProgressIndicator(),
                                 ),
-                                child: Text(DateFormatter.format(_to)),
-                              ),
-                            ),
+
+                              if (_summary != null) ...[
+                                const SizedBox(height: 24),
+                                const Divider(),
+                                const SizedBox(height: 16),
+                                Text('All-Time Running Balance Summary',
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 12),
+                                _SummaryRow(
+                                    label: 'Worker Name', value: _summary!.worker.name),
+                                _SummaryRow(
+                                    label: 'Daily Wage Rate',
+                                    value: '${CurrencyFormatter.format(_summary!.worker.dailyRate)} / day'),
+                                _SummaryRow(
+                                    label: 'Total Days Worked (All-Time)',
+                                    value: '${_summary!.totalDaysWorked.toStringAsFixed(1)} days'),
+                                _SummaryRow(
+                                    label: 'Gross Earned Wages (All-Time)',
+                                    value: CurrencyFormatter.format(_summary!.totalEarnedWages)),
+                                _SummaryRow(
+                                    label: 'Less: Total Payments Disbursed (All-Time)',
+                                    value: '-${CurrencyFormatter.format(_summary!.totalPaymentsPaid)}',
+                                    valueColor: const Color(0xFFEF4444)),
+                                const Divider(height: 24),
+                                _SummaryRow(
+                                  label: 'Net Outstanding Wage Balance Due',
+                                  value: CurrencyFormatter.format(_summary!.amountDue),
+                                  bold: true,
+                                  valueColor: const Color(0xFF4F46E5),
+                                ),
+                                const SizedBox(height: 16),
+
+                                // Payment mode
+                                DropdownButtonFormField<PaymentMode?>(
+                                  value: _paymentMode,
+                                  decoration:
+                                      const InputDecoration(labelText: 'Payment Mode'),
+                                  items: [
+                                    const DropdownMenuItem(
+                                        value: null, child: Text('— Select —')),
+                                    ...PaymentMode.values.map(
+                                      (m) => DropdownMenuItem(
+                                        value: m,
+                                        child: Text(m.displayName),
+                                      ),
+                                    ),
+                                  ],
+                                  onChanged: (v) => setState(() => _paymentMode = v),
+                                ),
+                                const SizedBox(height: 12),
+                                TextFormField(
+                                  controller: _narrationCtrl,
+                                  decoration:
+                                      const InputDecoration(labelText: 'Narration'),
+                                ),
+                                const SizedBox(height: 16),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: FilledButton.icon(
+                                    onPressed: _paying || _summary!.amountDue <= 0
+                                        ? null
+                                        : _recordPayment,
+                                    icon: const Icon(Icons.payments_outlined),
+                                    label: _paying
+                                        ? const SizedBox(
+                                            width: 18,
+                                            height: 18,
+                                            child: CircularProgressIndicator(
+                                                strokeWidth: 2),
+                                          )
+                                        : Text(
+                                            'Record Payment of ${CurrencyFormatter.format(_summary!.amountDue)}'),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
-                          const SizedBox(width: 12),
-                          FilledButton.tonal(
-                            onPressed: _loadSummary,
-                            child: const Text('Calculate'),
-                          ),
-                        ],
+                        ),
                       ),
-
-                      if (_loadingSummary)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          child: LinearProgressIndicator(),
-                        ),
-
-                      if (_summary != null) ...[
-                        const SizedBox(height: 24),
-                        const Divider(),
-                        const SizedBox(height: 16),
-                        Text('All-Time Running Balance Summary',
-                            style: theme.textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 12),
-                        _SummaryRow(
-                            label: 'Worker Name', value: _summary!.worker.name),
-                        _SummaryRow(
-                            label: 'Daily Wage Rate',
-                            value: '${CurrencyFormatter.format(_summary!.worker.dailyRate)} / day'),
-                        _SummaryRow(
-                            label: 'Total Days Worked (All-Time)',
-                            value: '${_summary!.totalDaysWorked.toStringAsFixed(1)} days'),
-                        _SummaryRow(
-                            label: 'Gross Earned Wages (All-Time)',
-                            value: CurrencyFormatter.format(_summary!.totalEarnedWages)),
-                        _SummaryRow(
-                            label: 'Less: Total Payments Disbursed (All-Time)',
-                            value: '-${CurrencyFormatter.format(_summary!.totalPaymentsPaid)}',
-                            valueColor: const Color(0xFFEF4444)),
-                        const Divider(height: 24),
-                        _SummaryRow(
-                          label: 'Net Outstanding Wage Balance Due',
-                          value: CurrencyFormatter.format(_summary!.amountDue),
-                          bold: true,
-                          valueColor: const Color(0xFF4F46E5),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Payment mode
-                        DropdownButtonFormField<PaymentMode?>(
-                          value: _paymentMode,
-                          decoration:
-                              const InputDecoration(labelText: 'Payment Mode'),
-                          items: [
-                            const DropdownMenuItem(
-                                value: null, child: Text('— Select —')),
-                            ...PaymentMode.values.map(
-                              (m) => DropdownMenuItem(
-                                value: m,
-                                child: Text(m.displayName),
-                              ),
-                            ),
-                          ],
-                          onChanged: (v) => setState(() => _paymentMode = v),
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _narrationCtrl,
-                          decoration:
-                              const InputDecoration(labelText: 'Narration'),
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: FilledButton.icon(
-                            onPressed: _paying || _summary!.amountDue <= 0
-                                ? null
-                                : _recordPayment,
-                            icon: const Icon(Icons.payments_outlined),
-                            label: _paying
-                                ? const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2),
-                                  )
-                                : Text(
-                                    'Record Payment of ${CurrencyFormatter.format(_summary!.amountDue)}'),
-                          ),
-                        ),
-                      ],
-                    ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
         ),
-      ],
-    ),
-  ),
-);
+      ),
+    );
   }
 
   Widget _buildProjectSelector(
@@ -367,8 +391,8 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                 child: Text(
                   'Auto-Assigned',
                   style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
                     color: theme.colorScheme.primary,
                   ),
                 ),
@@ -379,20 +403,17 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
       }
     }
 
-    return DropdownButtonFormField<int?>(
+    return DropdownButtonFormField<int>(
       value: _selectedProject,
-      decoration: const InputDecoration(labelText: 'Select Project'),
-      items: [
-        const DropdownMenuItem(value: null, child: Text('Select Project')),
-        ...projects.map((p) => DropdownMenuItem(
-              value: p.id,
-              child: Text(p.name),
-            )),
-      ],
-      onChanged: (v) => setState(() {
-        _selectedProject = v;
-        _summary = null;
-      }),
+      decoration: const InputDecoration(labelText: 'Select Target Project *'),
+      items: projects
+          .map((p) => DropdownMenuItem(
+                value: p.id,
+                child: Text('${p.code} — ${p.name}', overflow: TextOverflow.ellipsis),
+              ))
+          .toList(),
+      onChanged: (v) => setState(() => _selectedProject = v),
+      validator: (v) => v == null ? 'Required' : null,
     );
   }
 }
@@ -402,33 +423,33 @@ class _SummaryRow extends StatelessWidget {
   final String value;
   final bool bold;
   final Color? valueColor;
-  const _SummaryRow(
-      {required this.label,
-      required this.value,
-      this.bold = false,
-      this.valueColor});
+
+  const _SummaryRow({
+    required this.label,
+    required this.value,
+    this.bold = false,
+    this.valueColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final textStyle = bold
+        ? theme.textTheme.bodyLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: valueColor ?? theme.colorScheme.onSurface,
+          )
+        : theme.textTheme.bodyMedium?.copyWith(
+            color: valueColor ?? theme.colorScheme.onSurface,
+          );
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const Spacer(),
-          Text(
-            value,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: bold ? FontWeight.w700 : FontWeight.normal,
-              color: valueColor,
-            ),
-          ),
+          Text(label, style: theme.textTheme.bodyMedium),
+          Text(value, style: textStyle),
         ],
       ),
     );
