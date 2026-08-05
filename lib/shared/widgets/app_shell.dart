@@ -193,7 +193,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     final cashBalanceAsync = ref.watch(cashBalanceProvider);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: Colors.white,
         border: const Border(
@@ -204,213 +204,253 @@ class _AppShellState extends ConsumerState<AppShell> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-          Container(
-            padding: EdgeInsets.all(6.r),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEEF2FF),
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: Icon(
-              Icons.domain_rounded,
-              size: 18.sp,
-              color: const Color(0xFF4F46E5),
-            ),
-          ),
-          SizedBox(width: 8.w),
-          Text(
-            'Active Context:',
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF64748B),
-            ),
-          ),
-          SizedBox(width: 12.w),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minWidth: constraints.maxWidth),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(6.r),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEEF2FF),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Icon(
+                          Icons.domain_rounded,
+                          size: 18.sp,
+                          color: const Color(0xFF4F46E5),
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                      Text(
+                        'Active Context:',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      // Global Active Project Selector Dropdown
+                      projectsAsync.when(
+                        loading: () => SizedBox(
+                          width: 16.w,
+                          height: 16.h,
+                          child: const CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        error: (_, __) => const SizedBox.shrink(),
+                        data: (projects) {
+                          final validSelectedId =
+                              projects.any((p) => p.id == selectedId)
+                                  ? selectedId
+                                  : null;
 
-          // Global Active Project Selector Dropdown
-          projectsAsync.when(
-            loading: () => SizedBox(
-              width: 16.w,
-              height: 16.h,
-              child: const CircularProgressIndicator(strokeWidth: 2),
-            ),
-            error: (_, __) => const SizedBox.shrink(),
-            data: (projects) {
-              final validSelectedId = projects.any((p) => p.id == selectedId) ? selectedId : null;
-
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEEF2FF),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: const Color(0xFFC7D2FE),
+                          return Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 12.w, vertical: 4.h),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEEF2FF),
+                              borderRadius: BorderRadius.circular(8.r),
+                              border: Border.all(
+                                color: const Color(0xFFC7D2FE),
+                              ),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<int?>(
+                                value: validSelectedId,
+                                isDense: true,
+                                icon: const Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  color: Color(0xFF4F46E5),
+                                  size: 20,
+                                ),
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF4F46E5),
+                                ),
+                                onChanged: (int? newId) {
+                                  ref
+                                      .read(selectedProjectIdProvider.notifier)
+                                      .state = newId;
+                                },
+                                items: [
+                                  DropdownMenuItem<int?>(
+                                    value: null,
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.border_all_rounded,
+                                            size: 16.sp,
+                                            color: const Color(0xFF4F46E5)),
+                                        SizedBox(width: 6.w),
+                                        const Text(
+                                            'All Projects (Company Overview)'),
+                                      ],
+                                    ),
+                                  ),
+                                  ...projects.map((p) {
+                                    return DropdownMenuItem<int?>(
+                                      value: p.id,
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 6.w, vertical: 2.h),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF4F46E5)
+                                                  .withValues(alpha: 0.1),
+                                              borderRadius:
+                                                  BorderRadius.circular(4.r),
+                                            ),
+                                            child: Text(
+                                              p.code,
+                                              style: TextStyle(
+                                                fontSize: 11.sp,
+                                                fontWeight: FontWeight.bold,
+                                                color: const Color(0xFF4F46E5),
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(width: 8.w),
+                                          Text(p.name),
+                                        ],
+                                      ),
+                                    );
+                                  }),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<int?>(
-                    value: validSelectedId,
-                    isDense: true,
-                    icon: const Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      color: Color(0xFF4F46E5),
-                      size: 20,
-                    ),
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF4F46E5),
-                    ),
-                    onChanged: (int? newId) {
-                      ref.read(selectedProjectIdProvider.notifier).state = newId;
-                    },
-                    items: [
-                      DropdownMenuItem<int?>(
-                        value: null,
+
+                  SizedBox(width: 24.w),
+
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Live Cash Balance Pill
+                      cashBalanceAsync.when(
+                        data: (bal) => Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12.w, vertical: 6.h),
+                          decoration: BoxDecoration(
+                            color: bal >= 0
+                                ? const Color(0xFFECFDF5)
+                                : const Color(0xFFFEF2F2),
+                            borderRadius: BorderRadius.circular(8.r),
+                            border: Border.all(
+                                color: bal >= 0
+                                    ? const Color(0xFFA7F3D0)
+                                    : const Color(0xFFFCA5A5)),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.account_balance_wallet_rounded,
+                                size: 15.sp,
+                                color: bal >= 0
+                                    ? const Color(0xFF059669)
+                                    : const Color(0xFFDC2626),
+                              ),
+                              SizedBox(width: 6.w),
+                              Text(
+                                'Cash Balance: ',
+                                style: TextStyle(
+                                  fontSize: 11.sp,
+                                  color: const Color(0xFF64748B),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Text(
+                                CurrencyFormatter.format(bal),
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: bal >= 0
+                                      ? const Color(0xFF047857)
+                                      : const Color(0xFFB91C1C),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
+                      ),
+
+                      SizedBox(width: 14.w),
+
+                      // Status Badge
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(8.r),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
                         child: Row(
                           children: [
-                            Icon(Icons.border_all_rounded, size: 16.sp, color: const Color(0xFF4F46E5)),
+                            Container(
+                              width: 7.w,
+                              height: 7.h,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color(0xFF10B981),
+                              ),
+                            ),
                             SizedBox(width: 6.w),
-                            const Text('All Projects (Company Overview)'),
+                            Text(
+                              selectedId == null ? 'All Entries' : 'Filtered',
+                              style: TextStyle(
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF475569),
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      ...projects.map((p) {
-                        return DropdownMenuItem<int?>(
-                          value: p.id,
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF4F46E5).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(4.r),
-                                ),
-                                child: Text(
-                                  p.code,
-                                  style: TextStyle(
-                                    fontSize: 11.sp,
-                                    fontWeight: FontWeight.bold,
-                                    color: const Color(0xFF4F46E5),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 8.w),
-                              Text(p.name),
-                            ],
-                          ),
-                        );
-                      }),
+                      SizedBox(width: 8.w),
+
+                      // Lock App Quick Button
+                      IconButton(
+                        onPressed: () {
+                          ref.read(authProvider.notifier).lock();
+                          context.go('/login');
+                        },
+                        icon: Icon(
+                          Icons.lock_rounded,
+                          size: 18.sp,
+                          color: const Color(0xFF64748B),
+                        ),
+                        tooltip: 'Lock Financial Ledger (PIN Security)',
+                      ),
                     ],
-                  ),
-                ),
-              );
-            },
-          ),
-
-          const Spacer(),
-
-          // Live Cash Balance Pill
-          cashBalanceAsync.when(
-            data: (bal) => Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-              decoration: BoxDecoration(
-                color: bal >= 0 ? const Color(0xFFECFDF5) : const Color(0xFFFEF2F2),
-                borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(color: bal >= 0 ? const Color(0xFFA7F3D0) : const Color(0xFFFCA5A5)),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.account_balance_wallet_rounded,
-                    size: 15.sp,
-                    color: bal >= 0 ? const Color(0xFF059669) : const Color(0xFFDC2626),
-                  ),
-                  SizedBox(width: 6.w),
-                  Text(
-                    'Cash Balance: ',
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      color: const Color(0xFF64748B),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    CurrencyFormatter.format(bal),
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w700,
-                      color: bal >= 0 ? const Color(0xFF047857) : const Color(0xFFB91C1C),
-                    ),
                   ),
                 ],
               ),
             ),
-            loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
-          ),
-
-          SizedBox(width: 14.w),
-
-          // Status Badge
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(8.r),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 7.w,
-                  height: 7.h,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(0xFF10B981),
-                  ),
-                ),
-                SizedBox(width: 6.w),
-                Text(
-                  selectedId == null ? 'All Entries' : 'Filtered',
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF475569),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(width: 8.w),
-
-          // Lock App Quick Button
-          IconButton(
-            onPressed: () {
-              ref.read(authProvider.notifier).lock();
-              context.go('/login');
-            },
-            icon: Icon(
-              Icons.lock_rounded,
-              size: 18.sp,
-              color: const Color(0xFF64748B),
-            ),
-            tooltip: 'Lock Financial Ledger (PIN Security)',
-          ),
-        ],
+          );
+        },
       ),
-    ),
-  );
+    );
   }
 
   Widget _buildHeader(ThemeData theme) {
