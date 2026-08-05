@@ -132,15 +132,15 @@ class _AppShellState extends ConsumerState<AppShell> {
         // Quick Entry Actions
         const SingleActivator(LogicalKeyboardKey.keyN, alt: true): () => context.go('/cash-book/new'),
         const SingleActivator(LogicalKeyboardKey.keyN, meta: true): () => context.go('/cash-book/new'),
-        const SingleActivator(LogicalKeyboardKey.keyP, alt: true): () => context.go('/purchase'),
+        const SingleActivator(LogicalKeyboardKey.keyP, alt: true): () => context.go('/purchases/new'),
         const SingleActivator(LogicalKeyboardKey.keyA, alt: true): () => context.go('/labour/attendance'),
-        const SingleActivator(LogicalKeyboardKey.keyW, alt: true): () => context.go('/labour/payment'),
+        const SingleActivator(LogicalKeyboardKey.keyW, alt: true): () => context.go('/labour/payments'),
         const SingleActivator(LogicalKeyboardKey.keyJ, alt: true): () => context.go('/projects/new'),
 
         // Gateway Navigation
         const SingleActivator(LogicalKeyboardKey.keyD, alt: true): () => context.go('/'),
         const SingleActivator(LogicalKeyboardKey.keyC, alt: true): () => context.go('/cash-book'),
-        const SingleActivator(LogicalKeyboardKey.keyR, alt: true): () => context.go('/reports/pnl'),
+        const SingleActivator(LogicalKeyboardKey.keyR, alt: true): () => context.go('/reports/project-pnl'),
         const SingleActivator(LogicalKeyboardKey.keyS, alt: true): () => context.go('/settings'),
 
         // Security & Help
@@ -473,7 +473,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                           size: 18.sp,
                           color: const Color(0xFF64748B),
                         ),
-                        tooltip: 'Tally Keyboard Shortcuts (F1)',
+                        tooltip: 'NexLedger Keyboard Shortcuts (F1)',
                       ),
                       SizedBox(width: 4.w),
 

@@ -301,17 +301,17 @@ accruing cost at attendance-time without being asked — that would be a
 different accounting model (accrual-basis) and needs to be a deliberate
 decision, not a silent change.
 
-## 13. Tally-Style Global Keyboard Shortcuts & Responsive UI Rules
+## 13. NexLedger Global Keyboard Shortcuts & Responsive UI Rules
 
 ### 13a. Global Keyboard Shortcuts
 - **`Alt + N` / `Cmd + N`**: Create New Cash Book Entry (`/cash-book/new`)
-- **`Alt + P`**: Create New Purchase Entry (`/purchase`)
+- **`Alt + P`**: Create New Purchase Entry (`/purchases/new`)
 - **`Alt + A`**: Labour Daily Attendance Grid (`/labour/attendance`)
-- **`Alt + W`**: Record Labour Payment (`/labour/payment`)
+- **`Alt + W`**: Record Labour Payment (`/labour/payments`)
 - **`Alt + J`**: Create New Project (`/projects/new`)
 - **`Alt + D`**: Navigation -> Dashboard (`/`)
 - **`Alt + C`**: Navigation -> Cash Book Ledger (`/cash-book`)
-- **`Alt + R`**: Navigation -> Reports & P&L (`/reports/pnl`)
+- **`Alt + R`**: Navigation -> Reports & P&L (`/reports/project-pnl`)
 - **`Alt + S`**: Navigation -> Settings & Backup (`/settings`)
 - **`Ctrl + L` / `Cmd + L`**: Security -> Lock Financial Ledger (`/login`)
 - **`F1`**: Open Keyboard Shortcuts Guide Modal (`KeyboardShortcutsDialog`)

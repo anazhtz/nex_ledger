@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-/// A modern dialog showing all Tally-style keyboard shortcuts in NexLedger.
+/// A modern dialog showing all NexLedger keyboard shortcuts.
 class KeyboardShortcutsDialog extends StatelessWidget {
   const KeyboardShortcutsDialog({super.key});
 
@@ -40,7 +40,7 @@ class KeyboardShortcutsDialog extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Tally Keyboard Shortcuts',
+                  'NexLedger Keyboard Shortcuts',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF0F172A),
@@ -76,7 +76,7 @@ class KeyboardShortcutsDialog extends StatelessWidget {
               _buildShortcutRow('Alt + W', 'Record Labour Pay'),
               _buildShortcutRow('Alt + J', 'Create New Project'),
               SizedBox(height: 16.h),
-              _buildCategoryHeader('🧭 Navigation (Tally Gateway)'),
+              _buildCategoryHeader('🧭 Gateway Navigation'),
               _buildShortcutRow('Alt + D', 'Go to Dashboard'),
               _buildShortcutRow('Alt + C', 'Go to Cash Book Ledger'),
               _buildShortcutRow('Alt + R', 'Go to Reports & P&L'),
