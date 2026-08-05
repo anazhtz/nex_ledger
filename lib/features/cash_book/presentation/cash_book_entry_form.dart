@@ -27,8 +27,7 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
   DateTime _date = DateTime.now();
   bool _loading = false;
 
-  // Category selection state
-  String? _selectedGroup;
+  // Category selection (flat single-dropdown)
   int? _selectedCategoryId;
 
   @override
@@ -181,8 +180,6 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
                               onSelectionChanged: (s) {
                                 setState(() {
                                   _type = s.first;
-                                  // Reset category when switching type
-                                  _selectedGroup = null;
                                   _selectedCategoryId = null;
                                 });
                               },
@@ -333,114 +330,54 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
     );
   }
 
-  /// Two-step expense category picker: Group → Sub-category
+  /// Single-dropdown expense category picker (flat 18-category list).
   Widget _buildCategoryPicker(List<ExpenseCategory> categories, ThemeData theme) {
-    // Build distinct group list in original order
-    final groups = <String>[];
-    final seen = <String>{};
-    for (final c in categories) {
-      if (seen.add(c.groupName)) groups.add(c.groupName);
-    }
-
-    // Filter sub-categories for selected group
-    final subCategories = _selectedGroup != null
-        ? categories.where((c) => c.groupName == _selectedGroup).toList()
-        : <ExpenseCategory>[];
-
     return Container(
-      padding: EdgeInsets.all(14.r),
+      padding: EdgeInsets.symmetric(horizontal: 14.r, vertical: 10.r),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF7ED),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: const Color(0xFFFED7AA)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Icon(Icons.label_rounded, size: 16.sp, color: const Color(0xFFEA580C)),
-              SizedBox(width: 6.w),
-              Text(
-                'Expense Category (optional)',
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFFEA580C),
+          Icon(Icons.label_rounded, size: 16.sp, color: const Color(0xFFEA580C)),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: DropdownButtonFormField<int>(
+              value: _selectedCategoryId,
+              decoration: InputDecoration(
+                labelText: 'Expense Category (optional)',
+                labelStyle: const TextStyle(
+                    color: Color(0xFFEA580C), fontWeight: FontWeight.w600),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                  borderSide: const BorderSide(color: Color(0xFFFED7AA)),
                 ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                  borderSide: const BorderSide(color: Color(0xFFFED7AA)),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                isDense: true,
               ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          Row(
-            children: [
-              // Group dropdown
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  value: _selectedGroup,
-                  decoration: InputDecoration(
-                    labelText: 'Group',
-                    prefixIcon: Icon(Icons.folder_outlined, size: 18.sp),
-                    filled: true,
-                    fillColor: Colors.white,
-                  ),
-                  isExpanded: true,
-                  items: [
-                    const DropdownMenuItem(value: null, child: Text('— Select Group —')),
-                    ...groups.map((g) => DropdownMenuItem(value: g, child: Text(g))),
-                  ],
-                  onChanged: (v) => setState(() {
-                    _selectedGroup = v;
-                    _selectedCategoryId = null; // Reset sub-cat when group changes
-                  }),
+              isExpanded: true,
+              items: [
+                const DropdownMenuItem(
+                  value: null,
+                  child: Text('— None (Uncategorised) —',
+                      style: TextStyle(color: Color(0xFF94A3B8))),
                 ),
-              ),
-              SizedBox(width: 12.w),
-              // Sub-category dropdown (only enabled when group is selected)
-              Expanded(
-                child: DropdownButtonFormField<int>(
-                  value: _selectedCategoryId,
-                  decoration: InputDecoration(
-                    labelText: 'Sub-Category',
-                    prefixIcon: Icon(Icons.subdirectory_arrow_right_rounded, size: 18.sp),
-                    filled: true,
-                    fillColor: Colors.white,
-                  ),
-                  isExpanded: true,
-                  disabledHint: const Text('Select group first', style: TextStyle(color: Color(0xFF94A3B8))),
-                  items: _selectedGroup == null
-                      ? null
-                      : [
-                          const DropdownMenuItem(value: null, child: Text('— Select Sub-Category —')),
-                          ...subCategories.map((c) => DropdownMenuItem(
-                                value: c.id,
-                                child: Text(c.subCategory, overflow: TextOverflow.ellipsis),
-                              )),
-                        ],
-                  onChanged: _selectedGroup == null
-                      ? null
-                      : (v) => setState(() => _selectedCategoryId = v),
-                ),
-              ),
-            ],
-          ),
-          if (_selectedGroup != null && _selectedCategoryId != null) ...[
-            SizedBox(height: 8.h),
-            Row(
-              children: [
-                Icon(Icons.check_circle_rounded, size: 14.sp, color: const Color(0xFF16A34A)),
-                SizedBox(width: 4.w),
-                Text(
-                  'Tagged: $_selectedGroup',
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    color: const Color(0xFF16A34A),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                ...categories.map((c) => DropdownMenuItem(
+                      value: c.id,
+                      child: Text(c.subCategory,
+                          overflow: TextOverflow.ellipsis),
+                    )),
               ],
+              onChanged: (v) => setState(() => _selectedCategoryId = v),
             ),
-          ],
+          ),
         ],
       ),
     );

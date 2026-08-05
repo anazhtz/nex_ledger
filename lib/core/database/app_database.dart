@@ -66,7 +66,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -86,12 +86,14 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(transactions, transactions.workerId);
           }
           if (from < 5) {
-            // Create the expense_categories table
             await m.createTable(expenseCategories);
-            // Add nullable FK column to existing transactions
             await m.addColumn(
                 transactions, transactions.expenseCategoryId);
-            // Seed default categories for existing installations
+            await _seedExpenseCategories();
+          }
+          if (from < 6) {
+            // Replace old multi-group categories with the new flat 18-category list.
+            await delete(expenseCategories).go();
             await _seedExpenseCategories();
           }
         },
@@ -113,16 +115,14 @@ class AppDatabase extends _$AppDatabase {
     await _seedExpenseCategories();
   }
 
-  /// Seed all 38 default expense categories.
-  /// Called both on fresh install (onCreate) and on upgrade from < v5.
+  /// Seed all 18 default expense categories (flat list).
   Future<void> _seedExpenseCategories() async {
     final defaults = _defaultCategories();
     for (int i = 0; i < defaults.length; i++) {
-      final entry = defaults[i];
       await into(expenseCategories).insert(
         ExpenseCategoriesCompanion.insert(
-          groupName: entry.$1,
-          subCategory: entry.$2,
+          groupName: 'Expense',
+          subCategory: defaults[i],
           isDefault: const Value(true),
           isActive: const Value(true),
           sortOrder: Value(i),
@@ -131,51 +131,26 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
-  /// Returns all (groupName, subCategory) pairs in display order.
-  List<(String, String)> _defaultCategories() => [
-        // Site & Project Expenses
-        ('Site & Project Expenses', 'Fuel (Site)'),
-        ('Site & Project Expenses', 'Equipment Rental'),
-        ('Site & Project Expenses', 'Transport / Logistics'),
-        ('Site & Project Expenses', 'Accommodation'),
-        ('Site & Project Expenses', 'Food & Refreshments (Site)'),
-        ('Site & Project Expenses', 'Petty Cash / Sundry'),
-        // Office & Administrative
-        ('Office & Administrative', 'Office Rent'),
-        ('Office & Administrative', 'Electricity'),
-        ('Office & Administrative', 'Water'),
-        ('Office & Administrative', 'Internet & Wi-Fi'),
-        ('Office & Administrative', 'Phone Bills'),
-        ('Office & Administrative', 'Office Supplies'),
-        ('Office & Administrative', 'Printing & Photocopying'),
-        ('Office & Administrative', 'Courier & Postage'),
-        ('Office & Administrative', 'Maintenance & Repairs'),
-        // Employee Expenses
-        ('Employee Expenses', 'Staff Welfare'),
-        ('Employee Expenses', 'Travel Reimbursement'),
-        ('Employee Expenses', 'Medical Expenses'),
-        ('Employee Expenses', 'Visa / Work Permit Fees'),
-        // Vehicle Expenses
-        ('Vehicle Expenses', 'Fuel (Vehicle)'),
-        ('Vehicle Expenses', 'Vehicle Maintenance'),
-        ('Vehicle Expenses', 'Insurance'),
-        ('Vehicle Expenses', 'Parking'),
-        ('Vehicle Expenses', 'Salik / Toll Charges'),
-        // Financial & Legal
-        ('Financial & Legal', 'Bank Charges'),
-        ('Financial & Legal', 'Loan Interest'),
-        ('Financial & Legal', 'Taxes & Government Fees'),
-        ('Financial & Legal', 'Audit & Accounting Fees'),
-        ('Financial & Legal', 'Insurance (Financial)'),
-        // Marketing & Sales
-        ('Marketing & Sales', 'Advertising'),
-        ('Marketing & Sales', 'Social Media Marketing'),
-        ('Marketing & Sales', 'Website Hosting & Domain'),
-        ('Marketing & Sales', 'Business Cards & Printing'),
-        // Miscellaneous
-        ('Miscellaneous', 'Entertainment'),
-        ('Miscellaneous', 'Donations'),
-        ('Miscellaneous', 'Other Expenses'),
+  /// 18 flat expense categories for a project-based ERP.
+  List<String> _defaultCategories() => [
+        'Material Purchase',
+        'Petty Purchase',
+        'Labour Payment',
+        'Transport',
+        'Fuel',
+        'Equipment Rental',
+        'Site Expense',
+        'Office Expense',
+        'Internet & Phone',
+        'Utility Bills',
+        'Maintenance',
+        'Software Subscription',
+        'Bank Charges',
+        'Travel Expense',
+        'Food & Refreshments',
+        'Administrative Expense',
+        'Miscellaneous',
+        'Other Expense',
       ];
 
   /// Returns the absolute path of the database file (used for backup and Section 6a requirement).

@@ -25,8 +25,8 @@ void main() {
     purchaseRepo = PurchaseRepository(db.purchaseDao, db.transactionDao, db);
     labourRepo = LabourRepository(db.labourDao, db.transactionDao);
     cashBookRepo = CashBookRepository(db.transactionDao);
-    reportRepo =
-        ReportRepository(db.transactionDao, db.projectDao, db.depositDao);
+    reportRepo = ReportRepository(
+        db.transactionDao, db.projectDao, db.depositDao, db.expenseCategoryDao);
 
     // Create Project PRJ-2026-001 ("Luxury Villa Renovation")
     projectId = await db.projectDao.insertProject(

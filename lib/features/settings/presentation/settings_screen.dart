@@ -655,26 +655,43 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   const LinearProgressIndicator(),
                               error: (e, _) =>
                                   Text('Error loading categories: $e'),
-                              data: (categories) {
-                                // Group by groupName
-                                final grouped =
-                                    <String, List<ExpenseCategory>>{};
-                                for (final c in categories) {
-                                  grouped
-                                      .putIfAbsent(c.groupName, () => [])
-                                      .add(c);
-                                }
-                                return Column(
-                                  children: grouped.entries.map((entry) {
-                                    return _CategoryGroupTile(
-                                      groupName: entry.key,
-                                      categories: entry.value,
-                                      onDelete: (cat) =>
-                                          _deleteCategory(context, ref, cat),
-                                    );
-                                  }).toList(),
-                                );
-                              },
+                              data: (categories) => Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: categories.map((cat) {
+                                  return Chip(
+                                    label: Text(
+                                      cat.subCategory,
+                                      style: TextStyle(
+                                        fontSize: 12.sp,
+                                        color: cat.isDefault
+                                            ? const Color(0xFF475569)
+                                            : const Color(0xFFEA580C),
+                                      ),
+                                    ),
+                                    backgroundColor: cat.isDefault
+                                        ? const Color(0xFFF1F5F9)
+                                        : const Color(0xFFFFF7ED),
+                                    side: BorderSide(
+                                      color: cat.isDefault
+                                          ? const Color(0xFFE2E8F0)
+                                          : const Color(0xFFFED7AA),
+                                    ),
+                                    deleteIcon: cat.isDefault
+                                        ? null
+                                        : const Icon(
+                                            Icons.close_rounded,
+                                            size: 14,
+                                            color: Color(0xFFEF4444),
+                                          ),
+                                    onDeleted: cat.isDefault
+                                        ? null
+                                        : () => _deleteCategory(
+                                            context, ref, cat),
+                                    visualDensity: VisualDensity.compact,
+                                  );
+                                }).toList(),
+                              ),
                             );
                           },
                         ),
@@ -691,105 +708,62 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showAddCategoryDialog(BuildContext context) {
-    final groupCtrl = TextEditingController();
-    final subCtrl = TextEditingController();
-
-    // Predefined group options
-    const groups = [
-      'Site & Project Expenses',
-      'Office & Administrative',
-      'Employee Expenses',
-      'Vehicle Expenses',
-      'Financial & Legal',
-      'Marketing & Sales',
-      'Miscellaneous',
-    ];
-    String? selectedGroup;
+    final nameCtrl = TextEditingController();
 
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-          title: const Row(
-            children: [
-              Icon(Icons.add_rounded, color: Color(0xFFEA580C)),
-              SizedBox(width: 8),
-              Text('Add Custom Category'),
-            ],
-          ),
-          content: SizedBox(
-            width: 360,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Group — pick existing or type new
-                DropdownButtonFormField<String>(
-                  value: selectedGroup,
-                  decoration: const InputDecoration(
-                      labelText: 'Group', prefixIcon: Icon(Icons.folder_outlined)),
-                  items: [
-                    const DropdownMenuItem(
-                        value: null, child: Text('— Select or type below —')),
-                    ...groups.map((g) =>
-                        DropdownMenuItem(value: g, child: Text(g))),
-                  ],
-                  onChanged: (v) {
-                    setDialogState(() {
-                      selectedGroup = v;
-                      if (v != null) groupCtrl.text = v;
-                    });
-                  },
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: groupCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Group Name (or type custom)',
-                    prefixIcon: Icon(Icons.folder_special_outlined),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: subCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Sub-Category Name *',
-                    prefixIcon: Icon(Icons.label_outline_rounded),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () async {
-                final group = groupCtrl.text.trim();
-                final sub = subCtrl.text.trim();
-                if (group.isEmpty || sub.isEmpty) return;
-                await ref
-                    .read(expenseCategoryRepositoryProvider)
-                    .addCustomCategory(groupName: group, subCategory: sub);
-                if (mounted) {
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Custom category added!'),
-                      backgroundColor: Color(0xFF059669),
-                    ),
-                  );
-                }
-              },
-              style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFEA580C)),
-              child: const Text('Add'),
-            ),
+      builder: (ctx) => AlertDialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: const Row(
+          children: [
+            Icon(Icons.add_rounded, color: Color(0xFFEA580C)),
+            SizedBox(width: 8),
+            Text('Add Custom Category'),
           ],
         ),
+        content: SizedBox(
+          width: 360,
+          child: TextField(
+            controller: nameCtrl,
+            autofocus: true,
+            decoration: const InputDecoration(
+              labelText: 'Category Name *',
+              prefixIcon: Icon(Icons.label_outline_rounded),
+              hintText: 'e.g. Visa Fees',
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              final name = nameCtrl.text.trim();
+              if (name.isEmpty) return;
+              await ref
+                  .read(expenseCategoryRepositoryProvider)
+                  .addCustomCategory(
+                    groupName: 'Expense',
+                    subCategory: name,
+                  );
+              if (mounted) {
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Custom category added!'),
+                    backgroundColor: Color(0xFF059669),
+                  ),
+                );
+              }
+            },
+            style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFEA580C)),
+            child: const Text('Add'),
+          ),
+        ],
       ),
     );
   }
