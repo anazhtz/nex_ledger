@@ -300,3 +300,32 @@ intentionally accepted for v1 simplicity. Do not attempt to "fix" this by
 accruing cost at attendance-time without being asked — that would be a
 different accounting model (accrual-basis) and needs to be a deliberate
 decision, not a silent change.
+
+## 13. Tally-Style Global Keyboard Shortcuts & Responsive UI Rules
+
+### 13a. Global Keyboard Shortcuts
+- **`Alt + N` / `Cmd + N`**: Create New Cash Book Entry (`/cash-book/new`)
+- **`Alt + P`**: Create New Purchase Entry (`/purchase`)
+- **`Alt + A`**: Labour Daily Attendance Grid (`/labour/attendance`)
+- **`Alt + W`**: Record Labour Payment (`/labour/payment`)
+- **`Alt + J`**: Create New Project (`/projects/new`)
+- **`Alt + D`**: Navigation -> Dashboard (`/`)
+- **`Alt + C`**: Navigation -> Cash Book Ledger (`/cash-book`)
+- **`Alt + R`**: Navigation -> Reports & P&L (`/reports/pnl`)
+- **`Alt + S`**: Navigation -> Settings & Backup (`/settings`)
+- **`Ctrl + L` / `Cmd + L`**: Security -> Lock Financial Ledger (`/login`)
+- **`F1`**: Open Keyboard Shortcuts Guide Modal (`KeyboardShortcutsDialog`)
+
+### 13b. Form Commands
+- **`Ctrl + Enter` / `Cmd + Enter`**: Save & Submit Form immediately from any field
+- **`Escape`**: Cancel / Close Dialog or Form
+- **`Tab` / `Shift + Tab`**: Navigate between form fields
+
+### 13c. Security Lock Screen (`LoginScreen`)
+- Full physical keyboard support: numbers `0-9`, `NumPad 0-9`, `Backspace` (`⌫`), and `Enter` (`↵`) to submit PIN.
+- Works seamlessly alongside on-screen numeric keypad buttons.
+
+### 13d. Responsive UI & Full Width Tables
+- **Auto-Collapsing Sidebar**: Sidebar automatically collapses to icon-only mode (76px width) when window width < 900px to give maximum space to data tables and forms.
+- **100% Width DataTables**: `DataTableCard` dynamically calculates column spacing (`computedSpacing`) so tables span 100% of the card container width without empty white gaps on the right.
+- **Flex-Safe Headers**: Top bar header and table headers wrap elements safely with overflow constraints so no `RenderFlex overflow` occurs on narrow or resized laptop windows.
