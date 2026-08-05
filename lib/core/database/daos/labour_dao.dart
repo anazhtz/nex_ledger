@@ -86,9 +86,33 @@ class LabourDao extends DatabaseAccessor<AppDatabase> with _$LabourDaoMixin {
         );
   }
 
-  /// Upsert attendance (insert or replace if (worker,project,date) exists).
-  Future<void> upsertAttendance(AttendanceCompanion entry) =>
-      into(attendance).insertOnConflictUpdate(entry);
+  /// Upsert attendance — update status if a record for (worker, project, date)
+  /// already exists, otherwise insert a new one.
+  ///
+  /// NOTE: Drift's insertOnConflictUpdate only triggers on PRIMARY KEY conflicts.
+  /// Our unique key is (workerId, projectId, date) — a secondary unique constraint.
+  /// We therefore do a manual find-then-update-or-insert to guarantee the update.
+  Future<void> upsertAttendance(AttendanceCompanion entry) async {
+    final dateVal = entry.date.value;
+    final dayStart = DateTime(dateVal.year, dateVal.month, dateVal.day);
+    final dayEnd = dayStart.add(const Duration(days: 1));
+
+    final existing = await (select(attendance)
+          ..where((a) => a.workerId.equals(entry.workerId.value))
+          ..where((a) => a.projectId.equals(entry.projectId.value))
+          ..where((a) => a.date.isBiggerOrEqualValue(dayStart))
+          ..where((a) => a.date.isSmallerThanValue(dayEnd)))
+        .getSingleOrNull();
+
+    if (existing != null) {
+      // Row exists — update just the status column
+      await (update(attendance)..where((a) => a.id.equals(existing.id)))
+          .write(AttendanceCompanion(status: entry.status));
+    } else {
+      // No row yet — insert fresh
+      await into(attendance).insert(entry);
+    }
+  }
 
   /// Calculate payment summary for a worker using ALL-TIME Running Balance (prevents double payments).
   Future<WorkerPaymentSummary> getWorkerPaymentSummary(

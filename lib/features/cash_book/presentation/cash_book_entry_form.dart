@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/features/cash_book/providers/cash_book_providers.dart';
+import 'package:nex_ledger/features/expense_categories/providers/expense_category_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 
 class CashBookEntryForm extends ConsumerStatefulWidget {
@@ -25,6 +26,10 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
   PaymentMode? _paymentMode;
   DateTime _date = DateTime.now();
   bool _loading = false;
+
+  // Category selection state
+  String? _selectedGroup;
+  int? _selectedCategoryId;
 
   @override
   void initState() {
@@ -68,9 +73,7 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
           date: _date,
           amount: amount,
           paymentMode: _paymentMode,
-          narration: _narrationCtrl.text.isNotEmpty
-              ? _narrationCtrl.text
-              : null,
+          narration: _narrationCtrl.text.isNotEmpty ? _narrationCtrl.text : null,
           referenceNo: _refCtrl.text.isNotEmpty ? _refCtrl.text : null,
         );
       } else {
@@ -79,10 +82,9 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
           date: _date,
           amount: amount,
           paymentMode: _paymentMode,
-          narration: _narrationCtrl.text.isNotEmpty
-              ? _narrationCtrl.text
-              : null,
+          narration: _narrationCtrl.text.isNotEmpty ? _narrationCtrl.text : null,
           referenceNo: _refCtrl.text.isNotEmpty ? _refCtrl.text : null,
+          expenseCategoryId: _selectedCategoryId,
         );
       }
       if (mounted) context.go('/cash-book');
@@ -101,6 +103,7 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final projectsAsync = ref.watch(projectListProvider);
+    final categoriesAsync = ref.watch(expenseCategoryListProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -175,16 +178,22 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
                                 ),
                               ],
                               selected: {_type},
-                              onSelectionChanged: (s) =>
-                                  setState(() => _type = s.first),
-                              style: ButtonStyle(
+                              onSelectionChanged: (s) {
+                                setState(() {
+                                  _type = s.first;
+                                  // Reset category when switching type
+                                  _selectedGroup = null;
+                                  _selectedCategoryId = null;
+                                });
+                              },
+                              style: const ButtonStyle(
                                 visualDensity: VisualDensity.comfortable,
                               ),
                             ),
                           ),
                           SizedBox(height: 20.h),
 
-                          // Project selector (Auto-assigned if active context locked)
+                          // Project selector
                           projectsAsync.when(
                             loading: () => const LinearProgressIndicator(),
                             error: (_, __) => const SizedBox.shrink(),
@@ -225,13 +234,10 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
                                     prefixIcon: Icon(Icons.currency_rupee_rounded, size: 20),
                                   ),
                                   style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700),
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                          decimal: true),
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                   validator: (v) {
                                     if (v == null || v.isEmpty) return 'Required';
-                                    if (double.tryParse(v) == null)
-                                      return 'Invalid amount';
+                                    if (double.tryParse(v) == null) return 'Invalid amount';
                                     return null;
                                   },
                                 ),
@@ -248,19 +254,25 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
                               prefixIcon: Icon(Icons.payment_rounded, size: 20),
                             ),
                             items: [
-                              const DropdownMenuItem(
-                                  value: null, child: Text('— Select Payment Mode —')),
+                              const DropdownMenuItem(value: null, child: Text('— Select Payment Mode —')),
                               ...PaymentMode.values.map(
-                                (m) => DropdownMenuItem(
-                                  value: m,
-                                  child: Text(m.displayName),
-                                ),
+                                (m) => DropdownMenuItem(value: m, child: Text(m.displayName)),
                               ),
                             ],
-                            onChanged: (v) =>
-                                setState(() => _paymentMode = v),
+                            onChanged: (v) => setState(() => _paymentMode = v),
                           ),
                           SizedBox(height: 16.h),
+
+                          // ─── Expense Category Picker (only shown for Expense) ───
+                          if (_type == TransactionType.expense) ...[
+                            categoriesAsync.when(
+                              loading: () => const LinearProgressIndicator(),
+                              error: (_, __) => const SizedBox.shrink(),
+                              data: (categories) =>
+                                  _buildCategoryPicker(categories, theme),
+                            ),
+                            SizedBox(height: 16.h),
+                          ],
 
                           // Narration
                           TextFormField(
@@ -321,11 +333,123 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
     );
   }
 
+  /// Two-step expense category picker: Group → Sub-category
+  Widget _buildCategoryPicker(List<ExpenseCategory> categories, ThemeData theme) {
+    // Build distinct group list in original order
+    final groups = <String>[];
+    final seen = <String>{};
+    for (final c in categories) {
+      if (seen.add(c.groupName)) groups.add(c.groupName);
+    }
+
+    // Filter sub-categories for selected group
+    final subCategories = _selectedGroup != null
+        ? categories.where((c) => c.groupName == _selectedGroup).toList()
+        : <ExpenseCategory>[];
+
+    return Container(
+      padding: EdgeInsets.all(14.r),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF7ED),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFFFED7AA)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.label_rounded, size: 16.sp, color: const Color(0xFFEA580C)),
+              SizedBox(width: 6.w),
+              Text(
+                'Expense Category (optional)',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFFEA580C),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          Row(
+            children: [
+              // Group dropdown
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  value: _selectedGroup,
+                  decoration: InputDecoration(
+                    labelText: 'Group',
+                    prefixIcon: Icon(Icons.folder_outlined, size: 18.sp),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                  isExpanded: true,
+                  items: [
+                    const DropdownMenuItem(value: null, child: Text('— Select Group —')),
+                    ...groups.map((g) => DropdownMenuItem(value: g, child: Text(g))),
+                  ],
+                  onChanged: (v) => setState(() {
+                    _selectedGroup = v;
+                    _selectedCategoryId = null; // Reset sub-cat when group changes
+                  }),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              // Sub-category dropdown (only enabled when group is selected)
+              Expanded(
+                child: DropdownButtonFormField<int>(
+                  value: _selectedCategoryId,
+                  decoration: InputDecoration(
+                    labelText: 'Sub-Category',
+                    prefixIcon: Icon(Icons.subdirectory_arrow_right_rounded, size: 18.sp),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                  isExpanded: true,
+                  disabledHint: const Text('Select group first', style: TextStyle(color: Color(0xFF94A3B8))),
+                  items: _selectedGroup == null
+                      ? null
+                      : [
+                          const DropdownMenuItem(value: null, child: Text('— Select Sub-Category —')),
+                          ...subCategories.map((c) => DropdownMenuItem(
+                                value: c.id,
+                                child: Text(c.subCategory, overflow: TextOverflow.ellipsis),
+                              )),
+                        ],
+                  onChanged: _selectedGroup == null
+                      ? null
+                      : (v) => setState(() => _selectedCategoryId = v),
+                ),
+              ),
+            ],
+          ),
+          if (_selectedGroup != null && _selectedCategoryId != null) ...[
+            SizedBox(height: 8.h),
+            Row(
+              children: [
+                Icon(Icons.check_circle_rounded, size: 14.sp, color: const Color(0xFF16A34A)),
+                SizedBox(width: 4.w),
+                Text(
+                  'Tagged: $_selectedGroup',
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: const Color(0xFF16A34A),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildProjectSelector(
       List<Project> projects, int? globalId, ThemeData theme) {
     if (globalId != null) {
-      final activeProject =
-          projects.where((p) => p.id == globalId).firstOrNull;
+      final activeProject = projects.where((p) => p.id == globalId).firstOrNull;
       if (activeProject != null) {
         _selectedProject = activeProject.id;
         return Container(
@@ -333,14 +457,11 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
           decoration: BoxDecoration(
             color: theme.colorScheme.primaryContainer.withOpacity(0.35),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: theme.colorScheme.primary.withOpacity(0.3),
-            ),
+            border: Border.all(color: theme.colorScheme.primary.withOpacity(0.3)),
           ),
           child: Row(
             children: [
-              Icon(Icons.folder_special_rounded,
-                  color: theme.colorScheme.primary, size: 20),
+              Icon(Icons.folder_special_rounded, color: theme.colorScheme.primary, size: 20),
               const SizedBox(width: 10),
               Text(
                 'Target Project: ',
@@ -360,8 +481,7 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
               ),
               const Spacer(),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(4),
@@ -383,13 +503,11 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
 
     return DropdownButtonFormField<int>(
       value: _selectedProject,
-      decoration:
-          const InputDecoration(labelText: 'Select Target Project *'),
+      decoration: const InputDecoration(labelText: 'Select Target Project *'),
       items: projects
           .map((p) => DropdownMenuItem(
                 value: p.id,
-                child: Text('${p.code} — ${p.name}',
-                    overflow: TextOverflow.ellipsis),
+                child: Text('${p.code} — ${p.name}', overflow: TextOverflow.ellipsis),
               ))
           .toList(),
       onChanged: (v) => setState(() => _selectedProject = v),

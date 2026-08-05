@@ -118,4 +118,16 @@ class TransactionDao extends DatabaseAccessor<AppDatabase>
     final result = await query.getSingle();
     return result.read(transactions.amount.sum()) ?? 0.0;
   }
+
+  /// Get all expense transactions that have a category assigned.
+  /// Used for expense category breakdown reports.
+  Future<List<Transaction>> getExpensesWithCategory({int? projectId}) async {
+    final query = select(transactions)
+      ..where((t) => t.type.equals(TransactionType.expense.name))
+      ..where((t) => t.expenseCategoryId.isNotNull());
+    if (projectId != null) {
+      query.where((t) => t.projectId.equals(projectId));
+    }
+    return query.get();
+  }
 }

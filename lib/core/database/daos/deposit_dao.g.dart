@@ -6,6 +6,8 @@ part of 'deposit_dao.dart';
 mixin _$DepositDaoMixin on DatabaseAccessor<AppDatabase> {
   $ProjectsTable get projects => attachedDatabase.projects;
   $WorkersTable get workers => attachedDatabase.workers;
+  $ExpenseCategoriesTable get expenseCategories =>
+      attachedDatabase.expenseCategories;
   $TransactionsTable get transactions => attachedDatabase.transactions;
   $DepositsTable get deposits => attachedDatabase.deposits;
 }

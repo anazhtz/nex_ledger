@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/features/auth/providers/auth_provider.dart';
+import 'package:nex_ledger/features/expense_categories/providers/expense_category_providers.dart';
 import 'package:path_provider/path_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -582,11 +583,364 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ),
                 ),
+
+                SizedBox(height: 20.h),
+
+                // Expense Categories Management Card
+                Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.r),
+                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(20.r),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(10.r),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFF7ED),
+                                borderRadius: BorderRadius.circular(10.r),
+                              ),
+                              child: Icon(
+                                Icons.label_rounded,
+                                color: const Color(0xFFEA580C),
+                                size: 22.sp,
+                              ),
+                            ),
+                            SizedBox(width: 14.w),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Expense Categories',
+                                    style: TextStyle(
+                                      fontSize: 15.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  Text(
+                                    'Manage tags for cash book expense entries. Built-in categories cannot be deleted.',
+                                    style: TextStyle(
+                                      fontSize: 11.sp,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            FilledButton.icon(
+                              onPressed: () => _showAddCategoryDialog(context),
+                              icon: const Icon(Icons.add_rounded, size: 16),
+                              label: const Text('Add Category'),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: const Color(0xFFEA580C),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 16.h),
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final categoriesAsync =
+                                ref.watch(expenseCategoryListProvider);
+                            return categoriesAsync.when(
+                              loading: () =>
+                                  const LinearProgressIndicator(),
+                              error: (e, _) =>
+                                  Text('Error loading categories: $e'),
+                              data: (categories) {
+                                // Group by groupName
+                                final grouped =
+                                    <String, List<ExpenseCategory>>{};
+                                for (final c in categories) {
+                                  grouped
+                                      .putIfAbsent(c.groupName, () => [])
+                                      .add(c);
+                                }
+                                return Column(
+                                  children: grouped.entries.map((entry) {
+                                    return _CategoryGroupTile(
+                                      groupName: entry.key,
+                                      categories: entry.value,
+                                      onDelete: (cat) =>
+                                          _deleteCategory(context, ref, cat),
+                                    );
+                                  }).toList(),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  void _showAddCategoryDialog(BuildContext context) {
+    final groupCtrl = TextEditingController();
+    final subCtrl = TextEditingController();
+
+    // Predefined group options
+    const groups = [
+      'Site & Project Expenses',
+      'Office & Administrative',
+      'Employee Expenses',
+      'Vehicle Expenses',
+      'Financial & Legal',
+      'Marketing & Sales',
+      'Miscellaneous',
+    ];
+    String? selectedGroup;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+          title: const Row(
+            children: [
+              Icon(Icons.add_rounded, color: Color(0xFFEA580C)),
+              SizedBox(width: 8),
+              Text('Add Custom Category'),
+            ],
+          ),
+          content: SizedBox(
+            width: 360,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Group — pick existing or type new
+                DropdownButtonFormField<String>(
+                  value: selectedGroup,
+                  decoration: const InputDecoration(
+                      labelText: 'Group', prefixIcon: Icon(Icons.folder_outlined)),
+                  items: [
+                    const DropdownMenuItem(
+                        value: null, child: Text('— Select or type below —')),
+                    ...groups.map((g) =>
+                        DropdownMenuItem(value: g, child: Text(g))),
+                  ],
+                  onChanged: (v) {
+                    setDialogState(() {
+                      selectedGroup = v;
+                      if (v != null) groupCtrl.text = v;
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: groupCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Group Name (or type custom)',
+                    prefixIcon: Icon(Icons.folder_special_outlined),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: subCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Sub-Category Name *',
+                    prefixIcon: Icon(Icons.label_outline_rounded),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                final group = groupCtrl.text.trim();
+                final sub = subCtrl.text.trim();
+                if (group.isEmpty || sub.isEmpty) return;
+                await ref
+                    .read(expenseCategoryRepositoryProvider)
+                    .addCustomCategory(groupName: group, subCategory: sub);
+                if (mounted) {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Custom category added!'),
+                      backgroundColor: Color(0xFF059669),
+                    ),
+                  );
+                }
+              },
+              style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFFEA580C)),
+              child: const Text('Add'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _deleteCategory(
+      BuildContext context, WidgetRef ref, ExpenseCategory cat) async {
+    if (cat.isDefault) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('Built-in categories cannot be deleted.'),
+          backgroundColor: Color(0xFFEF4444),
+        ),
+      );
+      return;
+    }
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Category?'),
+        content:
+            Text('Remove "${cat.subCategory}" from "${cat.groupName}"?'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFDC2626)),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      await ref
+          .read(expenseCategoryRepositoryProvider)
+          .deleteCustomCategory(cat.id);
+    }
+  }
+}
+
+class _CategoryGroupTile extends StatefulWidget {
+  final String groupName;
+  final List<ExpenseCategory> categories;
+  final void Function(ExpenseCategory) onDelete;
+  const _CategoryGroupTile({
+    required this.groupName,
+    required this.categories,
+    required this.onDelete,
+  });
+
+  @override
+  State<_CategoryGroupTile> createState() => _CategoryGroupTileState();
+}
+
+class _CategoryGroupTileState extends State<_CategoryGroupTile> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      children: [
+        InkWell(
+          onTap: () => setState(() => _expanded = !_expanded),
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              children: [
+                Icon(
+                  _expanded
+                      ? Icons.expand_less_rounded
+                      : Icons.expand_more_rounded,
+                  color: const Color(0xFFEA580C),
+                  size: 18,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  widget.groupName,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF7ED),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFFED7AA)),
+                  ),
+                  child: Text(
+                    '${widget.categories.length}',
+                    style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFFEA580C),
+                        fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_expanded)
+          ...widget.categories.map(
+            (cat) => Padding(
+              padding: const EdgeInsets.only(left: 28, bottom: 4),
+              child: Row(
+                children: [
+                  const Icon(Icons.subdirectory_arrow_right_rounded,
+                      size: 14, color: Color(0xFF94A3B8)),
+                  const SizedBox(width: 6),
+                  Text(
+                    cat.subCategory,
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: const Color(0xFF475569)),
+                  ),
+                  if (cat.isDefault) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text('built-in',
+                          style: TextStyle(
+                              fontSize: 9, color: Color(0xFF64748B))),
+                    ),
+                  ],
+                  const Spacer(),
+                  if (!cat.isDefault)
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline_rounded,
+                          size: 16, color: Color(0xFFEF4444)),
+                      onPressed: () => widget.onDelete(cat),
+                      tooltip: 'Delete',
+                      constraints: const BoxConstraints(),
+                      padding: const EdgeInsets.all(4),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        const Divider(height: 8),
+      ],
     );
   }
 }

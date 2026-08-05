@@ -6,6 +6,8 @@ part of 'purchase_dao.dart';
 mixin _$PurchaseDaoMixin on DatabaseAccessor<AppDatabase> {
   $ProjectsTable get projects => attachedDatabase.projects;
   $WorkersTable get workers => attachedDatabase.workers;
+  $ExpenseCategoriesTable get expenseCategories =>
+      attachedDatabase.expenseCategories;
   $TransactionsTable get transactions => attachedDatabase.transactions;
   $VendorsTable get vendors => attachedDatabase.vendors;
   $PurchasesTable get purchases => attachedDatabase.purchases;

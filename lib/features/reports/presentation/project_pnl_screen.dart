@@ -228,6 +228,26 @@ class ProjectPnlScreen extends ConsumerWidget {
                                 ),
                               ),
                             ),
+                            const SizedBox(height: 16),
+
+                            // ── Expense Category Breakdown ──
+                            Consumer(
+                              builder: (context, ref, _) {
+                                final breakdownAsync = ref.watch(
+                                    expenseCategoryBreakdownProvider(selectedProjectId));
+                                return breakdownAsync.when(
+                                  loading: () => const SizedBox.shrink(),
+                                  error: (_, __) => const SizedBox.shrink(),
+                                  data: (breakdown) {
+                                    if (breakdown.isEmpty) {
+                                      return const SizedBox.shrink();
+                                    }
+                                    return _ExpenseCategoryBreakdownCard(
+                                        breakdown: breakdown);
+                                  },
+                                );
+                              },
+                            ),
                           ],
                         ),
                       ),
@@ -271,6 +291,126 @@ class _BreakdownRow extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Collapsible card showing expense breakdown by group → sub-category.
+class _ExpenseCategoryBreakdownCard extends StatefulWidget {
+  final Map<String, Map<String, double>> breakdown;
+  const _ExpenseCategoryBreakdownCard({required this.breakdown});
+
+  @override
+  State<_ExpenseCategoryBreakdownCard> createState() =>
+      _ExpenseCategoryBreakdownCardState();
+}
+
+class _ExpenseCategoryBreakdownCardState
+    extends State<_ExpenseCategoryBreakdownCard> {
+  final _expanded = <String, bool>{};
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final groups = widget.breakdown.keys.toList();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.label_rounded,
+                    color: Colors.orange.shade700, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Expense Breakdown by Category',
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ...groups.map((group) {
+              final subs = widget.breakdown[group]!;
+              final groupTotal =
+                  subs.values.fold(0.0, (a, b) => a + b);
+              final isOpen = _expanded[group] ?? false;
+
+              return Column(
+                children: [
+                  // Group row (tappable to expand/collapse)
+                  InkWell(
+                    onTap: () =>
+                        setState(() => _expanded[group] = !isOpen),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isOpen
+                                ? Icons.expand_less_rounded
+                                : Icons.expand_more_rounded,
+                            size: 18,
+                            color: Colors.orange.shade700,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            group,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            CurrencyFormatter.format(groupTotal),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: Colors.red.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Sub-category rows (visible when expanded)
+                  if (isOpen)
+                    ...subs.entries.map(
+                      (entry) => Padding(
+                        padding: const EdgeInsets.only(left: 28, bottom: 4),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.subdirectory_arrow_right_rounded,
+                                size: 14, color: Color(0xFF94A3B8)),
+                            const SizedBox(width: 6),
+                            Text(
+                              entry.key,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                  color: const Color(0xFF475569)),
+                            ),
+                            const Spacer(),
+                            Text(
+                              CurrencyFormatter.format(entry.value),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: Colors.red.shade600,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  const Divider(height: 1),
+                ],
+              );
+            }),
+          ],
+        ),
       ),
     );
   }

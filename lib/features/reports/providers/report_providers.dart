@@ -5,7 +5,12 @@ import 'package:nex_ledger/features/reports/data/report_repository.dart';
 
 final reportRepositoryProvider = Provider<ReportRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
-  return ReportRepository(db.transactionDao, db.projectDao, db.depositDao);
+  return ReportRepository(
+    db.transactionDao,
+    db.projectDao,
+    db.depositDao,
+    db.expenseCategoryDao,
+  );
 });
 
 /// Project P&L for a specific project (family provider).
@@ -22,3 +27,11 @@ final consolidatedPnlProvider =
 
 /// Selected project for P&L report screen.
 final reportProjectFilterProvider = StateProvider<int?>((ref) => null);
+
+/// Expense category breakdown — optionally scoped to a project.
+final expenseCategoryBreakdownProvider =
+    FutureProvider.family<ExpenseCategoryBreakdown, int?>((ref, projectId) {
+  return ref
+      .watch(reportRepositoryProvider)
+      .getExpenseCategoryBreakdown(projectId: projectId);
+});

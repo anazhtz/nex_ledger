@@ -766,6 +766,363 @@ class WorkersCompanion extends UpdateCompanion<Worker> {
   }
 }
 
+class $ExpenseCategoriesTable extends ExpenseCategories
+    with TableInfo<$ExpenseCategoriesTable, ExpenseCategory> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ExpenseCategoriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _groupNameMeta =
+      const VerificationMeta('groupName');
+  @override
+  late final GeneratedColumn<String> groupName = GeneratedColumn<String>(
+      'group_name', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 100),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _subCategoryMeta =
+      const VerificationMeta('subCategory');
+  @override
+  late final GeneratedColumn<String> subCategory = GeneratedColumn<String>(
+      'sub_category', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 100),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _isDefaultMeta =
+      const VerificationMeta('isDefault');
+  @override
+  late final GeneratedColumn<bool> isDefault = GeneratedColumn<bool>(
+      'is_default', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_default" IN (0, 1))'),
+      defaultValue: const Constant(true));
+  static const VerificationMeta _isActiveMeta =
+      const VerificationMeta('isActive');
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+      'is_active', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_active" IN (0, 1))'),
+      defaultValue: const Constant(true));
+  static const VerificationMeta _sortOrderMeta =
+      const VerificationMeta('sortOrder');
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+      'sort_order', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, groupName, subCategory, isDefault, isActive, sortOrder];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'expense_categories';
+  @override
+  VerificationContext validateIntegrity(Insertable<ExpenseCategory> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('group_name')) {
+      context.handle(_groupNameMeta,
+          groupName.isAcceptableOrUnknown(data['group_name']!, _groupNameMeta));
+    } else if (isInserting) {
+      context.missing(_groupNameMeta);
+    }
+    if (data.containsKey('sub_category')) {
+      context.handle(
+          _subCategoryMeta,
+          subCategory.isAcceptableOrUnknown(
+              data['sub_category']!, _subCategoryMeta));
+    } else if (isInserting) {
+      context.missing(_subCategoryMeta);
+    }
+    if (data.containsKey('is_default')) {
+      context.handle(_isDefaultMeta,
+          isDefault.isAcceptableOrUnknown(data['is_default']!, _isDefaultMeta));
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(_isActiveMeta,
+          isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta));
+    }
+    if (data.containsKey('sort_order')) {
+      context.handle(_sortOrderMeta,
+          sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ExpenseCategory map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ExpenseCategory(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      groupName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}group_name'])!,
+      subCategory: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sub_category'])!,
+      isDefault: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_default'])!,
+      isActive: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_active'])!,
+      sortOrder: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}sort_order'])!,
+    );
+  }
+
+  @override
+  $ExpenseCategoriesTable createAlias(String alias) {
+    return $ExpenseCategoriesTable(attachedDatabase, alias);
+  }
+}
+
+class ExpenseCategory extends DataClass implements Insertable<ExpenseCategory> {
+  final int id;
+
+  /// Parent group label, e.g. "Vehicle Expenses"
+  final String groupName;
+
+  /// Sub-category label, e.g. "Fuel (Vehicle)"
+  final String subCategory;
+
+  /// Seeded rows are flagged true — UI must prevent deletion of these.
+  final bool isDefault;
+
+  /// Soft-delete: false = hidden from dropdowns but data retained.
+  final bool isActive;
+
+  /// Controls display order within a group.
+  final int sortOrder;
+  const ExpenseCategory(
+      {required this.id,
+      required this.groupName,
+      required this.subCategory,
+      required this.isDefault,
+      required this.isActive,
+      required this.sortOrder});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['group_name'] = Variable<String>(groupName);
+    map['sub_category'] = Variable<String>(subCategory);
+    map['is_default'] = Variable<bool>(isDefault);
+    map['is_active'] = Variable<bool>(isActive);
+    map['sort_order'] = Variable<int>(sortOrder);
+    return map;
+  }
+
+  ExpenseCategoriesCompanion toCompanion(bool nullToAbsent) {
+    return ExpenseCategoriesCompanion(
+      id: Value(id),
+      groupName: Value(groupName),
+      subCategory: Value(subCategory),
+      isDefault: Value(isDefault),
+      isActive: Value(isActive),
+      sortOrder: Value(sortOrder),
+    );
+  }
+
+  factory ExpenseCategory.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ExpenseCategory(
+      id: serializer.fromJson<int>(json['id']),
+      groupName: serializer.fromJson<String>(json['groupName']),
+      subCategory: serializer.fromJson<String>(json['subCategory']),
+      isDefault: serializer.fromJson<bool>(json['isDefault']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      sortOrder: serializer.fromJson<int>(json['sortOrder']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'groupName': serializer.toJson<String>(groupName),
+      'subCategory': serializer.toJson<String>(subCategory),
+      'isDefault': serializer.toJson<bool>(isDefault),
+      'isActive': serializer.toJson<bool>(isActive),
+      'sortOrder': serializer.toJson<int>(sortOrder),
+    };
+  }
+
+  ExpenseCategory copyWith(
+          {int? id,
+          String? groupName,
+          String? subCategory,
+          bool? isDefault,
+          bool? isActive,
+          int? sortOrder}) =>
+      ExpenseCategory(
+        id: id ?? this.id,
+        groupName: groupName ?? this.groupName,
+        subCategory: subCategory ?? this.subCategory,
+        isDefault: isDefault ?? this.isDefault,
+        isActive: isActive ?? this.isActive,
+        sortOrder: sortOrder ?? this.sortOrder,
+      );
+  ExpenseCategory copyWithCompanion(ExpenseCategoriesCompanion data) {
+    return ExpenseCategory(
+      id: data.id.present ? data.id.value : this.id,
+      groupName: data.groupName.present ? data.groupName.value : this.groupName,
+      subCategory:
+          data.subCategory.present ? data.subCategory.value : this.subCategory,
+      isDefault: data.isDefault.present ? data.isDefault.value : this.isDefault,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExpenseCategory(')
+          ..write('id: $id, ')
+          ..write('groupName: $groupName, ')
+          ..write('subCategory: $subCategory, ')
+          ..write('isDefault: $isDefault, ')
+          ..write('isActive: $isActive, ')
+          ..write('sortOrder: $sortOrder')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, groupName, subCategory, isDefault, isActive, sortOrder);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ExpenseCategory &&
+          other.id == this.id &&
+          other.groupName == this.groupName &&
+          other.subCategory == this.subCategory &&
+          other.isDefault == this.isDefault &&
+          other.isActive == this.isActive &&
+          other.sortOrder == this.sortOrder);
+}
+
+class ExpenseCategoriesCompanion extends UpdateCompanion<ExpenseCategory> {
+  final Value<int> id;
+  final Value<String> groupName;
+  final Value<String> subCategory;
+  final Value<bool> isDefault;
+  final Value<bool> isActive;
+  final Value<int> sortOrder;
+  const ExpenseCategoriesCompanion({
+    this.id = const Value.absent(),
+    this.groupName = const Value.absent(),
+    this.subCategory = const Value.absent(),
+    this.isDefault = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+  });
+  ExpenseCategoriesCompanion.insert({
+    this.id = const Value.absent(),
+    required String groupName,
+    required String subCategory,
+    this.isDefault = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+  })  : groupName = Value(groupName),
+        subCategory = Value(subCategory);
+  static Insertable<ExpenseCategory> custom({
+    Expression<int>? id,
+    Expression<String>? groupName,
+    Expression<String>? subCategory,
+    Expression<bool>? isDefault,
+    Expression<bool>? isActive,
+    Expression<int>? sortOrder,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (groupName != null) 'group_name': groupName,
+      if (subCategory != null) 'sub_category': subCategory,
+      if (isDefault != null) 'is_default': isDefault,
+      if (isActive != null) 'is_active': isActive,
+      if (sortOrder != null) 'sort_order': sortOrder,
+    });
+  }
+
+  ExpenseCategoriesCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? groupName,
+      Value<String>? subCategory,
+      Value<bool>? isDefault,
+      Value<bool>? isActive,
+      Value<int>? sortOrder}) {
+    return ExpenseCategoriesCompanion(
+      id: id ?? this.id,
+      groupName: groupName ?? this.groupName,
+      subCategory: subCategory ?? this.subCategory,
+      isDefault: isDefault ?? this.isDefault,
+      isActive: isActive ?? this.isActive,
+      sortOrder: sortOrder ?? this.sortOrder,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (groupName.present) {
+      map['group_name'] = Variable<String>(groupName.value);
+    }
+    if (subCategory.present) {
+      map['sub_category'] = Variable<String>(subCategory.value);
+    }
+    if (isDefault.present) {
+      map['is_default'] = Variable<bool>(isDefault.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<int>(sortOrder.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExpenseCategoriesCompanion(')
+          ..write('id: $id, ')
+          ..write('groupName: $groupName, ')
+          ..write('subCategory: $subCategory, ')
+          ..write('isDefault: $isDefault, ')
+          ..write('isActive: $isActive, ')
+          ..write('sortOrder: $sortOrder')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $TransactionsTable extends Transactions
     with TableInfo<$TransactionsTable, Transaction> {
   @override
@@ -799,6 +1156,15 @@ class $TransactionsTable extends Transactions
       requiredDuringInsert: false,
       defaultConstraints: GeneratedColumn.constraintIsAlways(
           'REFERENCES workers (id) ON DELETE RESTRICT'));
+  static const VerificationMeta _expenseCategoryIdMeta =
+      const VerificationMeta('expenseCategoryId');
+  @override
+  late final GeneratedColumn<int> expenseCategoryId = GeneratedColumn<int>(
+      'expense_category_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES expense_categories (id) ON DELETE SET NULL'));
   static const VerificationMeta _dateMeta = const VerificationMeta('date');
   @override
   late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
@@ -865,6 +1231,7 @@ class $TransactionsTable extends Transactions
         id,
         projectId,
         workerId,
+        expenseCategoryId,
         date,
         type,
         affectsPnl,
@@ -897,6 +1264,12 @@ class $TransactionsTable extends Transactions
     if (data.containsKey('worker_id')) {
       context.handle(_workerIdMeta,
           workerId.isAcceptableOrUnknown(data['worker_id']!, _workerIdMeta));
+    }
+    if (data.containsKey('expense_category_id')) {
+      context.handle(
+          _expenseCategoryIdMeta,
+          expenseCategoryId.isAcceptableOrUnknown(
+              data['expense_category_id']!, _expenseCategoryIdMeta));
     }
     if (data.containsKey('date')) {
       context.handle(
@@ -951,6 +1324,8 @@ class $TransactionsTable extends Transactions
           .read(DriftSqlType.int, data['${effectivePrefix}project_id'])!,
       workerId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}worker_id']),
+      expenseCategoryId: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}expense_category_id']),
       date: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}date'])!,
       type: $TransactionsTable.$convertertype.fromSql(attachedDatabase
@@ -992,6 +1367,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   final int id;
   final int projectId;
   final int? workerId;
+
+  /// Optional expense category — only set for type=expense entries.
+  /// setNull on delete so existing transactions survive category removal.
+  final int? expenseCategoryId;
   final DateTime date;
   final TransactionType type;
 
@@ -1011,6 +1390,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       {required this.id,
       required this.projectId,
       this.workerId,
+      this.expenseCategoryId,
       required this.date,
       required this.type,
       required this.affectsPnl,
@@ -1027,6 +1407,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     map['project_id'] = Variable<int>(projectId);
     if (!nullToAbsent || workerId != null) {
       map['worker_id'] = Variable<int>(workerId);
+    }
+    if (!nullToAbsent || expenseCategoryId != null) {
+      map['expense_category_id'] = Variable<int>(expenseCategoryId);
     }
     map['date'] = Variable<DateTime>(date);
     {
@@ -1057,6 +1440,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       workerId: workerId == null && nullToAbsent
           ? const Value.absent()
           : Value(workerId),
+      expenseCategoryId: expenseCategoryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(expenseCategoryId),
       date: Value(date),
       type: Value(type),
       affectsPnl: Value(affectsPnl),
@@ -1082,6 +1468,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       id: serializer.fromJson<int>(json['id']),
       projectId: serializer.fromJson<int>(json['projectId']),
       workerId: serializer.fromJson<int?>(json['workerId']),
+      expenseCategoryId: serializer.fromJson<int?>(json['expenseCategoryId']),
       date: serializer.fromJson<DateTime>(json['date']),
       type: $TransactionsTable.$convertertype
           .fromJson(serializer.fromJson<String>(json['type'])),
@@ -1102,6 +1489,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       'id': serializer.toJson<int>(id),
       'projectId': serializer.toJson<int>(projectId),
       'workerId': serializer.toJson<int?>(workerId),
+      'expenseCategoryId': serializer.toJson<int?>(expenseCategoryId),
       'date': serializer.toJson<DateTime>(date),
       'type': serializer
           .toJson<String>($TransactionsTable.$convertertype.toJson(type)),
@@ -1120,6 +1508,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           {int? id,
           int? projectId,
           Value<int?> workerId = const Value.absent(),
+          Value<int?> expenseCategoryId = const Value.absent(),
           DateTime? date,
           TransactionType? type,
           bool? affectsPnl,
@@ -1133,6 +1522,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
         id: id ?? this.id,
         projectId: projectId ?? this.projectId,
         workerId: workerId.present ? workerId.value : this.workerId,
+        expenseCategoryId: expenseCategoryId.present
+            ? expenseCategoryId.value
+            : this.expenseCategoryId,
         date: date ?? this.date,
         type: type ?? this.type,
         affectsPnl: affectsPnl ?? this.affectsPnl,
@@ -1148,6 +1540,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       id: data.id.present ? data.id.value : this.id,
       projectId: data.projectId.present ? data.projectId.value : this.projectId,
       workerId: data.workerId.present ? data.workerId.value : this.workerId,
+      expenseCategoryId: data.expenseCategoryId.present
+          ? data.expenseCategoryId.value
+          : this.expenseCategoryId,
       date: data.date.present ? data.date.value : this.date,
       type: data.type.present ? data.type.value : this.type,
       affectsPnl:
@@ -1170,6 +1565,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ..write('id: $id, ')
           ..write('projectId: $projectId, ')
           ..write('workerId: $workerId, ')
+          ..write('expenseCategoryId: $expenseCategoryId, ')
           ..write('date: $date, ')
           ..write('type: $type, ')
           ..write('affectsPnl: $affectsPnl, ')
@@ -1188,6 +1584,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       id,
       projectId,
       workerId,
+      expenseCategoryId,
       date,
       type,
       affectsPnl,
@@ -1204,6 +1601,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           other.id == this.id &&
           other.projectId == this.projectId &&
           other.workerId == this.workerId &&
+          other.expenseCategoryId == this.expenseCategoryId &&
           other.date == this.date &&
           other.type == this.type &&
           other.affectsPnl == this.affectsPnl &&
@@ -1219,6 +1617,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   final Value<int> id;
   final Value<int> projectId;
   final Value<int?> workerId;
+  final Value<int?> expenseCategoryId;
   final Value<DateTime> date;
   final Value<TransactionType> type;
   final Value<bool> affectsPnl;
@@ -1232,6 +1631,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.id = const Value.absent(),
     this.projectId = const Value.absent(),
     this.workerId = const Value.absent(),
+    this.expenseCategoryId = const Value.absent(),
     this.date = const Value.absent(),
     this.type = const Value.absent(),
     this.affectsPnl = const Value.absent(),
@@ -1246,6 +1646,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.id = const Value.absent(),
     required int projectId,
     this.workerId = const Value.absent(),
+    this.expenseCategoryId = const Value.absent(),
     required DateTime date,
     required TransactionType type,
     this.affectsPnl = const Value.absent(),
@@ -1263,6 +1664,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Expression<int>? id,
     Expression<int>? projectId,
     Expression<int>? workerId,
+    Expression<int>? expenseCategoryId,
     Expression<DateTime>? date,
     Expression<String>? type,
     Expression<bool>? affectsPnl,
@@ -1277,6 +1679,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       if (id != null) 'id': id,
       if (projectId != null) 'project_id': projectId,
       if (workerId != null) 'worker_id': workerId,
+      if (expenseCategoryId != null) 'expense_category_id': expenseCategoryId,
       if (date != null) 'date': date,
       if (type != null) 'type': type,
       if (affectsPnl != null) 'affects_pnl': affectsPnl,
@@ -1293,6 +1696,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       {Value<int>? id,
       Value<int>? projectId,
       Value<int?>? workerId,
+      Value<int?>? expenseCategoryId,
       Value<DateTime>? date,
       Value<TransactionType>? type,
       Value<bool>? affectsPnl,
@@ -1306,6 +1710,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       id: id ?? this.id,
       projectId: projectId ?? this.projectId,
       workerId: workerId ?? this.workerId,
+      expenseCategoryId: expenseCategoryId ?? this.expenseCategoryId,
       date: date ?? this.date,
       type: type ?? this.type,
       affectsPnl: affectsPnl ?? this.affectsPnl,
@@ -1329,6 +1734,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     }
     if (workerId.present) {
       map['worker_id'] = Variable<int>(workerId.value);
+    }
+    if (expenseCategoryId.present) {
+      map['expense_category_id'] = Variable<int>(expenseCategoryId.value);
     }
     if (date.present) {
       map['date'] = Variable<DateTime>(date.value);
@@ -1368,6 +1776,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
           ..write('id: $id, ')
           ..write('projectId: $projectId, ')
           ..write('workerId: $workerId, ')
+          ..write('expenseCategoryId: $expenseCategoryId, ')
           ..write('date: $date, ')
           ..write('type: $type, ')
           ..write('affectsPnl: $affectsPnl, ')
@@ -2611,6 +3020,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $ProjectsTable projects = $ProjectsTable(this);
   late final $WorkersTable workers = $WorkersTable(this);
+  late final $ExpenseCategoriesTable expenseCategories =
+      $ExpenseCategoriesTable(this);
   late final $TransactionsTable transactions = $TransactionsTable(this);
   late final $VendorsTable vendors = $VendorsTable(this);
   late final $PurchasesTable purchases = $PurchasesTable(this);
@@ -2622,6 +3033,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final PurchaseDao purchaseDao = PurchaseDao(this as AppDatabase);
   late final LabourDao labourDao = LabourDao(this as AppDatabase);
   late final DepositDao depositDao = DepositDao(this as AppDatabase);
+  late final ExpenseCategoryDao expenseCategoryDao =
+      ExpenseCategoryDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2629,6 +3042,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
         projects,
         workers,
+        expenseCategories,
         transactions,
         vendors,
         purchases,
@@ -2638,6 +3052,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
         [
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('expense_categories',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('transactions', kind: UpdateKind.update),
+            ],
+          ),
           WritePropagation(
             on: TableUpdateQuery.onTableName('transactions',
                 limitUpdateKind: UpdateKind.delete),
@@ -3432,11 +3853,280 @@ typedef $$WorkersTableProcessedTableManager = ProcessedTableManager<
     (Worker, $$WorkersTableReferences),
     Worker,
     PrefetchHooks Function({bool transactionsRefs, bool attendanceRefs})>;
+typedef $$ExpenseCategoriesTableCreateCompanionBuilder
+    = ExpenseCategoriesCompanion Function({
+  Value<int> id,
+  required String groupName,
+  required String subCategory,
+  Value<bool> isDefault,
+  Value<bool> isActive,
+  Value<int> sortOrder,
+});
+typedef $$ExpenseCategoriesTableUpdateCompanionBuilder
+    = ExpenseCategoriesCompanion Function({
+  Value<int> id,
+  Value<String> groupName,
+  Value<String> subCategory,
+  Value<bool> isDefault,
+  Value<bool> isActive,
+  Value<int> sortOrder,
+});
+
+final class $$ExpenseCategoriesTableReferences extends BaseReferences<
+    _$AppDatabase, $ExpenseCategoriesTable, ExpenseCategory> {
+  $$ExpenseCategoriesTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$TransactionsTable, List<Transaction>>
+      _transactionsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.transactions,
+              aliasName: $_aliasNameGenerator(
+                  db.expenseCategories.id, db.transactions.expenseCategoryId));
+
+  $$TransactionsTableProcessedTableManager get transactionsRefs {
+    final manager = $$TransactionsTableTableManager($_db, $_db.transactions)
+        .filter(
+            (f) => f.expenseCategoryId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_transactionsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
+class $$ExpenseCategoriesTableFilterComposer
+    extends Composer<_$AppDatabase, $ExpenseCategoriesTable> {
+  $$ExpenseCategoriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get groupName => $composableBuilder(
+      column: $table.groupName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get subCategory => $composableBuilder(
+      column: $table.subCategory, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isDefault => $composableBuilder(
+      column: $table.isDefault, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+      column: $table.isActive, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+      column: $table.sortOrder, builder: (column) => ColumnFilters(column));
+
+  Expression<bool> transactionsRefs(
+      Expression<bool> Function($$TransactionsTableFilterComposer f) f) {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.transactions,
+        getReferencedColumn: (t) => t.expenseCategoryId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableFilterComposer(
+              $db: $db,
+              $table: $db.transactions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$ExpenseCategoriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ExpenseCategoriesTable> {
+  $$ExpenseCategoriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get groupName => $composableBuilder(
+      column: $table.groupName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get subCategory => $composableBuilder(
+      column: $table.subCategory, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isDefault => $composableBuilder(
+      column: $table.isDefault, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+      column: $table.isActive, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+      column: $table.sortOrder, builder: (column) => ColumnOrderings(column));
+}
+
+class $$ExpenseCategoriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ExpenseCategoriesTable> {
+  $$ExpenseCategoriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get groupName =>
+      $composableBuilder(column: $table.groupName, builder: (column) => column);
+
+  GeneratedColumn<String> get subCategory => $composableBuilder(
+      column: $table.subCategory, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDefault =>
+      $composableBuilder(column: $table.isDefault, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  Expression<T> transactionsRefs<T extends Object>(
+      Expression<T> Function($$TransactionsTableAnnotationComposer a) f) {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.transactions,
+        getReferencedColumn: (t) => t.expenseCategoryId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.transactions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$ExpenseCategoriesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $ExpenseCategoriesTable,
+    ExpenseCategory,
+    $$ExpenseCategoriesTableFilterComposer,
+    $$ExpenseCategoriesTableOrderingComposer,
+    $$ExpenseCategoriesTableAnnotationComposer,
+    $$ExpenseCategoriesTableCreateCompanionBuilder,
+    $$ExpenseCategoriesTableUpdateCompanionBuilder,
+    (ExpenseCategory, $$ExpenseCategoriesTableReferences),
+    ExpenseCategory,
+    PrefetchHooks Function({bool transactionsRefs})> {
+  $$ExpenseCategoriesTableTableManager(
+      _$AppDatabase db, $ExpenseCategoriesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ExpenseCategoriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ExpenseCategoriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ExpenseCategoriesTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> groupName = const Value.absent(),
+            Value<String> subCategory = const Value.absent(),
+            Value<bool> isDefault = const Value.absent(),
+            Value<bool> isActive = const Value.absent(),
+            Value<int> sortOrder = const Value.absent(),
+          }) =>
+              ExpenseCategoriesCompanion(
+            id: id,
+            groupName: groupName,
+            subCategory: subCategory,
+            isDefault: isDefault,
+            isActive: isActive,
+            sortOrder: sortOrder,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String groupName,
+            required String subCategory,
+            Value<bool> isDefault = const Value.absent(),
+            Value<bool> isActive = const Value.absent(),
+            Value<int> sortOrder = const Value.absent(),
+          }) =>
+              ExpenseCategoriesCompanion.insert(
+            id: id,
+            groupName: groupName,
+            subCategory: subCategory,
+            isDefault: isDefault,
+            isActive: isActive,
+            sortOrder: sortOrder,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$ExpenseCategoriesTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({transactionsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (transactionsRefs) db.transactions],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (transactionsRefs)
+                    await $_getPrefetchedData<ExpenseCategory,
+                            $ExpenseCategoriesTable, Transaction>(
+                        currentTable: table,
+                        referencedTable: $$ExpenseCategoriesTableReferences
+                            ._transactionsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$ExpenseCategoriesTableReferences(db, table, p0)
+                                .transactionsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.expenseCategoryId == item.id),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$ExpenseCategoriesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $ExpenseCategoriesTable,
+    ExpenseCategory,
+    $$ExpenseCategoriesTableFilterComposer,
+    $$ExpenseCategoriesTableOrderingComposer,
+    $$ExpenseCategoriesTableAnnotationComposer,
+    $$ExpenseCategoriesTableCreateCompanionBuilder,
+    $$ExpenseCategoriesTableUpdateCompanionBuilder,
+    (ExpenseCategory, $$ExpenseCategoriesTableReferences),
+    ExpenseCategory,
+    PrefetchHooks Function({bool transactionsRefs})>;
 typedef $$TransactionsTableCreateCompanionBuilder = TransactionsCompanion
     Function({
   Value<int> id,
   required int projectId,
   Value<int?> workerId,
+  Value<int?> expenseCategoryId,
   required DateTime date,
   required TransactionType type,
   Value<bool> affectsPnl,
@@ -3452,6 +4142,7 @@ typedef $$TransactionsTableUpdateCompanionBuilder = TransactionsCompanion
   Value<int> id,
   Value<int> projectId,
   Value<int?> workerId,
+  Value<int?> expenseCategoryId,
   Value<DateTime> date,
   Value<TransactionType> type,
   Value<bool> affectsPnl,
@@ -3492,6 +4183,22 @@ final class $$TransactionsTableReferences
     final manager = $$WorkersTableTableManager($_db, $_db.workers)
         .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_workerIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $ExpenseCategoriesTable _expenseCategoryIdTable(_$AppDatabase db) =>
+      db.expenseCategories.createAlias($_aliasNameGenerator(
+          db.transactions.expenseCategoryId, db.expenseCategories.id));
+
+  $$ExpenseCategoriesTableProcessedTableManager? get expenseCategoryId {
+    final $_column = $_itemColumn<int>('expense_category_id');
+    if ($_column == null) return null;
+    final manager =
+        $$ExpenseCategoriesTableTableManager($_db, $_db.expenseCategories)
+            .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_expenseCategoryIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: [item]));
@@ -3603,6 +4310,26 @@ class $$TransactionsTableFilterComposer
             $$WorkersTableFilterComposer(
               $db: $db,
               $table: $db.workers,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$ExpenseCategoriesTableFilterComposer get expenseCategoryId {
+    final $$ExpenseCategoriesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.expenseCategoryId,
+        referencedTable: $db.expenseCategories,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ExpenseCategoriesTableFilterComposer(
+              $db: $db,
+              $table: $db.expenseCategories,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -3732,6 +4459,26 @@ class $$TransactionsTableOrderingComposer
             ));
     return composer;
   }
+
+  $$ExpenseCategoriesTableOrderingComposer get expenseCategoryId {
+    final $$ExpenseCategoriesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.expenseCategoryId,
+        referencedTable: $db.expenseCategories,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ExpenseCategoriesTableOrderingComposer(
+              $db: $db,
+              $table: $db.expenseCategories,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 }
 
 class $$TransactionsTableAnnotationComposer
@@ -3814,6 +4561,27 @@ class $$TransactionsTableAnnotationComposer
     return composer;
   }
 
+  $$ExpenseCategoriesTableAnnotationComposer get expenseCategoryId {
+    final $$ExpenseCategoriesTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.expenseCategoryId,
+            referencedTable: $db.expenseCategories,
+            getReferencedColumn: (t) => t.id,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$ExpenseCategoriesTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.expenseCategories,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return composer;
+  }
+
   Expression<T> purchasesRefs<T extends Object>(
       Expression<T> Function($$PurchasesTableAnnotationComposer a) f) {
     final $$PurchasesTableAnnotationComposer composer = $composerBuilder(
@@ -3871,6 +4639,7 @@ class $$TransactionsTableTableManager extends RootTableManager<
     PrefetchHooks Function(
         {bool projectId,
         bool workerId,
+        bool expenseCategoryId,
         bool purchasesRefs,
         bool depositsRefs})> {
   $$TransactionsTableTableManager(_$AppDatabase db, $TransactionsTable table)
@@ -3887,6 +4656,7 @@ class $$TransactionsTableTableManager extends RootTableManager<
             Value<int> id = const Value.absent(),
             Value<int> projectId = const Value.absent(),
             Value<int?> workerId = const Value.absent(),
+            Value<int?> expenseCategoryId = const Value.absent(),
             Value<DateTime> date = const Value.absent(),
             Value<TransactionType> type = const Value.absent(),
             Value<bool> affectsPnl = const Value.absent(),
@@ -3901,6 +4671,7 @@ class $$TransactionsTableTableManager extends RootTableManager<
             id: id,
             projectId: projectId,
             workerId: workerId,
+            expenseCategoryId: expenseCategoryId,
             date: date,
             type: type,
             affectsPnl: affectsPnl,
@@ -3915,6 +4686,7 @@ class $$TransactionsTableTableManager extends RootTableManager<
             Value<int> id = const Value.absent(),
             required int projectId,
             Value<int?> workerId = const Value.absent(),
+            Value<int?> expenseCategoryId = const Value.absent(),
             required DateTime date,
             required TransactionType type,
             Value<bool> affectsPnl = const Value.absent(),
@@ -3929,6 +4701,7 @@ class $$TransactionsTableTableManager extends RootTableManager<
             id: id,
             projectId: projectId,
             workerId: workerId,
+            expenseCategoryId: expenseCategoryId,
             date: date,
             type: type,
             affectsPnl: affectsPnl,
@@ -3948,6 +4721,7 @@ class $$TransactionsTableTableManager extends RootTableManager<
           prefetchHooksCallback: (
               {projectId = false,
               workerId = false,
+              expenseCategoryId = false,
               purchasesRefs = false,
               depositsRefs = false}) {
             return PrefetchHooks(
@@ -3987,6 +4761,17 @@ class $$TransactionsTableTableManager extends RootTableManager<
                         $$TransactionsTableReferences._workerIdTable(db),
                     referencedColumn:
                         $$TransactionsTableReferences._workerIdTable(db).id,
+                  ) as T;
+                }
+                if (expenseCategoryId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.expenseCategoryId,
+                    referencedTable: $$TransactionsTableReferences
+                        ._expenseCategoryIdTable(db),
+                    referencedColumn: $$TransactionsTableReferences
+                        ._expenseCategoryIdTable(db)
+                        .id,
                   ) as T;
                 }
 
@@ -4041,6 +4826,7 @@ typedef $$TransactionsTableProcessedTableManager = ProcessedTableManager<
     PrefetchHooks Function(
         {bool projectId,
         bool workerId,
+        bool expenseCategoryId,
         bool purchasesRefs,
         bool depositsRefs})>;
 typedef $$VendorsTableCreateCompanionBuilder = VendorsCompanion Function({
@@ -5318,6 +6104,8 @@ class $AppDatabaseManager {
       $$ProjectsTableTableManager(_db, _db.projects);
   $$WorkersTableTableManager get workers =>
       $$WorkersTableTableManager(_db, _db.workers);
+  $$ExpenseCategoriesTableTableManager get expenseCategories =>
+      $$ExpenseCategoriesTableTableManager(_db, _db.expenseCategories);
   $$TransactionsTableTableManager get transactions =>
       $$TransactionsTableTableManager(_db, _db.transactions);
   $$VendorsTableTableManager get vendors =>

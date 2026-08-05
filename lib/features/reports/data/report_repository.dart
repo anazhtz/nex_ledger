@@ -37,12 +37,17 @@ class DepositLedgerRow {
   });
 }
 
+/// Expense breakdown — Group → SubCategory → total amount
+typedef ExpenseCategoryBreakdown = Map<String, Map<String, double>>;
+
 class ReportRepository {
   final TransactionDao _txnDao;
   final ProjectDao _projectDao;
   final DepositDao _depositDao;
+  final ExpenseCategoryDao _categoryDao;
 
-  ReportRepository(this._txnDao, this._projectDao, this._depositDao);
+  ReportRepository(
+      this._txnDao, this._projectDao, this._depositDao, this._categoryDao);
 
   /// Compute P&L for a single project.
   /// ONLY sums transactions WHERE affectsPnl = true.
@@ -95,6 +100,30 @@ class ReportRepository {
   /// Get deposit ledger for a project.
   Future<List<DepositDetail>> getDepositLedger(int projectId) =>
       _depositDao.watchDepositsByProject(projectId).first;
+
+  /// Get expense breakdown by category group → sub-category → total amount.
+  /// Pass [projectId] = null for company-wide breakdown.
+  Future<ExpenseCategoryBreakdown> getExpenseCategoryBreakdown({
+    int? projectId,
+  }) async {
+    // Get all expense transactions with a category
+    final txns = await _txnDao.getExpensesWithCategory(projectId: projectId);
+    // Get all category details
+    final allCats = await _categoryDao.getAllActiveCategories();
+    final catById = {for (final c in allCats) c.id: c};
+
+    // Build the nested map: group → subCategory → sum
+    final result = <String, Map<String, double>>{};
+    for (final txn in txns) {
+      if (txn.expenseCategoryId == null) continue;
+      final cat = catById[txn.expenseCategoryId!];
+      if (cat == null) continue;
+      result
+          .putIfAbsent(cat.groupName, () => {})
+          .update(cat.subCategory, (v) => v + txn.amount, ifAbsent: () => txn.amount);
+    }
+    return result;
+  }
 
   /// Helper: sum net remaining deposits held for a project.
   Future<double> _getProjectDepositsHeld(int projectId) async {

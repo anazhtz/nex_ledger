@@ -57,6 +57,7 @@ class CashBookRepository {
     PaymentMode? paymentMode,
     String? narration,
     String? referenceNo,
+    int? expenseCategoryId,
   }) =>
       _dao.insertTransaction(
         TransactionsCompanion.insert(
@@ -68,6 +69,7 @@ class CashBookRepository {
           paymentMode: Value(paymentMode),
           narration: Value(narration),
           referenceNo: Value(referenceNo),
+          expenseCategoryId: Value(expenseCategoryId),
         ),
       );
 }

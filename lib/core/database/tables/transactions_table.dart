@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'projects_table.dart';
 import 'workers_table.dart';
+import 'expense_categories_table.dart';
 
 /// Unified transaction ledger — every money movement goes here.
 ///
@@ -13,6 +14,12 @@ class Transactions extends Table {
       integer().references(Projects, #id, onDelete: KeyAction.restrict)();
   IntColumn get workerId =>
       integer().nullable().references(Workers, #id, onDelete: KeyAction.restrict)();
+
+  /// Optional expense category — only set for type=expense entries.
+  /// setNull on delete so existing transactions survive category removal.
+  IntColumn get expenseCategoryId =>
+      integer().nullable().references(ExpenseCategories, #id, onDelete: KeyAction.setNull)();
+
   DateTimeColumn get date => dateTime()();
   TextColumn get type => textEnum<TransactionType>()();
 
