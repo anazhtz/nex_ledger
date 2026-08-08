@@ -33,6 +33,10 @@ dependencies:
   flutter_screenutil: ^5.9.3
   cupertino_icons: ^1.0.8
 
+  # Firebase Remote Config
+  firebase_core: ^3.6.0
+  firebase_remote_config: ^5.1.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

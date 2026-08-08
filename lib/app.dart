@@ -21,14 +21,30 @@ import 'package:nex_ledger/features/reports/presentation/project_pnl_screen.dart
 import 'package:nex_ledger/features/reports/presentation/deposit_ledger_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/consolidated_pnl_screen.dart';
 import 'package:nex_ledger/features/settings/presentation/settings_screen.dart';
+import 'package:nex_ledger/features/maintenance/presentation/maintenance_screen.dart';
+import 'package:nex_ledger/features/maintenance/providers/maintenance_provider.dart';
 import 'package:nex_ledger/shared/widgets/app_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
+  final maintenanceState = ref.watch(maintenanceProvider);
 
   return GoRouter(
     initialLocation: '/',
     redirect: (context, state) {
+      final isMaintenanceRoute = state.matchedLocation == '/maintenance';
+
+      if (maintenanceState.isUnderMaintenance) {
+        if (!isMaintenanceRoute) {
+          return '/maintenance';
+        }
+        return null;
+      }
+
+      if (isMaintenanceRoute) {
+        return '/';
+      }
+
       final isLoggingIn = state.matchedLocation == '/login';
       if (!authState.isUnlocked && !isLoggingIn) {
         return '/login';
@@ -39,6 +55,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/maintenance',
+        builder: (c, s) => const MaintenanceScreen(),
+      ),
       GoRoute(
         path: '/login',
         builder: (c, s) => const LoginScreen(),
