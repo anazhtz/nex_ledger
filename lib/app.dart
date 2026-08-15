@@ -14,9 +14,11 @@ import 'package:nex_ledger/features/purchase/presentation/purchase_list_screen.d
 import 'package:nex_ledger/features/purchase/presentation/purchase_form_screen.dart';
 import 'package:nex_ledger/features/labour/presentation/attendance_screen.dart';
 import 'package:nex_ledger/features/labour/presentation/labour_payment_screen.dart';
+import 'package:nex_ledger/features/labour/presentation/worker_detail_screen.dart';
 import 'package:nex_ledger/features/labour/presentation/workers_list_screen.dart';
 import 'package:nex_ledger/features/deposits/presentation/deposit_list_screen.dart';
 import 'package:nex_ledger/features/deposits/presentation/deposit_entry_form.dart';
+import 'package:nex_ledger/features/purchase/presentation/vendor_detail_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/project_pnl_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/deposit_ledger_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/consolidated_pnl_screen.dart';
@@ -116,6 +118,12 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (c, s) => const WorkersListScreen(),
           ),
           GoRoute(
+            path: '/labour/workers/:id',
+            builder: (c, s) => WorkerDetailScreen(
+              workerId: int.parse(s.pathParameters['id']!),
+            ),
+          ),
+          GoRoute(
             path: '/deposits',
             builder: (c, s) => const DepositListScreen(),
             routes: [
@@ -128,6 +136,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/reports/project-pnl',
             builder: (c, s) => const ProjectPnlScreen(),
+          ),
+          GoRoute(
+            path: '/vendors/:id',
+            builder: (c, s) => VendorDetailScreen(
+              vendorId: int.parse(s.pathParameters['id']!),
+            ),
           ),
           GoRoute(
             path: '/reports/deposit-ledger',

@@ -12,6 +12,11 @@ class ProjectPnl {
   final double netPnl;
   final double depositsHeld;
 
+  /// Unpaid vendor bills — purchase transactions where affectsCash = false.
+  /// These have already hit P&L (cost recognized) but cash has not moved yet.
+  /// Shown as a liability (Accounts Payable), NOT subtracted again from netPnl.
+  final double accountsPayable;
+
   ProjectPnl({
     required this.project,
     required this.income,
@@ -19,6 +24,7 @@ class ProjectPnl {
     required this.purchases,
     required this.labourCosts,
     required this.depositsHeld,
+    this.accountsPayable = 0.0,
   }) : netPnl = income - expenses - purchases - labourCosts;
 }
 
@@ -67,6 +73,7 @@ class ReportRepository {
         double expenses = 0.0;
         double purchases = 0.0;
         double labourCosts = 0.0;
+        double accountsPayable = 0.0;
 
         for (final t in txns) {
           if (t.affectsPnl) {
@@ -76,9 +83,19 @@ class ReportRepository {
               expenses += t.amount;
             } else if (t.type == TransactionType.purchase) {
               purchases += t.amount;
+              // If affectsCash is false, cash hasn't moved — it's a vendor liability.
+              if (!t.affectsCash) {
+                accountsPayable += t.amount;
+              }
             } else if (t.type == TransactionType.labourPayment) {
               labourCosts += t.amount;
             }
+          }
+          // purchasePayment (affectsPnl:false, affectsCash:true) reduces accounts payable
+          // when the vendor bill is eventually settled.
+          if (t.type == TransactionType.purchasePayment) {
+            accountsPayable -= t.amount;
+            if (accountsPayable < 0) accountsPayable = 0;
           }
         }
 
@@ -102,6 +119,7 @@ class ReportRepository {
           purchases: purchases,
           labourCosts: labourCosts,
           depositsHeld: depositsHeld,
+          accountsPayable: accountsPayable,
         );
       },
     );
@@ -135,6 +153,7 @@ class ReportRepository {
           double expenses = 0.0;
           double purchases = 0.0;
           double labourCosts = 0.0;
+          double accountsPayable = 0.0;
 
           for (final t in txns) {
             if (t.affectsPnl) {
@@ -144,9 +163,16 @@ class ReportRepository {
                 expenses += t.amount;
               } else if (t.type == TransactionType.purchase) {
                 purchases += t.amount;
+                if (!t.affectsCash) {
+                  accountsPayable += t.amount;
+                }
               } else if (t.type == TransactionType.labourPayment) {
                 labourCosts += t.amount;
               }
+            }
+            if (t.type == TransactionType.purchasePayment) {
+              accountsPayable -= t.amount;
+              if (accountsPayable < 0) accountsPayable = 0;
             }
           }
 
@@ -170,6 +196,7 @@ class ReportRepository {
             purchases: purchases,
             labourCosts: labourCosts,
             depositsHeld: depositsHeld,
+            accountsPayable: accountsPayable,
           ));
         }
 

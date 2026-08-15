@@ -69,9 +69,60 @@ class PurchaseDao extends DatabaseAccessor<AppDatabase>
         );
   }
 
+  /// Watch only pending/partial purchases (Accounts Payable view).
+  /// Optional [projectId] filter; if null, returns across all projects.
+  Stream<List<PurchaseDetail>> watchPendingPurchases({int? projectId}) {
+    final pendingStatuses = [
+      PaymentStatus.pending.name,
+      PaymentStatus.partial.name,
+    ];
+    final query = select(purchases).join([
+      innerJoin(
+          transactions, transactions.id.equalsExp(purchases.transactionId)),
+      innerJoin(vendors, vendors.id.equalsExp(purchases.vendorId)),
+      innerJoin(projects, projects.id.equalsExp(transactions.projectId)),
+    ])
+      ..where(purchases.paymentStatus.isIn(pendingStatuses));
+    if (projectId != null) {
+      query.where(transactions.projectId.equals(projectId));
+    }
+    query.orderBy([OrderingTerm.desc(transactions.date)]);
+    return query.watch().map(
+          (rows) => rows
+              .map(
+                (r) => PurchaseDetail(
+                  r.readTable(purchases),
+                  r.readTable(transactions),
+                  r.readTable(vendors),
+                  r.readTable(projects),
+                ),
+              )
+              .toList(),
+        );
+  }
+
+  /// Get a single purchase by its [purchaseId].
+  Future<PurchaseDetail?> getPurchaseById(int purchaseId) {
+    final query = select(purchases).join([
+      innerJoin(
+          transactions, transactions.id.equalsExp(purchases.transactionId)),
+      innerJoin(vendors, vendors.id.equalsExp(purchases.vendorId)),
+      innerJoin(projects, projects.id.equalsExp(transactions.projectId)),
+    ])
+      ..where(purchases.id.equals(purchaseId));
+    return query.getSingleOrNull().then((row) => row == null
+        ? null
+        : PurchaseDetail(
+            row.readTable(purchases),
+            row.readTable(transactions),
+            row.readTable(vendors),
+            row.readTable(projects),
+          ));
+  }
+
   /// Update payment status of a purchase.
   Future<int> updatePaymentStatus(
-      int purchaseId, PaymentStatus status) =>
+          int purchaseId, PaymentStatus status) =>
       (update(purchases)..where((p) => p.id.equals(purchaseId)))
           .write(PurchasesCompanion(paymentStatus: Value(status)));
 
@@ -82,6 +133,14 @@ class PurchaseDao extends DatabaseAccessor<AppDatabase>
 
   Future<List<Vendor>> getAllVendors() => select(vendors).get();
 
+  /// Get a single vendor by id.
+  Future<Vendor?> getVendorById(int vendorId) =>
+      (select(vendors)..where((v) => v.id.equals(vendorId))).getSingleOrNull();
+
+  /// Watch a vendor reactively (for the header card).
+  Stream<Vendor?> watchVendorById(int vendorId) =>
+      (select(vendors)..where((v) => v.id.equals(vendorId))).watchSingleOrNull();
+
   Future<int> insertVendor(VendorsCompanion entry) =>
       into(vendors).insert(entry);
 
@@ -90,4 +149,29 @@ class PurchaseDao extends DatabaseAccessor<AppDatabase>
 
   Future<int> deleteVendor(int id) =>
       (delete(vendors)..where((v) => v.id.equals(id))).go();
+
+  /// Stream of ALL purchases for a specific vendor across all projects,
+  /// newest first — used by the Vendor Ledger detail screen.
+  Stream<List<PurchaseDetail>> watchPurchasesByVendor(int vendorId) {
+    final query = select(purchases).join([
+      innerJoin(
+          transactions, transactions.id.equalsExp(purchases.transactionId)),
+      innerJoin(vendors, vendors.id.equalsExp(purchases.vendorId)),
+      innerJoin(projects, projects.id.equalsExp(transactions.projectId)),
+    ])
+      ..where(purchases.vendorId.equals(vendorId))
+      ..orderBy([OrderingTerm.desc(transactions.date)]);
+    return query.watch().map(
+          (rows) => rows
+              .map(
+                (r) => PurchaseDetail(
+                  r.readTable(purchases),
+                  r.readTable(transactions),
+                  r.readTable(vendors),
+                  r.readTable(projects),
+                ),
+              )
+              .toList(),
+        );
+  }
 }

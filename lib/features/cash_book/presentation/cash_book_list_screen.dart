@@ -258,6 +258,10 @@ class _TypeBadge extends StatelessWidget {
           Colors.indigo.shade700,
           Colors.indigo.shade50
         ),
+      TransactionType.purchasePayment => (
+          Colors.brown.shade700,
+          Colors.brown.shade50
+        ),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

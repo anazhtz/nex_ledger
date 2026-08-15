@@ -66,7 +66,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -95,6 +95,22 @@ class AppDatabase extends _$AppDatabase {
             // Replace old multi-group categories with the new flat 18-category list.
             await delete(expenseCategories).go();
             await _seedExpenseCategories();
+          }
+          if (from < 7) {
+            // Accrued expense support: pending/partial purchases should NOT move cash.
+            // For existing purchases with status != 'paid', set affectsCash = false on
+            // their linked transaction rows. Paid purchases are left as-is (affectsCash = true).
+            await customStatement(
+              '''
+              UPDATE transactions
+              SET affects_cash = 0
+              WHERE type = 'purchase'
+                AND id IN (
+                  SELECT transaction_id FROM purchases
+                  WHERE payment_status != 'paid'
+                )
+              ''',
+            );
           }
         },
       );

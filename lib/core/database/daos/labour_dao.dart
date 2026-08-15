@@ -187,4 +187,32 @@ class LabourDao extends DatabaseAccessor<AppDatabase> with _$LabourDaoMixin {
             ..where((a) => a.date.isSmallerOrEqualValue(to))
             ..orderBy([(a) => OrderingTerm.asc(a.date)]))
           .get();
+
+  /// Stream of ALL attendance records for a worker across all projects,
+  /// newest first — used by the Worker Ledger detail screen.
+  Stream<List<AttendanceWithWorker>> watchWorkerAttendanceAll(int workerId) {
+    final query = select(attendance).join([
+      innerJoin(workers, workers.id.equalsExp(attendance.workerId)),
+    ])
+      ..where(attendance.workerId.equals(workerId))
+      ..orderBy([OrderingTerm.desc(attendance.date)]);
+    return query.watch().map(
+          (rows) => rows
+              .map((r) => AttendanceWithWorker(
+                    r.readTable(attendance),
+                    r.readTable(workers),
+                  ))
+              .toList(),
+        );
+  }
+
+  /// Stream of ALL labour payment transactions for a worker across all projects,
+  /// newest first — used by the Worker Ledger detail screen.
+  Stream<List<Transaction>> watchWorkerPayments(int workerId) =>
+      (select(db.transactions)
+            ..where((t) => t.workerId.equals(workerId))
+            ..where(
+                (t) => t.type.equals(TransactionType.labourPayment.name))
+            ..orderBy([(t) => OrderingTerm.desc(t.date)]))
+          .watch();
 }

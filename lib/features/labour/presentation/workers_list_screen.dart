@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/features/labour/providers/labour_providers.dart';
 import 'package:nex_ledger/shared/widgets/confirm_dialog.dart';
 import 'package:nex_ledger/shared/widgets/data_table_card.dart';
@@ -133,14 +134,24 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
                           DataColumn(label: Text('Actions')),
                         ],
                         rows: workers.map((w) {
-                          return DataRow(cells: [
+                          return DataRow(
+                            onSelectChanged: (_) =>
+                                context.push('/labour/workers/${w.id}'),
+                            cells: [
                             DataCell(Text(
                               w.workerCode ?? '—',
                               style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF4F46E5)),
                             )),
-                            DataCell(Text(w.name,
+                            DataCell(GestureDetector(
+                              onTap: () => context.push('/labour/workers/${w.id}'),
+                              child: Text(
+                                w.name,
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.w600))),
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.underline,
+                                    color: Color(0xFF4F46E5)),
+                              ),
+                            )),
                             DataCell(Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(

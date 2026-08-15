@@ -83,12 +83,14 @@ class ConsolidatedPnlScreen extends ConsumerWidget {
                   double totalPurchases = 0;
                   double totalLabour = 0;
                   double totalDepositsHeld = 0;
+                  double totalAccountsPayable = 0;
                   for (final p in pnls) {
                     totalIncome += p.income;
                     totalExpenses += p.expenses;
                     totalPurchases += p.purchases;
                     totalLabour += p.labourCosts;
                     totalDepositsHeld += p.depositsHeld;
+                    totalAccountsPayable += p.accountsPayable;
                   }
                   final totalNet =
                       totalIncome - totalExpenses - totalPurchases - totalLabour;
@@ -197,6 +199,9 @@ class ConsolidatedPnlScreen extends ConsumerWidget {
                             DataColumn(
                                 label: Text('Deposit Held'),
                                 numeric: true),
+                            DataColumn(
+                                label: Text('Payable'),
+                                numeric: true),
                           ],
                           rows: [
                             ...pnls.map((pnl) {
@@ -228,6 +233,16 @@ class ConsolidatedPnlScreen extends ConsumerWidget {
                                 )),
                                 DataCell(Text(CurrencyFormatter.format(
                                     pnl.depositsHeld))),
+                                DataCell(Text(
+                                  CurrencyFormatter.format(
+                                      pnl.accountsPayable),
+                                  style: pnl.accountsPayable > 0
+                                      ? TextStyle(
+                                          color: Colors.red.shade700,
+                                          fontWeight: FontWeight.w500,
+                                        )
+                                      : null,
+                                )),
                               ]);
                             }),
                             // Totals row
@@ -277,6 +292,16 @@ class ConsolidatedPnlScreen extends ConsumerWidget {
                                       totalDepositsHeld),
                                   style: const TextStyle(
                                       fontWeight: FontWeight.w700),
+                                )),
+                                DataCell(Text(
+                                  CurrencyFormatter.format(
+                                      totalAccountsPayable),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    color: totalAccountsPayable > 0
+                                        ? Colors.red.shade700
+                                        : null,
+                                  ),
                                 )),
                               ],
                             ),

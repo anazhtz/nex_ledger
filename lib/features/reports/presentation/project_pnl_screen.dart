@@ -171,6 +171,14 @@ class ProjectPnlScreen extends ConsumerWidget {
                                   subtitle:
                                       'Deposits held: ${CurrencyFormatter.format(pnl.depositsHeld)}',
                                 );
+                                final c6 = StatCard(
+                                  label: 'Accounts Payable',
+                                  value: CurrencyFormatter.format(pnl.accountsPayable),
+                                  icon: Icons.account_balance_wallet_outlined,
+                                  iconColor: Colors.red.shade700,
+                                  valueColor: Colors.red.shade700,
+                                  subtitle: 'Unpaid vendor bills (liability)',
+                                );
 
                                 if (isCompact) {
                                   return Column(
@@ -190,6 +198,8 @@ class ProjectPnlScreen extends ConsumerWidget {
                                           Expanded(child: c4),
                                           const SizedBox(width: 12),
                                           Expanded(child: c5),
+                                          const SizedBox(width: 12),
+                                          Expanded(child: c6),
                                         ],
                                       ),
                                     ],
@@ -207,6 +217,8 @@ class ProjectPnlScreen extends ConsumerWidget {
                                     Expanded(child: c4),
                                     const SizedBox(width: 12),
                                     Expanded(child: c5),
+                                    const SizedBox(width: 12),
+                                    Expanded(child: c6),
                                   ],
                                 );
                               },
@@ -253,6 +265,15 @@ class ProjectPnlScreen extends ConsumerWidget {
                                       pnl.depositsHeld,
                                       Colors.orange.shade700,
                                     ),
+                                    if (pnl.accountsPayable > 0) ...
+                                      [
+                                        const SizedBox(height: 6),
+                                        _BreakdownRow(
+                                          'Accounts Payable (Vendor Dues — not double-counted)',
+                                          pnl.accountsPayable,
+                                          Colors.red.shade700,
+                                        ),
+                                      ],
                                   ],
                                 ),
                               ),

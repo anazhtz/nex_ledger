@@ -9,6 +9,7 @@ enum TransactionType {
   income,
   expense,
   purchase,
+  purchasePayment, // cash outflow when settling a pending/partial purchase bill
   labourPayment,
   deposit,
   depositRefund,
@@ -47,6 +48,7 @@ extension TransactionTypeX on TransactionType {
         TransactionType.income => 'Income',
         TransactionType.expense => 'Expense',
         TransactionType.purchase => 'Purchase',
+        TransactionType.purchasePayment => 'Purchase Payment',
         TransactionType.labourPayment => 'Labour Payment',
         TransactionType.deposit => 'Security Deposit',
         TransactionType.depositRefund => 'Deposit Refund',
@@ -54,11 +56,13 @@ extension TransactionTypeX on TransactionType {
       };
 
   /// Whether this transaction type affects P&L by default.
-  /// Deposit and depositRefund are always false; others are true.
+  /// purchasePayment is false — P&L was already hit when the bill was recorded.
+  /// Deposit-related types are always false.
   bool get defaultAffectsPnl => switch (this) {
         TransactionType.deposit => false,
         TransactionType.depositRefund => false,
         TransactionType.depositAdjustment => false,
+        TransactionType.purchasePayment => false, // P&L already hit at bill entry
         _ => true,
       };
 
@@ -66,6 +70,7 @@ extension TransactionTypeX on TransactionType {
   bool get isDebit => switch (this) {
         TransactionType.expense => true,
         TransactionType.purchase => true,
+        TransactionType.purchasePayment => true, // actual cash out when bill is settled
         TransactionType.labourPayment => true,
         TransactionType.depositRefund => true,
         _ => false,
