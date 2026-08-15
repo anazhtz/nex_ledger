@@ -2,16 +2,45 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nex_ledger/core/services/update_service.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/features/dashboard/providers/dashboard_provider.dart';
 import 'package:nex_ledger/shared/widgets/data_table_card.dart';
 import 'package:nex_ledger/shared/widgets/stat_card.dart';
+import 'package:nex_ledger/shared/widgets/update_prompt_dialog.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  static bool _hasCheckedUpdate = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!_hasCheckedUpdate) {
+      _hasCheckedUpdate = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkUpdateInBackground();
+      });
+    }
+  }
+
+  Future<void> _checkUpdateInBackground() async {
+    await Future.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
+    final info = await UpdateService.instance.checkForUpdates();
+    if (info != null && info.hasUpdate && mounted) {
+      UpdatePromptDialog.show(context, info);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final summaryAsync = ref.watch(dashboardSummaryProvider);
     final theme = Theme.of(context);
 

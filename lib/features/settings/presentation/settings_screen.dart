@@ -5,8 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
+import 'package:nex_ledger/core/services/update_service.dart';
 import 'package:nex_ledger/features/auth/providers/auth_provider.dart';
 import 'package:nex_ledger/features/expense_categories/providers/expense_category_providers.dart';
+import 'package:nex_ledger/shared/widgets/update_prompt_dialog.dart';
 import 'package:path_provider/path_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -586,6 +588,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                 SizedBox(height: 20.h),
 
+                // Software Updates Card
+                const _SoftwareUpdateCard(),
+
+                SizedBox(height: 20.h),
+
                 // Expense Categories Management Card
                 Card(
                   elevation: 0,
@@ -918,3 +925,175 @@ class _CategoryGroupTileState extends State<_CategoryGroupTile> {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Software Update Card
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _SoftwareUpdateCard extends StatefulWidget {
+  const _SoftwareUpdateCard();
+
+  @override
+  State<_SoftwareUpdateCard> createState() => _SoftwareUpdateCardState();
+}
+
+class _SoftwareUpdateCardState extends State<_SoftwareUpdateCard> {
+  bool _checking = false;
+  String? _statusMessage;
+  bool _hasUpdate = false;
+  AppUpdateInfo? _latestInfo;
+
+  Future<void> _checkUpdate() async {
+    setState(() {
+      _checking = true;
+      _statusMessage = null;
+    });
+
+    final info = await UpdateService.instance.checkForUpdates();
+    if (!mounted) return;
+
+    setState(() {
+      _checking = false;
+      _latestInfo = info;
+      if (info == null) {
+        _statusMessage = 'Could not check updates. Verify internet connection.';
+        _hasUpdate = false;
+      } else if (info.hasUpdate) {
+        _statusMessage = 'New version v${info.latestVersion} is available!';
+        _hasUpdate = true;
+      } else {
+        _statusMessage = 'You are on the latest version (v${info.currentVersion}).';
+        _hasUpdate = false;
+      }
+    });
+
+    if (info != null && info.hasUpdate && mounted) {
+      UpdatePromptDialog.show(context, info);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.r),
+        side: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(20.r),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(10.r),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Icon(
+                    Icons.cloud_sync_rounded,
+                    color: const Color(0xFF2563EB),
+                    size: 22.sp,
+                  ),
+                ),
+                SizedBox(width: 14.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Software Releases & Updates',
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0F172A),
+                        ),
+                      ),
+                      Text(
+                        'Pulls latest builds & bug fixes automatically from GitHub releases',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                FilledButton.icon(
+                  onPressed: _checking ? null : _checkUpdate,
+                  icon: _checking
+                      ? SizedBox(
+                          width: 14.r,
+                          height: 14.r,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.refresh_rounded, size: 16),
+                  label: Text(_checking ? 'Checking…' : 'Check Updates'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF2563EB),
+                  ),
+                ),
+              ],
+            ),
+            if (_statusMessage != null) ...[
+              SizedBox(height: 14.h),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: _hasUpdate
+                      ? const Color(0xFFFEF3C7)
+                      : const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(8.r),
+                  border: Border.all(
+                    color: _hasUpdate
+                        ? const Color(0xFFFCD34D)
+                        : const Color(0xFFE2E8F0),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      _hasUpdate
+                          ? Icons.new_releases_rounded
+                          : Icons.check_circle_rounded,
+                      size: 16.sp,
+                      color: _hasUpdate
+                          ? const Color(0xFFD97706)
+                          : const Color(0xFF059669),
+                    ),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        _statusMessage!,
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                          color: _hasUpdate
+                              ? const Color(0xFF92400E)
+                              : const Color(0xFF334155),
+                        ),
+                      ),
+                    ),
+                    if (_hasUpdate && _latestInfo != null)
+                      TextButton(
+                        onPressed: () =>
+                            UpdatePromptDialog.show(context, _latestInfo!),
+                        child: const Text('View Release'),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
