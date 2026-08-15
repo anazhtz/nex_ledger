@@ -36,6 +36,11 @@ class TransactionDao extends DatabaseAccessor<AppDatabase>
         );
   }
 
+  /// Watch all raw transactions ordered by date desc.
+  Stream<List<Transaction>> watchAllRawTransactions() =>
+      (select(transactions)..orderBy([(t) => OrderingTerm.desc(t.date)]))
+          .watch();
+
   /// Watch transactions for a specific project.
   Stream<List<Transaction>> watchTransactionsByProject(int projectId) =>
       (select(transactions)
@@ -129,5 +134,16 @@ class TransactionDao extends DatabaseAccessor<AppDatabase>
       query.where((t) => t.projectId.equals(projectId));
     }
     return query.get();
+  }
+
+  /// Watch all expense transactions that have a category assigned.
+  Stream<List<Transaction>> watchExpensesWithCategory({int? projectId}) {
+    final query = select(transactions)
+      ..where((t) => t.type.equals(TransactionType.expense.name))
+      ..where((t) => t.expenseCategoryId.isNotNull());
+    if (projectId != null) {
+      query.where((t) => t.projectId.equals(projectId));
+    }
+    return query.watch();
   }
 }

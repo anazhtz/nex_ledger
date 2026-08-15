@@ -29,6 +29,10 @@ class ProjectDao extends DatabaseAccessor<AppDatabase>
   Future<Project?> getProjectById(int id) =>
       (select(projects)..where((p) => p.id.equals(id))).getSingleOrNull();
 
+  /// Stream of a single project by id.
+  Stream<Project?> watchProjectById(int id) =>
+      (select(projects)..where((p) => p.id.equals(id))).watchSingleOrNull();
+
   /// Insert a new project. Returns the new row's id.
   Future<int> insertProject(ProjectsCompanion entry) =>
       into(projects).insert(entry);

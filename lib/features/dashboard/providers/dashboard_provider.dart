@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
-import 'package:nex_ledger/core/database/database_provider.dart';
 import 'package:nex_ledger/features/cash_book/providers/cash_book_providers.dart';
 import 'package:nex_ledger/features/deposits/providers/deposit_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
@@ -24,28 +23,19 @@ class DashboardSummary {
 
 final dashboardSummaryProvider =
     FutureProvider<DashboardSummary>((ref) async {
-  final cashBalance =
-      await ref.watch(cashBalanceProvider.future);
-  final depositsHeld =
-      await ref.watch(totalDepositsHeldProvider.future);
-  final activeProjects =
-      await ref.watch(activeProjectsProvider.future);
+  final cashBalance = await ref.watch(cashBalanceProvider.future);
+  final depositsHeld = await ref.watch(totalDepositsHeldProvider.future);
+  final activeProjects = await ref.watch(activeProjectsProvider.future);
+  final allPnls = await ref.watch(consolidatedPnlProvider.future);
 
-  // Get P&L for each active project
-  final repo = ref.watch(reportRepositoryProvider);
-  final pnls = <ProjectPnl>[];
-  for (final p in activeProjects) {
-    try {
-      pnls.add(await repo.getProjectPnl(p.id));
-    } catch (_) {
-      // Skip if project has no data yet
-    }
-  }
+  final activeIds = {for (final p in activeProjects) p.id};
+  final activePnls =
+      allPnls.where((p) => activeIds.contains(p.project.id)).toList();
 
   return DashboardSummary(
     cashBalance: cashBalance,
     totalDepositsHeld: depositsHeld,
     activeProjects: activeProjects,
-    projectPnls: pnls,
+    projectPnls: activePnls,
   );
 });

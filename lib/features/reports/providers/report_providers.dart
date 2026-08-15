@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/database_provider.dart';
 import 'package:nex_ledger/features/reports/data/report_repository.dart';
 
@@ -13,25 +12,25 @@ final reportRepositoryProvider = Provider<ReportRepository>((ref) {
   );
 });
 
-/// Project P&L for a specific project (family provider).
+/// Project P&L for a specific project (family stream provider).
 final projectPnlProvider =
-    FutureProvider.family<ProjectPnl, int>((ref, projectId) {
-  return ref.watch(reportRepositoryProvider).getProjectPnl(projectId);
+    StreamProvider.family<ProjectPnl, int>((ref, projectId) {
+  return ref.watch(reportRepositoryProvider).watchProjectPnl(projectId);
 });
 
-/// Consolidated P&L across all projects.
+/// Consolidated P&L across all projects (stream provider).
 final consolidatedPnlProvider =
-    FutureProvider<List<ProjectPnl>>((ref) {
-  return ref.watch(reportRepositoryProvider).getConsolidatedPnl();
+    StreamProvider<List<ProjectPnl>>((ref) {
+  return ref.watch(reportRepositoryProvider).watchConsolidatedPnl();
 });
 
 /// Selected project for P&L report screen.
 final reportProjectFilterProvider = StateProvider<int?>((ref) => null);
 
-/// Expense category breakdown — optionally scoped to a project.
+/// Expense category breakdown — optionally scoped to a project (stream provider).
 final expenseCategoryBreakdownProvider =
-    FutureProvider.family<ExpenseCategoryBreakdown, int?>((ref, projectId) {
+    StreamProvider.family<ExpenseCategoryBreakdown, int?>((ref, projectId) {
   return ref
       .watch(reportRepositoryProvider)
-      .getExpenseCategoryBreakdown(projectId: projectId);
+      .watchExpenseCategoryBreakdown(projectId: projectId);
 });
