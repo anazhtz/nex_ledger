@@ -267,21 +267,50 @@ class _VendorPurchaseTable extends StatelessWidget {
         final isPending =
             pd.purchase.paymentStatus == PaymentStatus.pending ||
                 pd.purchase.paymentStatus == PaymentStatus.partial;
+        final isStock = pd.purchase.isAdvanceStock;
+        final unallocated =
+            pd.transaction.amount - pd.purchase.allocatedAmount;
+        final canAllocate = isStock && unallocated > 0.01;
+
         return DataRow(cells: [
           DataCell(Text(DateFormatter.format(pd.transaction.date))),
           DataCell(Text(pd.project.name, overflow: TextOverflow.ellipsis)),
-          DataCell(SizedBox(
-            width: 180,
-            child: Text(pd.purchase.itemDescription,
-                overflow: TextOverflow.ellipsis),
+          DataCell(Row(
+            children: [
+              SizedBox(
+                width: 140,
+                child: Text(pd.purchase.itemDescription,
+                    overflow: TextOverflow.ellipsis),
+              ),
+              if (isStock) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF3C7),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    'Stock',
+                    style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFB45309)),
+                  ),
+                ),
+              ],
+            ],
           )),
           DataCell(Text(CurrencyFormatter.format(pd.transaction.amount))),
           DataCell(_PaymentStatusChip(pd.purchase.paymentStatus)),
           DataCell(
               Text(pd.transaction.paymentMode?.displayName ?? '—')),
           DataCell(
-            isPending
-                ? TextButton.icon(
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isPending)
+                  TextButton.icon(
                     onPressed: () =>
                         _showMarkPaidDialog(context, ref, pd),
                     icon: const Icon(Icons.check_circle_outline, size: 16),
@@ -290,8 +319,11 @@ class _VendorPurchaseTable extends StatelessWidget {
                       foregroundColor:
                           Theme.of(context).colorScheme.primary,
                     ),
-                  )
-                : const Text('—'),
+                  ),
+                if (!isPending && !canAllocate)
+                  const Text('—'),
+              ],
+            ),
           ),
         ]);
       }).toList(),

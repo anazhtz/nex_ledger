@@ -12,4 +12,8 @@ class Purchases extends Table {
       integer().references(Vendors, #id, onDelete: KeyAction.restrict)();
   TextColumn get itemDescription => text()();
   TextColumn get paymentStatus => textEnum<PaymentStatus>()();
+  BoolColumn get isAdvanceStock =>
+      boolean().withDefault(const Constant(false))();
+  RealColumn get allocatedAmount =>
+      real().withDefault(const Constant(0.0))();
 }

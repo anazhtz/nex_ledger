@@ -81,10 +81,11 @@ class ReportRepository {
               income += t.amount;
             } else if (t.type == TransactionType.expense) {
               expenses += t.amount;
-            } else if (t.type == TransactionType.purchase) {
+            } else if (t.type == TransactionType.purchase ||
+                t.type == TransactionType.stockAllocation) {
               purchases += t.amount;
-              // If affectsCash is false, cash hasn't moved — it's a vendor liability.
-              if (!t.affectsCash) {
+              // If it's a purchase and affectsCash is false, cash hasn't moved — it's a vendor liability.
+              if (t.type == TransactionType.purchase && !t.affectsCash) {
                 accountsPayable += t.amount;
               }
             } else if (t.type == TransactionType.labourPayment) {
@@ -161,9 +162,10 @@ class ReportRepository {
                 income += t.amount;
               } else if (t.type == TransactionType.expense) {
                 expenses += t.amount;
-              } else if (t.type == TransactionType.purchase) {
+              } else if (t.type == TransactionType.purchase ||
+                  t.type == TransactionType.stockAllocation) {
                 purchases += t.amount;
-                if (!t.affectsCash) {
+                if (t.type == TransactionType.purchase && !t.affectsCash) {
                   accountsPayable += t.amount;
                 }
               } else if (t.type == TransactionType.labourPayment) {

@@ -86,3 +86,24 @@ final vendorLedgerSummaryProvider =
     );
   });
 });
+
+// ─── Advance Stock Asset Providers ──────────────────────────────────────────
+
+/// Stream of all advance stock purchases.
+final advanceStockPurchasesProvider =
+    StreamProvider<List<PurchaseDetail>>((ref) {
+  final repo = ref.watch(purchaseRepositoryProvider);
+  return repo.watchAdvanceStockPurchases();
+});
+
+/// Total value of unallocated advance stock held across the company (Asset).
+final totalUnallocatedStockAssetProvider = StreamProvider<double>((ref) {
+  return ref.watch(advanceStockPurchasesProvider.stream).map((list) {
+    return list.fold<double>(0.0, (sum, pd) {
+      final remaining =
+          pd.transaction.amount - pd.purchase.allocatedAmount;
+      return sum + (remaining > 0 ? remaining : 0.0);
+    });
+  });
+});
+

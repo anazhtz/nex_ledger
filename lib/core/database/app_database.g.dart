@@ -2058,9 +2058,34 @@ class $PurchasesTable extends Purchases
               type: DriftSqlType.string, requiredDuringInsert: true)
           .withConverter<PaymentStatus>(
               $PurchasesTable.$converterpaymentStatus);
+  static const VerificationMeta _isAdvanceStockMeta =
+      const VerificationMeta('isAdvanceStock');
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, transactionId, vendorId, itemDescription, paymentStatus];
+  late final GeneratedColumn<bool> isAdvanceStock = GeneratedColumn<bool>(
+      'is_advance_stock', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_advance_stock" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _allocatedAmountMeta =
+      const VerificationMeta('allocatedAmount');
+  @override
+  late final GeneratedColumn<double> allocatedAmount = GeneratedColumn<double>(
+      'allocated_amount', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        transactionId,
+        vendorId,
+        itemDescription,
+        paymentStatus,
+        isAdvanceStock,
+        allocatedAmount
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2096,6 +2121,18 @@ class $PurchasesTable extends Purchases
     } else if (isInserting) {
       context.missing(_itemDescriptionMeta);
     }
+    if (data.containsKey('is_advance_stock')) {
+      context.handle(
+          _isAdvanceStockMeta,
+          isAdvanceStock.isAcceptableOrUnknown(
+              data['is_advance_stock']!, _isAdvanceStockMeta));
+    }
+    if (data.containsKey('allocated_amount')) {
+      context.handle(
+          _allocatedAmountMeta,
+          allocatedAmount.isAcceptableOrUnknown(
+              data['allocated_amount']!, _allocatedAmountMeta));
+    }
     return context;
   }
 
@@ -2116,6 +2153,10 @@ class $PurchasesTable extends Purchases
       paymentStatus: $PurchasesTable.$converterpaymentStatus.fromSql(
           attachedDatabase.typeMapping.read(
               DriftSqlType.string, data['${effectivePrefix}payment_status'])!),
+      isAdvanceStock: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_advance_stock'])!,
+      allocatedAmount: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}allocated_amount'])!,
     );
   }
 
@@ -2135,12 +2176,16 @@ class Purchase extends DataClass implements Insertable<Purchase> {
   final int vendorId;
   final String itemDescription;
   final PaymentStatus paymentStatus;
+  final bool isAdvanceStock;
+  final double allocatedAmount;
   const Purchase(
       {required this.id,
       required this.transactionId,
       required this.vendorId,
       required this.itemDescription,
-      required this.paymentStatus});
+      required this.paymentStatus,
+      required this.isAdvanceStock,
+      required this.allocatedAmount});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -2152,6 +2197,8 @@ class Purchase extends DataClass implements Insertable<Purchase> {
       map['payment_status'] = Variable<String>(
           $PurchasesTable.$converterpaymentStatus.toSql(paymentStatus));
     }
+    map['is_advance_stock'] = Variable<bool>(isAdvanceStock);
+    map['allocated_amount'] = Variable<double>(allocatedAmount);
     return map;
   }
 
@@ -2162,6 +2209,8 @@ class Purchase extends DataClass implements Insertable<Purchase> {
       vendorId: Value(vendorId),
       itemDescription: Value(itemDescription),
       paymentStatus: Value(paymentStatus),
+      isAdvanceStock: Value(isAdvanceStock),
+      allocatedAmount: Value(allocatedAmount),
     );
   }
 
@@ -2175,6 +2224,8 @@ class Purchase extends DataClass implements Insertable<Purchase> {
       itemDescription: serializer.fromJson<String>(json['itemDescription']),
       paymentStatus: $PurchasesTable.$converterpaymentStatus
           .fromJson(serializer.fromJson<String>(json['paymentStatus'])),
+      isAdvanceStock: serializer.fromJson<bool>(json['isAdvanceStock']),
+      allocatedAmount: serializer.fromJson<double>(json['allocatedAmount']),
     );
   }
   @override
@@ -2187,6 +2238,8 @@ class Purchase extends DataClass implements Insertable<Purchase> {
       'itemDescription': serializer.toJson<String>(itemDescription),
       'paymentStatus': serializer.toJson<String>(
           $PurchasesTable.$converterpaymentStatus.toJson(paymentStatus)),
+      'isAdvanceStock': serializer.toJson<bool>(isAdvanceStock),
+      'allocatedAmount': serializer.toJson<double>(allocatedAmount),
     };
   }
 
@@ -2195,13 +2248,17 @@ class Purchase extends DataClass implements Insertable<Purchase> {
           int? transactionId,
           int? vendorId,
           String? itemDescription,
-          PaymentStatus? paymentStatus}) =>
+          PaymentStatus? paymentStatus,
+          bool? isAdvanceStock,
+          double? allocatedAmount}) =>
       Purchase(
         id: id ?? this.id,
         transactionId: transactionId ?? this.transactionId,
         vendorId: vendorId ?? this.vendorId,
         itemDescription: itemDescription ?? this.itemDescription,
         paymentStatus: paymentStatus ?? this.paymentStatus,
+        isAdvanceStock: isAdvanceStock ?? this.isAdvanceStock,
+        allocatedAmount: allocatedAmount ?? this.allocatedAmount,
       );
   Purchase copyWithCompanion(PurchasesCompanion data) {
     return Purchase(
@@ -2216,6 +2273,12 @@ class Purchase extends DataClass implements Insertable<Purchase> {
       paymentStatus: data.paymentStatus.present
           ? data.paymentStatus.value
           : this.paymentStatus,
+      isAdvanceStock: data.isAdvanceStock.present
+          ? data.isAdvanceStock.value
+          : this.isAdvanceStock,
+      allocatedAmount: data.allocatedAmount.present
+          ? data.allocatedAmount.value
+          : this.allocatedAmount,
     );
   }
 
@@ -2226,14 +2289,16 @@ class Purchase extends DataClass implements Insertable<Purchase> {
           ..write('transactionId: $transactionId, ')
           ..write('vendorId: $vendorId, ')
           ..write('itemDescription: $itemDescription, ')
-          ..write('paymentStatus: $paymentStatus')
+          ..write('paymentStatus: $paymentStatus, ')
+          ..write('isAdvanceStock: $isAdvanceStock, ')
+          ..write('allocatedAmount: $allocatedAmount')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, transactionId, vendorId, itemDescription, paymentStatus);
+  int get hashCode => Object.hash(id, transactionId, vendorId, itemDescription,
+      paymentStatus, isAdvanceStock, allocatedAmount);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2242,7 +2307,9 @@ class Purchase extends DataClass implements Insertable<Purchase> {
           other.transactionId == this.transactionId &&
           other.vendorId == this.vendorId &&
           other.itemDescription == this.itemDescription &&
-          other.paymentStatus == this.paymentStatus);
+          other.paymentStatus == this.paymentStatus &&
+          other.isAdvanceStock == this.isAdvanceStock &&
+          other.allocatedAmount == this.allocatedAmount);
 }
 
 class PurchasesCompanion extends UpdateCompanion<Purchase> {
@@ -2251,12 +2318,16 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
   final Value<int> vendorId;
   final Value<String> itemDescription;
   final Value<PaymentStatus> paymentStatus;
+  final Value<bool> isAdvanceStock;
+  final Value<double> allocatedAmount;
   const PurchasesCompanion({
     this.id = const Value.absent(),
     this.transactionId = const Value.absent(),
     this.vendorId = const Value.absent(),
     this.itemDescription = const Value.absent(),
     this.paymentStatus = const Value.absent(),
+    this.isAdvanceStock = const Value.absent(),
+    this.allocatedAmount = const Value.absent(),
   });
   PurchasesCompanion.insert({
     this.id = const Value.absent(),
@@ -2264,6 +2335,8 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
     required int vendorId,
     required String itemDescription,
     required PaymentStatus paymentStatus,
+    this.isAdvanceStock = const Value.absent(),
+    this.allocatedAmount = const Value.absent(),
   })  : transactionId = Value(transactionId),
         vendorId = Value(vendorId),
         itemDescription = Value(itemDescription),
@@ -2274,6 +2347,8 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
     Expression<int>? vendorId,
     Expression<String>? itemDescription,
     Expression<String>? paymentStatus,
+    Expression<bool>? isAdvanceStock,
+    Expression<double>? allocatedAmount,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2281,6 +2356,8 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
       if (vendorId != null) 'vendor_id': vendorId,
       if (itemDescription != null) 'item_description': itemDescription,
       if (paymentStatus != null) 'payment_status': paymentStatus,
+      if (isAdvanceStock != null) 'is_advance_stock': isAdvanceStock,
+      if (allocatedAmount != null) 'allocated_amount': allocatedAmount,
     });
   }
 
@@ -2289,13 +2366,17 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
       Value<int>? transactionId,
       Value<int>? vendorId,
       Value<String>? itemDescription,
-      Value<PaymentStatus>? paymentStatus}) {
+      Value<PaymentStatus>? paymentStatus,
+      Value<bool>? isAdvanceStock,
+      Value<double>? allocatedAmount}) {
     return PurchasesCompanion(
       id: id ?? this.id,
       transactionId: transactionId ?? this.transactionId,
       vendorId: vendorId ?? this.vendorId,
       itemDescription: itemDescription ?? this.itemDescription,
       paymentStatus: paymentStatus ?? this.paymentStatus,
+      isAdvanceStock: isAdvanceStock ?? this.isAdvanceStock,
+      allocatedAmount: allocatedAmount ?? this.allocatedAmount,
     );
   }
 
@@ -2318,6 +2399,12 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
       map['payment_status'] = Variable<String>(
           $PurchasesTable.$converterpaymentStatus.toSql(paymentStatus.value));
     }
+    if (isAdvanceStock.present) {
+      map['is_advance_stock'] = Variable<bool>(isAdvanceStock.value);
+    }
+    if (allocatedAmount.present) {
+      map['allocated_amount'] = Variable<double>(allocatedAmount.value);
+    }
     return map;
   }
 
@@ -2328,7 +2415,9 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
           ..write('transactionId: $transactionId, ')
           ..write('vendorId: $vendorId, ')
           ..write('itemDescription: $itemDescription, ')
-          ..write('paymentStatus: $paymentStatus')
+          ..write('paymentStatus: $paymentStatus, ')
+          ..write('isAdvanceStock: $isAdvanceStock, ')
+          ..write('allocatedAmount: $allocatedAmount')
           ..write(')'))
         .toString();
   }
@@ -5049,6 +5138,8 @@ typedef $$PurchasesTableCreateCompanionBuilder = PurchasesCompanion Function({
   required int vendorId,
   required String itemDescription,
   required PaymentStatus paymentStatus,
+  Value<bool> isAdvanceStock,
+  Value<double> allocatedAmount,
 });
 typedef $$PurchasesTableUpdateCompanionBuilder = PurchasesCompanion Function({
   Value<int> id,
@@ -5056,6 +5147,8 @@ typedef $$PurchasesTableUpdateCompanionBuilder = PurchasesCompanion Function({
   Value<int> vendorId,
   Value<String> itemDescription,
   Value<PaymentStatus> paymentStatus,
+  Value<bool> isAdvanceStock,
+  Value<double> allocatedAmount,
 });
 
 final class $$PurchasesTableReferences
@@ -5112,6 +5205,14 @@ class $$PurchasesTableFilterComposer
       get paymentStatus => $composableBuilder(
           column: $table.paymentStatus,
           builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<bool> get isAdvanceStock => $composableBuilder(
+      column: $table.isAdvanceStock,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get allocatedAmount => $composableBuilder(
+      column: $table.allocatedAmount,
+      builder: (column) => ColumnFilters(column));
 
   $$TransactionsTableFilterComposer get transactionId {
     final $$TransactionsTableFilterComposer composer = $composerBuilder(
@@ -5174,6 +5275,14 @@ class $$PurchasesTableOrderingComposer
       column: $table.paymentStatus,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<bool> get isAdvanceStock => $composableBuilder(
+      column: $table.isAdvanceStock,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get allocatedAmount => $composableBuilder(
+      column: $table.allocatedAmount,
+      builder: (column) => ColumnOrderings(column));
+
   $$TransactionsTableOrderingComposer get transactionId {
     final $$TransactionsTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -5233,6 +5342,12 @@ class $$PurchasesTableAnnotationComposer
   GeneratedColumnWithTypeConverter<PaymentStatus, String> get paymentStatus =>
       $composableBuilder(
           column: $table.paymentStatus, builder: (column) => column);
+
+  GeneratedColumn<bool> get isAdvanceStock => $composableBuilder(
+      column: $table.isAdvanceStock, builder: (column) => column);
+
+  GeneratedColumn<double> get allocatedAmount => $composableBuilder(
+      column: $table.allocatedAmount, builder: (column) => column);
 
   $$TransactionsTableAnnotationComposer get transactionId {
     final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
@@ -5303,6 +5418,8 @@ class $$PurchasesTableTableManager extends RootTableManager<
             Value<int> vendorId = const Value.absent(),
             Value<String> itemDescription = const Value.absent(),
             Value<PaymentStatus> paymentStatus = const Value.absent(),
+            Value<bool> isAdvanceStock = const Value.absent(),
+            Value<double> allocatedAmount = const Value.absent(),
           }) =>
               PurchasesCompanion(
             id: id,
@@ -5310,6 +5427,8 @@ class $$PurchasesTableTableManager extends RootTableManager<
             vendorId: vendorId,
             itemDescription: itemDescription,
             paymentStatus: paymentStatus,
+            isAdvanceStock: isAdvanceStock,
+            allocatedAmount: allocatedAmount,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -5317,6 +5436,8 @@ class $$PurchasesTableTableManager extends RootTableManager<
             required int vendorId,
             required String itemDescription,
             required PaymentStatus paymentStatus,
+            Value<bool> isAdvanceStock = const Value.absent(),
+            Value<double> allocatedAmount = const Value.absent(),
           }) =>
               PurchasesCompanion.insert(
             id: id,
@@ -5324,6 +5445,8 @@ class $$PurchasesTableTableManager extends RootTableManager<
             vendorId: vendorId,
             itemDescription: itemDescription,
             paymentStatus: paymentStatus,
+            isAdvanceStock: isAdvanceStock,
+            allocatedAmount: allocatedAmount,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (

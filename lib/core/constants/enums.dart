@@ -10,6 +10,7 @@ enum TransactionType {
   expense,
   purchase,
   purchasePayment, // cash outflow when settling a pending/partial purchase bill
+  stockAllocation, // material/stock allocated to a project from advance stock (hits P&L, no cash)
   labourPayment,
   deposit,
   depositRefund,
@@ -49,6 +50,7 @@ extension TransactionTypeX on TransactionType {
         TransactionType.expense => 'Expense',
         TransactionType.purchase => 'Purchase',
         TransactionType.purchasePayment => 'Purchase Payment',
+        TransactionType.stockAllocation => 'Stock Allocation',
         TransactionType.labourPayment => 'Labour Payment',
         TransactionType.deposit => 'Security Deposit',
         TransactionType.depositRefund => 'Deposit Refund',
@@ -67,6 +69,7 @@ extension TransactionTypeX on TransactionType {
       };
 
   /// Whether this is a cash outflow (debit).
+  /// Note: stockAllocation does NOT move cash (cash was already paid during bulk purchase).
   bool get isDebit => switch (this) {
         TransactionType.expense => true,
         TransactionType.purchase => true,

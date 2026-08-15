@@ -19,16 +19,21 @@ class PurchaseRepository {
   Stream<List<PurchaseDetail>> watchPendingPurchases({int? projectId}) =>
       _purchaseDao.watchPendingPurchases(projectId: projectId);
 
+  /// Watch only advance stock purchases.
+  Stream<List<PurchaseDetail>> watchAdvanceStockPurchases() =>
+      _purchaseDao.watchAdvanceStockPurchases();
+
   Stream<List<Vendor>> watchAllVendors() => _purchaseDao.watchAllVendors();
 
   /// Create a purchase atomically: inserts a Transaction + a Purchase row.
   ///
-  /// **Accrual logic:**
-  /// - [PaymentStatus.paid] → `affectsPnl: true, affectsCash: true`
-  ///   (expense recognized + cash moved immediately)
-  /// - [PaymentStatus.pending] / [PaymentStatus.partial] →
-  ///   `affectsPnl: true, affectsCash: false`
-  ///   (expense recognized as a liability; cash moves separately when [markPurchasePaid] is called)
+  /// **Accrual & Asset logic:**
+  /// - [isAdvanceStock] = true:
+  ///   - `affectsPnl: false` (held as Asset/Stock; does not reduce project profit upon purchase)
+  ///   - `affectsCash: true` if paid, `false` if pending
+  /// - [isAdvanceStock] = false (Standard Direct Purchase):
+  ///   - `affectsPnl: true` (expense recognized immediately for project)
+  ///   - `affectsCash: true` if paid, `false` if pending
   Future<void> addPurchase({
     required int projectId,
     required int vendorId,
@@ -39,9 +44,11 @@ class PurchaseRepository {
     PaymentMode? paymentMode,
     String? narration,
     String? referenceNo,
+    bool isAdvanceStock = false,
   }) async {
-    // Pending/partial → does NOT move cash yet (accrued expense / liability).
     final affectsCash = paymentStatus == PaymentStatus.paid;
+    // If it's advance stock asset, P&L is NOT affected at purchase time.
+    final affectsPnl = !isAdvanceStock;
 
     await _db.transaction(() async {
       final txnId = await _transactionDao.insertTransaction(
@@ -49,7 +56,7 @@ class PurchaseRepository {
           projectId: projectId,
           date: date,
           type: TransactionType.purchase,
-          affectsPnl: const Value(true),
+          affectsPnl: Value(affectsPnl),
           affectsCash: Value(affectsCash),
           amount: amount,
           paymentMode: Value(paymentMode),
@@ -63,6 +70,8 @@ class PurchaseRepository {
               vendorId: vendorId,
               itemDescription: itemDescription,
               paymentStatus: paymentStatus,
+              isAdvanceStock: Value(isAdvanceStock),
+              allocatedAmount: const Value(0.0),
             ),
           );
     });
@@ -118,11 +127,60 @@ class PurchaseRepository {
     });
   }
 
+  /// Allocate material/stock from an advance stock purchase to a specific target project.
+  ///
+  /// This inserts a [TransactionType.stockAllocation] row for [targetProjectId]:
+  /// - `affectsPnl: true` (Project P&L recognizes the material cost)
+  /// - `affectsCash: false` (Zero cash movement — cash was already paid at bulk purchase time)
+  ///
+  /// Updates [allocatedAmount] on the original advance stock purchase.
+  Future<void> allocateStockToProject({
+    required int purchaseId,
+    required int targetProjectId,
+    required DateTime date,
+    required double amountToAllocate,
+    String? narration,
+    String? referenceNo,
+  }) async {
+    final detail = await _purchaseDao.getPurchaseById(purchaseId);
+    if (detail == null) {
+      throw StateError('Purchase $purchaseId not found');
+    }
+    if (!detail.purchase.isAdvanceStock) {
+      throw StateError('Purchase $purchaseId is not marked as Advance Stock');
+    }
+    final unallocated =
+        detail.transaction.amount - detail.purchase.allocatedAmount;
+    if (amountToAllocate > unallocated + 0.01) {
+      throw StateError(
+          'Cannot allocate $amountToAllocate; only $unallocated remaining in stock');
+    }
+
+    await _db.transaction(() async {
+      // 1. Insert allocation transaction for the target project
+      await _transactionDao.insertTransaction(
+        TransactionsCompanion.insert(
+          projectId: targetProjectId,
+          date: date,
+          type: TransactionType.stockAllocation,
+          affectsPnl: const Value(true), // hits target project P&L
+          affectsCash: const Value(false), // zero cash movement
+          amount: amountToAllocate,
+          narration: Value(narration ??
+              'Stock allocated: ${detail.purchase.itemDescription}'),
+          referenceNo: Value(referenceNo),
+        ),
+      );
+
+      // 2. Update allocated amount on the advance stock purchase record
+      final newAllocated =
+          detail.purchase.allocatedAmount + amountToAllocate;
+      await _purchaseDao.updateAllocatedAmount(purchaseId, newAllocated);
+    });
+  }
+
   /// Outstanding (unpaid) amount for a purchase detail.
   double _outstandingAmount(PurchaseDetail detail) {
-    // For pending: the full amount is outstanding.
-    // For partial: ideally tracked, but conservatively return full amount.
-    // The purchase transaction amount = original bill amount.
     return detail.transaction.amount;
   }
 

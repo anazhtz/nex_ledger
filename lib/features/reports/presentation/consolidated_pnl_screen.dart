@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/core/utils/excel_export_service.dart';
+import 'package:nex_ledger/features/purchase/providers/purchase_providers.dart';
 import 'package:nex_ledger/features/reports/providers/report_providers.dart';
 import 'package:nex_ledger/shared/widgets/data_table_card.dart';
 
@@ -12,6 +13,7 @@ class ConsolidatedPnlScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pnlAsync = ref.watch(consolidatedPnlProvider);
+    final stockAssetAsync = ref.watch(totalUnallocatedStockAssetProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -133,6 +135,16 @@ class ConsolidatedPnlScreen extends ConsumerWidget {
                                       'Labour',
                                       totalLabour,
                                       Colors.purple.shade700),
+                                  stockAssetAsync.maybeWhen(
+                                    data: (stock) => stock > 0
+                                        ? _TotalChip(
+                                            'Stock Asset',
+                                            stock,
+                                            const Color(0xFFD97706),
+                                          )
+                                        : const SizedBox.shrink(),
+                                    orElse: () => const SizedBox.shrink(),
+                                  ),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 16, vertical: 12),

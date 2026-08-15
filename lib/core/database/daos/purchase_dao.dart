@@ -126,6 +126,36 @@ class PurchaseDao extends DatabaseAccessor<AppDatabase>
       (update(purchases)..where((p) => p.id.equals(purchaseId)))
           .write(PurchasesCompanion(paymentStatus: Value(status)));
 
+  /// Update allocated amount of an advance stock purchase.
+  Future<int> updateAllocatedAmount(
+          int purchaseId, double newAllocatedAmount) =>
+      (update(purchases)..where((p) => p.id.equals(purchaseId)))
+          .write(PurchasesCompanion(allocatedAmount: Value(newAllocatedAmount)));
+
+  /// Watch only advance stock purchases.
+  Stream<List<PurchaseDetail>> watchAdvanceStockPurchases() {
+    final query = select(purchases).join([
+      innerJoin(
+          transactions, transactions.id.equalsExp(purchases.transactionId)),
+      innerJoin(vendors, vendors.id.equalsExp(purchases.vendorId)),
+      innerJoin(projects, projects.id.equalsExp(transactions.projectId)),
+    ])
+      ..where(purchases.isAdvanceStock.equals(true))
+      ..orderBy([OrderingTerm.desc(transactions.date)]);
+    return query.watch().map(
+          (rows) => rows
+              .map(
+                (r) => PurchaseDetail(
+                  r.readTable(purchases),
+                  r.readTable(transactions),
+                  r.readTable(vendors),
+                  r.readTable(projects),
+                ),
+              )
+              .toList(),
+        );
+  }
+
   // --- Vendor helpers ---
 
   Stream<List<Vendor>> watchAllVendors() =>
