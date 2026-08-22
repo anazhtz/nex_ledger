@@ -22,6 +22,8 @@ import 'package:nex_ledger/features/purchase/presentation/vendor_detail_screen.d
 import 'package:nex_ledger/features/reports/presentation/project_pnl_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/deposit_ledger_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/consolidated_pnl_screen.dart';
+import 'package:nex_ledger/features/reports/presentation/day_book_screen.dart';
+import 'package:nex_ledger/features/bank_accounts/presentation/bank_accounts_screen.dart';
 import 'package:nex_ledger/features/settings/presentation/settings_screen.dart';
 import 'package:nex_ledger/features/maintenance/presentation/maintenance_screen.dart';
 import 'package:nex_ledger/features/maintenance/providers/maintenance_provider.dart';
@@ -93,6 +95,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: 'new',
                 builder: (c, s) => const CashBookEntryForm(),
               ),
+              GoRoute(
+                path: ':id/edit',
+                builder: (c, s) => CashBookEntryForm(
+                  transactionId: int.parse(s.pathParameters['id']!),
+                ),
+              ),
             ],
           ),
           GoRoute(
@@ -102,6 +110,12 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'new',
                 builder: (c, s) => const PurchaseFormScreen(),
+              ),
+              GoRoute(
+                path: ':id/edit',
+                builder: (c, s) => PurchaseFormScreen(
+                  purchaseId: int.parse(s.pathParameters['id']!),
+                ),
               ),
             ],
           ),
@@ -150,6 +164,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/reports/consolidated',
             builder: (c, s) => const ConsolidatedPnlScreen(),
+          ),
+          GoRoute(
+            path: '/reports/day-book',
+            builder: (c, s) => const DayBookScreen(),
+          ),
+          GoRoute(
+            path: '/bank-accounts',
+            builder: (c, s) => const BankAccountsScreen(),
           ),
           GoRoute(
             path: '/settings',

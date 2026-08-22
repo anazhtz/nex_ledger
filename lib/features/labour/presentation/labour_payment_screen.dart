@@ -6,6 +6,8 @@ import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
+import 'package:nex_ledger/features/bank_accounts/data/bank_account_repository.dart';
+import 'package:nex_ledger/features/bank_accounts/providers/bank_account_providers.dart';
 import 'package:nex_ledger/features/cash_book/providers/cash_book_providers.dart';
 import 'package:nex_ledger/features/labour/data/labour_repository.dart';
 import 'package:nex_ledger/features/labour/providers/labour_providers.dart';
@@ -29,6 +31,7 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
   bool _paying = false;
 
   PaymentMode? _paymentMode;
+  int? _selectedBankAccountId;
   final _narrationCtrl = TextEditingController();
 
   @override
@@ -44,17 +47,22 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
   }
 
   Future<void> _loadSummary() async {
-    if (_selectedProject == null || _selectedWorker == null) return;
+    if (_selectedWorker == null || _selectedProject == null) return;
     setState(() => _loadingSummary = true);
     try {
-      final summary =
-          await ref.read(labourRepositoryProvider).getPaymentSummary(
-                _selectedWorker!,
-                _selectedProject!,
-                _from,
-                _to,
-              );
-      if (mounted) setState(() => _summary = summary);
+      final summary = await ref.read(labourRepositoryProvider).getPaymentSummary(
+            _selectedWorker!,
+            _selectedProject!,
+            _from,
+            _to,
+          );
+      setState(() => _summary = summary);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error calculating summary: $e')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _loadingSummary = false);
     }
@@ -73,6 +81,56 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
       return;
     }
 
+    // Negative balance check on wage payout
+    final accountsWithBalances =
+        ref.read(bankAccountsWithBalancesProvider).asData?.value;
+    if (accountsWithBalances != null && accountsWithBalances.isNotEmpty) {
+      final targetAcc = accountsWithBalances
+          .cast<BankAccountWithBalance?>()
+          .firstWhere(
+            (a) => a?.account.id == _selectedBankAccountId,
+            orElse: () => null,
+          );
+      final currentBal = targetAcc != null
+          ? targetAcc.currentBalance
+          : (ref.read(liquiditySummaryProvider).asData?.value.totalLiquidity ??
+              0.0);
+
+      if (currentBal - _summary!.amountDue < 0) {
+        final proceed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Row(
+              children: [
+                Icon(Icons.warning_amber_rounded,
+                    color: Colors.orange.shade800),
+                const SizedBox(width: 8),
+                const Text('Negative Balance Warning'),
+              ],
+            ),
+            content: Text(
+              'This wage payment of ${CurrencyFormatter.format(_summary!.amountDue)} exceeds your current balance in ${targetAcc?.account.accountName ?? 'Total Liquidity'} (${CurrencyFormatter.format(currentBal)}).\n\n'
+              'Recording this will make your balance negative (${CurrencyFormatter.format(currentBal - _summary!.amountDue)}).\n\n'
+              'Do you wish to proceed anyway?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel / Change Account'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                style: FilledButton.styleFrom(
+                    backgroundColor: Colors.orange.shade800),
+                child: const Text('Proceed Anyway'),
+              ),
+            ],
+          ),
+        );
+        if (proceed != true) return;
+      }
+    }
+
     setState(() => _paying = true);
     try {
       await ref.read(labourRepositoryProvider).recordPayment(
@@ -81,6 +139,7 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
             date: DateTime.now(),
             amount: _summary!.amountDue,
             paymentMode: _paymentMode ?? PaymentMode.cash,
+            bankAccountId: _selectedBankAccountId,
             narration: _narrationCtrl.text.isEmpty ? null : _narrationCtrl.text,
           );
 
@@ -130,6 +189,7 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
     final theme = Theme.of(context);
     final projectsAsync = ref.watch(activeProjectsProvider);
     final workersAsync = ref.watch(workerListProvider);
+    final accountsAsync = ref.watch(bankAccountsWithBalancesProvider);
 
     return CallbackShortcuts(
       bindings: {
@@ -294,7 +354,7 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                       const InputDecoration(labelText: 'Payment Mode'),
                                   items: [
                                     const DropdownMenuItem(
-                                        value: null, child: Text('— Select —')),
+                                        value: null, child: Text('— Select Mode —')),
                                     ...PaymentMode.values.map(
                                       (m) => DropdownMenuItem(
                                         value: m,
@@ -305,6 +365,60 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                   onChanged: (v) => setState(() => _paymentMode = v),
                                 ),
                                 const SizedBox(height: 12),
+
+                                // Bank / Cash Account
+                                accountsAsync.when(
+                                  loading: () => const SizedBox.shrink(),
+                                  error: (_, __) => const SizedBox.shrink(),
+                                  data: (accounts) {
+                                    if (accounts.isEmpty) return const SizedBox.shrink();
+                                    return Column(
+                                      children: [
+                                        DropdownButtonFormField<int?>(
+                                          value: _selectedBankAccountId,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Paid From (Account)',
+                                            prefixIcon: Icon(Icons.account_balance_outlined),
+                                          ),
+                                          items: [
+                                            const DropdownMenuItem(
+                                              value: null,
+                                              child: Text('— Auto (Default) —'),
+                                            ),
+                                            ...accounts.map(
+                                              (a) => DropdownMenuItem(
+                                                value: a.account.id,
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      '${a.account.accountName} (${a.account.isCashAccount ? 'Cash' : 'Bank'})',
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Text(
+                                                      '• ${CurrencyFormatter.format(a.currentBalance)}',
+                                                      style: TextStyle(
+                                                        fontSize: 11,
+                                                        color: a.currentBalance < 0
+                                                            ? Colors.red.shade700
+                                                            : Colors.green.shade700,
+                                                        fontWeight: FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                          onChanged: (v) => setState(
+                                              () => _selectedBankAccountId = v),
+                                        ),
+                                        const SizedBox(height: 12),
+                                      ],
+                                    );
+                                  },
+                                ),
+
                                 TextFormField(
                                   controller: _narrationCtrl,
                                   decoration:

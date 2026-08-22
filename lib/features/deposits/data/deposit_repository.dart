@@ -32,6 +32,7 @@ class DepositRepository {
     required DateTime date,
     required double amount,
     PaymentMode? paymentMode,
+    int? bankAccountId,
     String? narration,
     String? referenceNo,
   }) async {
@@ -44,6 +45,7 @@ class DepositRepository {
           affectsPnl: const Value(false), // CRITICAL: never affects P&L
           amount: amount,
           paymentMode: Value(paymentMode),
+          bankAccountId: Value(bankAccountId),
           narration: Value(narration),
           referenceNo: Value(referenceNo),
         ),
@@ -115,6 +117,7 @@ class DepositRepository {
     required double refundAmount,
     required DateTime date,
     PaymentMode? paymentMode,
+    int? bankAccountId,
     String? narration,
     String? referenceNo,
   }) async {
@@ -127,11 +130,24 @@ class DepositRepository {
           affectsPnl: const Value(false), // CRITICAL: never affects P&L
           amount: refundAmount,
           paymentMode: Value(paymentMode),
+          bankAccountId: Value(bankAccountId),
           narration: Value(narration ?? 'Deposit refund'),
           referenceNo: Value(referenceNo),
         ),
       );
       await _depositDao.updateDepositStatus(depositId, DepositStatus.refunded);
+    });
+  }
+
+  /// OPERATION 4: Delete a deposit record.
+  ///
+  /// Permanently removes the deposit liability row and its linked transaction.
+  Future<void> deleteDeposit(int depositId) async {
+    final deposit = await _depositDao.getDepositById(depositId);
+    if (deposit == null) return;
+    await _db.transaction(() async {
+      await (_db.delete(_db.deposits)..where((d) => d.id.equals(depositId))).go();
+      await (_db.delete(_db.transactions)..where((t) => t.id.equals(deposit.transactionId))).go();
     });
   }
 }

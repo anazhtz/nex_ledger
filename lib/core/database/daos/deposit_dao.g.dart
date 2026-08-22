@@ -8,6 +8,7 @@ mixin _$DepositDaoMixin on DatabaseAccessor<AppDatabase> {
   $WorkersTable get workers => attachedDatabase.workers;
   $ExpenseCategoriesTable get expenseCategories =>
       attachedDatabase.expenseCategories;
+  $BankAccountsTable get bankAccounts => attachedDatabase.bankAccounts;
   $TransactionsTable get transactions => attachedDatabase.transactions;
   $DepositsTable get deposits => attachedDatabase.deposits;
 }

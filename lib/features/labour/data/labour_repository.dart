@@ -69,6 +69,24 @@ class LabourRepository {
         ),
       );
 
+  /// Batch update attendance for multiple workers atomically.
+  Future<void> saveBatchAttendance({
+    required int projectId,
+    required DateTime date,
+    required Map<int, AttendanceStatus> workerStatuses,
+  }) async {
+    final noonDate = DateTime(date.year, date.month, date.day, 12);
+    final entries = workerStatuses.entries.map((e) {
+      return AttendanceCompanion.insert(
+        workerId: e.key,
+        projectId: projectId,
+        date: noonDate,
+        status: e.value,
+      );
+    }).toList();
+    await _labourDao.saveBatchAttendance(entries);
+  }
+
   // --- Payments ---
 
   Future<WorkerPaymentSummary> getPaymentSummary(
@@ -86,6 +104,7 @@ class LabourRepository {
     required DateTime date,
     required double amount,
     PaymentMode? paymentMode,
+    int? bankAccountId,
     String? narration,
     String? referenceNo,
   }) =>
@@ -98,6 +117,7 @@ class LabourRepository {
           affectsPnl: const Value(true),
           amount: amount,
           paymentMode: Value(paymentMode),
+          bankAccountId: Value(bankAccountId),
           narration: Value(narration),
           referenceNo: Value(referenceNo),
         ),

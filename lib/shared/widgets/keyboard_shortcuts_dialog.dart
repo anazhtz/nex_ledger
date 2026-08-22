@@ -79,6 +79,8 @@ class KeyboardShortcutsDialog extends StatelessWidget {
               _buildCategoryHeader('🧭 Gateway Navigation'),
               _buildShortcutRow('Alt + D', 'Go to Dashboard'),
               _buildShortcutRow('Alt + C', 'Go to Cash Book Ledger'),
+              _buildShortcutRow('Alt + B', 'Go to Bank & Cash Accounts'),
+              _buildShortcutRow('Alt + Y', 'Go to Daily Day-Book Sheet'),
               _buildShortcutRow('Alt + R', 'Go to Reports & P&L'),
               _buildShortcutRow('Alt + S', 'Go to Settings'),
               _buildShortcutRow('Ctrl + L / Cmd + L', 'Lock Financial Ledger (PIN Lock)'),

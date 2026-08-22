@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
@@ -195,31 +196,106 @@ class CashBookListScreen extends ConsumerWidget {
                     DataColumn(label: Text('Ref No.')),
                     DataColumn(label: Text('Debit (−)'), numeric: true),
                     DataColumn(label: Text('Credit (+)'), numeric: true),
+                    DataColumn(label: Text('Actions')),
                   ],
                   rows: txns.map((tw) {
                     final isDebit = tw.transaction.type.isDebit;
                     final amount = tw.transaction.amount;
+                    final isDirectCashBook =
+                        tw.transaction.type == TransactionType.income ||
+                            tw.transaction.type == TransactionType.expense;
+
                     return DataRow(cells: [
                       DataCell(Text(DateFormatter.format(tw.transaction.date))),
-                      DataCell(Text(tw.project.name,
-                          overflow: TextOverflow.ellipsis)),
+                      DataCell(
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: 160.w),
+                          child: Tooltip(
+                            message: '${tw.project.code} — ${tw.project.name}',
+                            child: Text(
+                              tw.project.name,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ),
+                        ),
+                      ),
                       DataCell(
                         _TypeBadge(type: tw.transaction.type),
                       ),
-                      DataCell(Text(tw.transaction.narration ?? '—')),
-                      DataCell(Text(tw.transaction.referenceNo ?? '—')),
-                      DataCell(Text(
-                        isDebit ? CurrencyFormatter.format(amount) : '—',
-                        style: isDebit
-                            ? TextStyle(color: Colors.red.shade700)
-                            : null,
-                      )),
-                      DataCell(Text(
-                        !isDebit ? CurrencyFormatter.format(amount) : '—',
-                        style: !isDebit
-                            ? TextStyle(color: Colors.green.shade700)
-                            : null,
-                      )),
+                      DataCell(
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: 200.w),
+                          child: Tooltip(
+                            message: tw.transaction.narration ?? '',
+                            child: Text(
+                              tw.transaction.narration ?? '—',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ),
+                        ),
+                      ),
+                      DataCell(
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: 100.w),
+                          child: Text(
+                            tw.transaction.referenceNo ?? '—',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ),
+                      DataCell(
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            isDebit ? CurrencyFormatter.format(amount) : '—',
+                            style: isDebit
+                                ? TextStyle(
+                                    color: Colors.red.shade700,
+                                    fontWeight: FontWeight.w600)
+                                : null,
+                          ),
+                        ),
+                      ),
+                      DataCell(
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            !isDebit ? CurrencyFormatter.format(amount) : '—',
+                            style: !isDebit
+                                ? TextStyle(
+                                    color: Colors.green.shade700,
+                                    fontWeight: FontWeight.w600)
+                                : null,
+                          ),
+                        ),
+                      ),
+                      DataCell(
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (isDirectCashBook)
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined, size: 17),
+                                tooltip: 'Edit Entry',
+                                onPressed: () => context
+                                    .go('/cash-book/${tw.transaction.id}/edit'),
+                              ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline_rounded,
+                                  size: 17),
+                              tooltip: 'Delete Entry',
+                              color: theme.colorScheme.error,
+                              onPressed: () =>
+                                  _deleteTransaction(context, ref, tw),
+                            ),
+                          ],
+                        ),
+                      ),
                     ]);
                   }).toList(),
                 ),
@@ -229,6 +305,64 @@ class CashBookListScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _deleteTransaction(
+    BuildContext context,
+    WidgetRef ref,
+    TransactionWithProject tw,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.delete_forever_rounded, color: Colors.red.shade700),
+            const SizedBox(width: 8),
+            const Text('Delete Cash Entry?'),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to permanently delete this ${tw.transaction.type.displayName} entry of ${CurrencyFormatter.format(tw.transaction.amount)} for project "${tw.project.name}"?\n\n'
+          'This will remove the transaction and update your cash balance.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style:
+                FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            child: const Text('Delete Entry'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await ref
+            .read(cashBookRepositoryProvider)
+            .deleteTransaction(tw.transaction.id);
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✓ Transaction deleted successfully.'),
+            backgroundColor: Color(0xFF059669),
+          ),
+        );
+      } catch (e) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting transaction: $e'),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
+      }
+    }
   }
 }
 

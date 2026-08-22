@@ -38,7 +38,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           }
         }
         destDir ??= (await getDownloadsDirectory())?.path;
-        destDir ??= (await getApplicationDocumentsDirectory())?.path;
+        destDir ??= (await getApplicationDocumentsDirectory()).path;
       } else {
         destDir = await FilePicker.platform.getDirectoryPath(
           dialogTitle: 'Select Destination Folder for NexLedger Backup',
@@ -140,7 +140,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     try {
       final destPath = await AppDatabase.getDatabasePath();
       final backupFile = File(selectedFilePath);
-      final destFile = File(destPath);
 
       if (!await backupFile.exists()) {
         throw Exception('Selected backup file does not exist.');

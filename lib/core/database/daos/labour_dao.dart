@@ -114,6 +114,15 @@ class LabourDao extends DatabaseAccessor<AppDatabase> with _$LabourDaoMixin {
     }
   }
 
+  /// Batch upsert attendance for multiple workers in a single database transaction.
+  Future<void> saveBatchAttendance(List<AttendanceCompanion> entries) async {
+    await db.transaction(() async {
+      for (final entry in entries) {
+        await upsertAttendance(entry);
+      }
+    });
+  }
+
   /// Calculate payment summary for a worker using ALL-TIME Running Balance (prevents double payments).
   Future<WorkerPaymentSummary> getWorkerPaymentSummary(
     int workerId,

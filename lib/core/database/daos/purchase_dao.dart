@@ -126,6 +126,15 @@ class PurchaseDao extends DatabaseAccessor<AppDatabase>
       (update(purchases)..where((p) => p.id.equals(purchaseId)))
           .write(PurchasesCompanion(paymentStatus: Value(status)));
 
+  /// Update paid amount and payment status of a purchase.
+  Future<int> updatePaymentDetails(
+          int purchaseId, double newPaidAmount, PaymentStatus status) =>
+      (update(purchases)..where((p) => p.id.equals(purchaseId)))
+          .write(PurchasesCompanion(
+            paidAmount: Value(newPaidAmount),
+            paymentStatus: Value(status),
+          ));
+
   /// Update allocated amount of an advance stock purchase.
   Future<int> updateAllocatedAmount(
           int purchaseId, double newAllocatedAmount) =>

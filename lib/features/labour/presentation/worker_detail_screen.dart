@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
+import 'package:nex_ledger/core/database/database_provider.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
 import 'package:nex_ledger/features/labour/providers/labour_providers.dart';
@@ -355,14 +356,14 @@ class _AttendanceBadge extends StatelessWidget {
 // Payment history table
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _PaymentHistoryTable extends StatelessWidget {
+class _PaymentHistoryTable extends ConsumerWidget {
   final List<Transaction> payments;
   final Map<int, String> projectMap;
   const _PaymentHistoryTable(
       {required this.payments, required this.projectMap});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final totalPaid =
         payments.fold<double>(0.0, (s, t) => s + t.amount);
 
@@ -374,6 +375,7 @@ class _PaymentHistoryTable extends StatelessWidget {
         DataColumn(label: Text('Project')),
         DataColumn(label: Text('Amount'), numeric: true),
         DataColumn(label: Text('Mode')),
+        DataColumn(label: Text('Action')),
       ],
       rows: payments.map((t) {
         return DataRow(cells: [
@@ -388,9 +390,75 @@ class _PaymentHistoryTable extends StatelessWidget {
                 color: Colors.teal.shade700, fontWeight: FontWeight.w600),
           )),
           DataCell(Text(t.paymentMode?.displayName ?? '—')),
+          DataCell(
+            IconButton(
+              icon: const Icon(Icons.delete_outline_rounded, size: 16),
+              tooltip: 'Delete Payment',
+              color: Colors.red.shade700,
+              onPressed: () => _deletePayment(context, ref, t),
+            ),
+          ),
         ]);
       }).toList(),
     );
+  }
+
+  Future<void> _deletePayment(
+    BuildContext context,
+    WidgetRef ref,
+    Transaction t,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.delete_forever_rounded, color: Colors.red.shade700),
+            const SizedBox(width: 8),
+            const Text('Delete Labour Payment?'),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to delete this payment record of ${CurrencyFormatter.format(t.amount)} dated ${DateFormatter.format(t.date)}?\n\n'
+          'This will increase the worker\'s running balance due and restore the cash balance.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style:
+                FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            child: const Text('Delete Payment'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        final db = ref.read(appDatabaseProvider);
+        await (db.delete(db.transactions)..where((tbl) => tbl.id.equals(t.id)))
+            .go();
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✓ Labour payment record deleted.'),
+            backgroundColor: Color(0xFF059669),
+          ),
+        );
+      } catch (e) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
+      }
+    }
   }
 }
 

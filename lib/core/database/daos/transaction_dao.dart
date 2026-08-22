@@ -85,9 +85,21 @@ class TransactionDao extends DatabaseAccessor<AppDatabase>
         );
   }
 
+  /// Get a single transaction by id.
+  Future<Transaction?> getTransactionById(int id) =>
+      (select(transactions)..where((t) => t.id.equals(id))).getSingleOrNull();
+
   /// Insert a transaction and return its id.
   Future<int> insertTransaction(TransactionsCompanion entry) =>
       into(transactions).insert(entry);
+
+  /// Update an existing transaction.
+  Future<bool> updateTransaction(TransactionsCompanion entry) =>
+      update(transactions).replace(entry);
+
+  /// Delete a transaction by id.
+  Future<int> deleteTransaction(int id) =>
+      (delete(transactions)..where((t) => t.id.equals(id))).go();
 
   /// Sum of all cash-affecting amounts (credits - debits) = cash balance.
   /// Credits: income, deposit. Debits: expense, purchase, labourPayment, depositRefund.

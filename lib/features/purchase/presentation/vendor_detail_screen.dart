@@ -245,14 +245,18 @@ class _VendorPurchaseTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final total = purchases.fold<double>(0.0, (s, p) => s + p.transaction.amount);
-    final pending = purchases
-        .where((p) => p.purchase.paymentStatus != PaymentStatus.paid)
-        .fold<double>(0.0, (s, p) => s + p.transaction.amount);
+    final total = purchases.fold<double>(
+        0.0, (sum, p) => sum + p.transaction.amount);
+    final pending = purchases.fold<double>(
+        0.0,
+        (s, p) =>
+            s +
+            (p.transaction.amount - p.purchase.paidAmount)
+                .clamp(0.0, double.infinity));
 
     return DataTableCard(
       title: 'Purchase History  •  ${purchases.length} bills  •  Total: ${CurrencyFormatter.format(total)}'
-          '${pending > 0 ? "  •  Pending: ${CurrencyFormatter.format(pending)}" : ""}',
+          '${pending > 0 ? "  •  Pending Due: ${CurrencyFormatter.format(pending)}" : ""}',
       emptyMessage: 'No purchases from this vendor yet.',
       columns: const [
         DataColumn(label: Text('Date')),
@@ -268,40 +272,67 @@ class _VendorPurchaseTable extends StatelessWidget {
             pd.purchase.paymentStatus == PaymentStatus.pending ||
                 pd.purchase.paymentStatus == PaymentStatus.partial;
         final isStock = pd.purchase.isAdvanceStock;
-        final unallocated =
-            pd.transaction.amount - pd.purchase.allocatedAmount;
-        final canAllocate = isStock && unallocated > 0.01;
 
         return DataRow(cells: [
           DataCell(Text(DateFormatter.format(pd.transaction.date))),
           DataCell(Text(pd.project.name, overflow: TextOverflow.ellipsis)),
-          DataCell(Row(
+          DataCell(Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(
-                width: 140,
-                child: Text(pd.purchase.itemDescription,
-                    overflow: TextOverflow.ellipsis),
+              Row(
+                children: [
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 160),
+                    child: Text(pd.purchase.itemDescription,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w600)),
+                  ),
+                  if (isStock) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF3C7),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'Stock',
+                        style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFB45309)),
+                      ),
+                    ),
+                  ],
+                ],
               ),
-              if (isStock) ...[
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEF3C7),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text(
-                    'Stock',
-                    style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFB45309)),
-                  ),
+              if (pd.purchase.quantity > 0 && pd.purchase.unitRate > 0)
+                Text(
+                  '${pd.purchase.quantity % 1 == 0 ? pd.purchase.quantity.toInt() : pd.purchase.quantity} ${pd.purchase.unit ?? 'units'} × ₹${pd.purchase.unitRate % 1 == 0 ? pd.purchase.unitRate.toInt() : pd.purchase.unitRate.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                      fontSize: 11, color: Color(0xFF64748B)),
                 ),
-              ],
             ],
           )),
-          DataCell(Text(CurrencyFormatter.format(pd.transaction.amount))),
+          DataCell(Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(CurrencyFormatter.format(pd.transaction.amount),
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              if (pd.purchase.paymentStatus == PaymentStatus.partial)
+                Text(
+                  'Due: ${CurrencyFormatter.format((pd.transaction.amount - pd.purchase.paidAmount).clamp(0.0, double.infinity))}',
+                  style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.red.shade700,
+                      fontWeight: FontWeight.bold),
+                ),
+            ],
+          )),
           DataCell(_PaymentStatusChip(pd.purchase.paymentStatus)),
           DataCell(
               Text(pd.transaction.paymentMode?.displayName ?? '—')),
@@ -320,7 +351,7 @@ class _VendorPurchaseTable extends StatelessWidget {
                           Theme.of(context).colorScheme.primary,
                     ),
                   ),
-                if (!isPending && !canAllocate)
+                if (!isPending)
                   const Text('—'),
               ],
             ),
@@ -353,13 +384,26 @@ class _MarkPaidDialog extends StatefulWidget {
 }
 
 class _MarkPaidDialogState extends State<_MarkPaidDialog> {
+  late final TextEditingController _amountPaidCtrl;
   DateTime _date = DateTime.now();
   PaymentMode? _mode;
   final _refCtrl = TextEditingController();
   bool _saving = false;
 
   @override
+  void initState() {
+    super.initState();
+    final total = widget.pd.transaction.amount;
+    final alreadyPaid = widget.pd.purchase.paidAmount;
+    final due = (total - alreadyPaid).clamp(0.0, double.infinity);
+    _amountPaidCtrl = TextEditingController(
+      text: due % 1 == 0 ? due.toInt().toString() : due.toStringAsFixed(2),
+    );
+  }
+
+  @override
   void dispose() {
+    _amountPaidCtrl.dispose();
     _refCtrl.dispose();
     super.dispose();
   }
@@ -367,10 +411,14 @@ class _MarkPaidDialogState extends State<_MarkPaidDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final total = widget.pd.transaction.amount;
+    final alreadyPaid = widget.pd.purchase.paidAmount;
+    final due = (total - alreadyPaid).clamp(0.0, double.infinity);
+
     return AlertDialog(
-      title: const Text('Confirm Payment'),
+      title: const Text('Record Vendor Payment'),
       content: SizedBox(
-        width: 380,
+        width: 420,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -381,31 +429,82 @@ class _MarkPaidDialogState extends State<_MarkPaidDialog> {
                 color: theme.colorScheme.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Row(children: [
-                Expanded(
-                  child: Text(widget.pd.purchase.itemDescription,
-                      style: theme.textTheme.titleSmall
-                          ?.copyWith(fontWeight: FontWeight.w600)),
-                ),
-                Text(
-                  CurrencyFormatter.format(widget.pd.transaction.amount),
-                  style: theme.textTheme.titleMedium?.copyWith(
-                      color: Colors.red.shade700,
-                      fontWeight: FontWeight.w700),
-                ),
-              ]),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    Expanded(
+                      child: Text(widget.pd.purchase.itemDescription,
+                          style: theme.textTheme.titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w600)),
+                    ),
+                    Text(
+                      CurrencyFormatter.format(total),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                          color: const Color(0xFF0F172A),
+                          fontWeight: FontWeight.w700),
+                    ),
+                  ]),
+                  if (alreadyPaid > 0) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Text('Already Paid: ${CurrencyFormatter.format(alreadyPaid)}',
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.green.shade700,
+                                fontWeight: FontWeight.w600)),
+                        const Spacer(),
+                        Text('Credit Due: ${CurrencyFormatter.format(due)}',
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.red.shade700,
+                                fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
             ),
             const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _amountPaidCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Amount to Pay Now (₹) *',
+                      prefixText: '₹ ',
+                      isDense: true,
+                    ),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton(
+                  onPressed: () {
+                    setState(() {
+                      _amountPaidCtrl.text = due % 1 == 0
+                          ? due.toInt().toString()
+                          : due.toStringAsFixed(2);
+                    });
+                  },
+                  child: const Text('Pay Full'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.calendar_today_outlined),
-              title: Text('Date: ${DateFormatter.format(_date)}'),
+              title: Text('Payment Date: ${DateFormatter.format(_date)}'),
               onTap: () async {
                 final picked = await showDatePicker(
                   context: context,
                   initialDate: _date,
                   firstDate: DateTime(2020),
-                  lastDate: DateTime.now(),
+                  lastDate: DateTime(2100),
                 );
                 if (picked != null) setState(() => _date = picked);
               },
@@ -416,7 +515,7 @@ class _MarkPaidDialogState extends State<_MarkPaidDialog> {
                   labelText: 'Payment Mode', isDense: true),
               items: [
                 const DropdownMenuItem(
-                    value: null, child: Text('— Select —')),
+                    value: null, child: Text('— Select Mode —')),
                 ...PaymentMode.values.map((m) =>
                     DropdownMenuItem(value: m, child: Text(m.displayName))),
               ],
@@ -445,22 +544,46 @@ class _MarkPaidDialogState extends State<_MarkPaidDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2))
               : const Icon(Icons.check, size: 18),
-          label: Text(_saving ? 'Saving…' : 'Confirm Payment'),
+          label: Text(_saving ? 'Recording…' : 'Record Payment'),
         ),
       ],
     );
   }
 
   Future<void> _save() async {
+    final cleanStr =
+        _amountPaidCtrl.text.replaceAll(',', '').replaceAll(' ', '').trim();
+    final amountPaid = double.tryParse(cleanStr);
+    if (amountPaid == null || amountPaid <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Please enter a valid positive payment amount.')),
+      );
+      return;
+    }
+
+    final total = widget.pd.transaction.amount;
+    final alreadyPaid = widget.pd.purchase.paidAmount;
+    final due = (total - alreadyPaid).clamp(0.0, double.infinity);
+
+    if (amountPaid > due + 0.01) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Payment amount (${CurrencyFormatter.format(amountPaid)}) cannot exceed outstanding due (${CurrencyFormatter.format(due)}).'),
+        ),
+      );
+      return;
+    }
+
     setState(() => _saving = true);
     try {
       final db = widget.ref.read(appDatabaseProvider);
-      final repo =
-          PurchaseRepository(db.purchaseDao, db.transactionDao, db);
+      final repo = PurchaseRepository(db.purchaseDao, db.transactionDao, db);
       await repo.markPurchasePaid(
         purchaseId: widget.pd.purchase.id,
         paymentDate: _date,
-        amountPaid: widget.pd.transaction.amount,
+        amountPaid: amountPaid,
         paymentMode: _mode,
         referenceNo:
             _refCtrl.text.trim().isEmpty ? null : _refCtrl.text.trim(),
@@ -469,15 +592,15 @@ class _MarkPaidDialogState extends State<_MarkPaidDialog> {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(
-            'Payment recorded for ${widget.pd.purchase.itemDescription}'),
-        backgroundColor: Colors.green,
+            '✓ Payment of ${CurrencyFormatter.format(amountPaid)} recorded for ${widget.pd.purchase.itemDescription}'),
+        backgroundColor: const Color(0xFF059669),
       ));
     } catch (e) {
       setState(() => _saving = false);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Error: $e'),
-        backgroundColor: Colors.red,
+        backgroundColor: Colors.red.shade700,
       ));
     }
   }

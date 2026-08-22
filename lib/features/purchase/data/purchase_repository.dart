@@ -33,20 +33,31 @@ class PurchaseRepository {
   ///   - `affectsCash: true` if paid, `false` if pending
   /// - [isAdvanceStock] = false (Standard Direct Purchase):
   ///   - `affectsPnl: true` (expense recognized immediately for project)
-  ///   - `affectsCash: true` if paid, `false` if pending
+  ///   - `affectsCash: true` if paid, `false` if pending / credit
   Future<void> addPurchase({
     required int projectId,
     required int vendorId,
     required DateTime date,
     required String itemDescription,
     required double amount,
+    double quantity = 1.0,
+    double unitRate = 0.0,
+    String? unit,
+    double paidAmount = 0.0,
     required PaymentStatus paymentStatus,
     PaymentMode? paymentMode,
+    int? bankAccountId,
     String? narration,
     String? referenceNo,
     bool isAdvanceStock = false,
   }) async {
-    final affectsCash = paymentStatus == PaymentStatus.paid;
+    final isFullPaid = paymentStatus == PaymentStatus.paid;
+    final isPartial = paymentStatus == PaymentStatus.partial;
+    final actualPaid = isFullPaid ? amount : (isPartial ? paidAmount : 0.0);
+
+    // Primary bill transaction:
+    // affectsCash is true ONLY when paid in full on the main bill.
+    final affectsCash = isFullPaid;
     // If it's advance stock asset, P&L is NOT affected at purchase time.
     final affectsPnl = !isAdvanceStock;
 
@@ -60,15 +71,39 @@ class PurchaseRepository {
           affectsCash: Value(affectsCash),
           amount: amount,
           paymentMode: Value(paymentMode),
+          bankAccountId: Value(bankAccountId),
           narration: Value(narration),
           referenceNo: Value(referenceNo),
         ),
       );
+
+      // If partial advance was paid at time of credit purchase, insert a purchasePayment transaction for the cash out
+      if (isPartial && actualPaid > 0) {
+        await _transactionDao.insertTransaction(
+          TransactionsCompanion.insert(
+            projectId: projectId,
+            date: date,
+            type: TransactionType.purchasePayment,
+            affectsPnl: const Value(false), // P&L already recognized by main purchase bill
+            affectsCash: const Value(true), // moves cash
+            amount: actualPaid,
+            paymentMode: Value(paymentMode),
+            bankAccountId: Value(bankAccountId),
+            narration: Value('Advance payment for: $itemDescription'),
+            referenceNo: Value(referenceNo),
+          ),
+        );
+      }
+
       await _db.into(_db.purchases).insert(
             PurchasesCompanion.insert(
               transactionId: txnId,
               vendorId: vendorId,
               itemDescription: itemDescription,
+              quantity: Value(quantity),
+              unitRate: Value(unitRate),
+              unit: Value(unit),
+              paidAmount: Value(actualPaid),
               paymentStatus: paymentStatus,
               isAdvanceStock: Value(isAdvanceStock),
               allocatedAmount: const Value(0.0),
@@ -89,6 +124,7 @@ class PurchaseRepository {
     required DateTime paymentDate,
     required double amountPaid,
     PaymentMode? paymentMode,
+    int? bankAccountId,
     String? referenceNo,
   }) async {
     final detail = await _purchaseDao.getPurchaseById(purchaseId);
@@ -107,6 +143,7 @@ class PurchaseRepository {
           affectsCash: const Value(true), // cash moves NOW
           amount: amountPaid,
           paymentMode: Value(paymentMode),
+          bankAccountId: Value(bankAccountId),
           narration: Value(
             'Payment for: ${detail.purchase.itemDescription}',
           ),
@@ -114,16 +151,16 @@ class PurchaseRepository {
         ),
       );
 
-      // Determine new payment status based on amount paid vs original bill.
+      // Determine new payment status based on total amount paid vs original bill.
       final original = detail.transaction.amount;
-      final alreadyPaid = original - _outstandingAmount(detail);
+      final alreadyPaid = detail.purchase.paidAmount;
       final totalNowPaid = alreadyPaid + amountPaid;
       final newStatus = totalNowPaid >= original - 0.01
           ? PaymentStatus.paid
           : PaymentStatus.partial;
 
-      // Mark the purchase record as paid/partial.
-      await _purchaseDao.updatePaymentStatus(purchaseId, newStatus);
+      // Update the purchase record with new paid amount and status.
+      await _purchaseDao.updatePaymentDetails(purchaseId, totalNowPaid, newStatus);
     });
   }
 
@@ -180,8 +217,84 @@ class PurchaseRepository {
   }
 
   /// Outstanding (unpaid) amount for a purchase detail.
-  double _outstandingAmount(PurchaseDetail detail) {
-    return detail.transaction.amount;
+  double outstandingAmount(PurchaseDetail detail) {
+    if (detail.purchase.paymentStatus == PaymentStatus.paid) return 0.0;
+    final total = detail.transaction.amount;
+    final paid = detail.purchase.paidAmount;
+    final due = total - paid;
+    return due > 0 ? due : 0.0;
+  }
+
+  /// Get purchase by id
+  Future<PurchaseDetail?> getPurchaseById(int purchaseId) =>
+      _purchaseDao.getPurchaseById(purchaseId);
+
+  /// Delete a purchase and its linked transaction.
+  Future<void> deletePurchase(int purchaseId) async {
+    final detail = await _purchaseDao.getPurchaseById(purchaseId);
+    if (detail == null) return;
+    await _db.transaction(() async {
+      await (_db.delete(_db.purchases)..where((p) => p.id.equals(purchaseId))).go();
+      await (_db.delete(_db.transactions)..where((t) => t.id.equals(detail.transaction.id))).go();
+    });
+  }
+
+  /// Update an existing purchase.
+  Future<void> updatePurchase({
+    required int purchaseId,
+    required int projectId,
+    required int vendorId,
+    required DateTime date,
+    required String itemDescription,
+    required double amount,
+    double quantity = 1.0,
+    double unitRate = 0.0,
+    String? unit,
+    double paidAmount = 0.0,
+    PaymentStatus paymentStatus = PaymentStatus.paid,
+    PaymentMode? paymentMode,
+    int? bankAccountId,
+    String? referenceNo,
+    String? narration,
+    bool isAdvanceStock = false,
+  }) async {
+    final detail = await _purchaseDao.getPurchaseById(purchaseId);
+    if (detail == null) throw StateError('Purchase $purchaseId not found');
+
+    await _db.transaction(() async {
+      final affectsCash = paymentStatus == PaymentStatus.paid;
+
+      // Update primary transaction row
+      await _transactionDao.updateTransaction(
+        TransactionsCompanion(
+          id: Value(detail.transaction.id),
+          projectId: Value(projectId),
+          date: Value(date),
+          type: const Value(TransactionType.purchase),
+          affectsPnl: Value(!isAdvanceStock),
+          affectsCash: Value(affectsCash),
+          amount: Value(amount),
+          paymentMode: Value(paymentMode),
+          bankAccountId: Value(bankAccountId),
+          narration: Value(narration),
+          referenceNo: Value(referenceNo),
+        ),
+      );
+
+      // Update purchase row
+      await (_db.update(_db.purchases)..where((p) => p.id.equals(purchaseId))).write(
+        PurchasesCompanion(
+          vendorId: Value(vendorId),
+          itemDescription: Value(itemDescription.trim()),
+          quantity: Value(quantity),
+          unitRate: Value(unitRate),
+          unit: Value(unit?.trim()),
+          paidAmount: Value(paidAmount),
+          paymentStatus: Value(paymentStatus),
+          isAdvanceStock: Value(isAdvanceStock),
+        ),
+      );
+    });
   }
 
   // --- Vendor ---

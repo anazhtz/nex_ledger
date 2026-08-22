@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/database_provider.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
@@ -70,13 +69,11 @@ final vendorLedgerSummaryProvider =
 
     for (final pd in purchases) {
       final amount = pd.transaction.amount;
+      final paid = pd.purchase.paidAmount;
       totalPurchases += amount;
-      if (pd.purchase.paymentStatus == PaymentStatus.paid) {
-        totalPaid += amount;
-      } else {
-        // pending or partial — count as payable
-        totalPending += amount;
-      }
+      totalPaid += paid;
+      final due = (amount - paid).clamp(0.0, double.infinity);
+      totalPending += due;
     }
 
     return VendorLedgerSummary(

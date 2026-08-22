@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/database_provider.dart';
+import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 import 'package:nex_ledger/features/purchase/data/purchase_repository.dart';
 import 'package:nex_ledger/features/reports/data/report_repository.dart';
 
@@ -61,4 +62,25 @@ final pendingPurchasesProvider =
   final db = ref.watch(appDatabaseProvider);
   final repo = PurchaseRepository(db.purchaseDao, db.transactionDao, db);
   return repo.watchPendingPurchases(projectId: projectId);
+});
+
+/// Day-book date filter provider.
+final selectedDayBookDateProvider =
+    StateProvider<DateTime>((ref) => DateTime.now());
+
+/// Day-book bank account filter provider.
+final selectedDayBookBankAccountIdProvider =
+    StateProvider<int?>((ref) => null);
+
+/// Reactive day-book stream provider.
+final dayBookReportProvider = StreamProvider<DayBookReport>((ref) {
+  final date = ref.watch(selectedDayBookDateProvider);
+  final projectId = ref.watch(selectedProjectIdProvider);
+  final bankAccountId = ref.watch(selectedDayBookBankAccountIdProvider);
+  final repo = ref.watch(reportRepositoryProvider);
+  return repo.watchDayBook(
+    date,
+    projectId: projectId,
+    bankAccountId: bankAccountId,
+  );
 });

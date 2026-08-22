@@ -11,6 +11,10 @@ class Purchases extends Table {
   IntColumn get vendorId =>
       integer().references(Vendors, #id, onDelete: KeyAction.restrict)();
   TextColumn get itemDescription => text()();
+  RealColumn get quantity => real().withDefault(const Constant(1.0))();
+  RealColumn get unitRate => real().withDefault(const Constant(0.0))();
+  TextColumn get unit => text().nullable()();
+  RealColumn get paidAmount => real().withDefault(const Constant(0.0))();
   TextColumn get paymentStatus => textEnum<PaymentStatus>()();
   BoolColumn get isAdvanceStock =>
       boolean().withDefault(const Constant(false))();

@@ -35,6 +35,7 @@ class CashBookRepository {
     PaymentMode? paymentMode,
     String? narration,
     String? referenceNo,
+    int? bankAccountId,
   }) =>
       _dao.insertTransaction(
         TransactionsCompanion.insert(
@@ -44,6 +45,7 @@ class CashBookRepository {
           affectsPnl: const Value(true),
           amount: amount,
           paymentMode: Value(paymentMode),
+          bankAccountId: Value(bankAccountId),
           narration: Value(narration),
           referenceNo: Value(referenceNo),
         ),
@@ -58,6 +60,7 @@ class CashBookRepository {
     String? narration,
     String? referenceNo,
     int? expenseCategoryId,
+    int? bankAccountId,
   }) =>
       _dao.insertTransaction(
         TransactionsCompanion.insert(
@@ -67,9 +70,47 @@ class CashBookRepository {
           affectsPnl: const Value(true),
           amount: amount,
           paymentMode: Value(paymentMode),
+          bankAccountId: Value(bankAccountId),
           narration: Value(narration),
           referenceNo: Value(referenceNo),
           expenseCategoryId: Value(expenseCategoryId),
         ),
       );
+
+  /// Get transaction by id.
+  Future<Transaction?> getTransactionById(int id) =>
+      _dao.getTransactionById(id);
+
+  /// Update an existing transaction.
+  Future<void> updateTransaction({
+    required int id,
+    required int projectId,
+    required DateTime date,
+    required TransactionType type,
+    required double amount,
+    PaymentMode? paymentMode,
+    String? narration,
+    String? referenceNo,
+    int? expenseCategoryId,
+    int? bankAccountId,
+  }) =>
+      _dao.updateTransaction(
+        TransactionsCompanion(
+          id: Value(id),
+          projectId: Value(projectId),
+          date: Value(date),
+          type: Value(type),
+          affectsPnl: const Value(true),
+          affectsCash: const Value(true),
+          amount: Value(amount),
+          paymentMode: Value(paymentMode),
+          bankAccountId: Value(bankAccountId),
+          narration: Value(narration),
+          referenceNo: Value(referenceNo),
+          expenseCategoryId: Value(expenseCategoryId),
+        ),
+      );
+
+  /// Delete a transaction.
+  Future<void> deleteTransaction(int id) => _dao.deleteTransaction(id);
 }

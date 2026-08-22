@@ -80,30 +80,89 @@ class ProjectListScreen extends ConsumerWidget {
                           Text(DateFormatter.format(p.startDate))),
                       DataCell(
                         Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
                               icon: const Icon(Icons.edit_outlined, size: 18),
-                              tooltip: 'Edit',
+                              tooltip: 'Edit Project',
                               onPressed: () =>
                                   context.go('/projects/${p.id}/edit'),
                             ),
                             if (p.status != ProjectStatus.closed)
                               IconButton(
-                                icon: const Icon(Icons.close, size: 18),
+                                icon: const Icon(Icons.archive_outlined, size: 18),
                                 tooltip: 'Close Project',
-                                color: theme.colorScheme.error,
+                                color: Colors.orange.shade700,
                                 onPressed: () async {
                                   final confirmed = await ConfirmDialog.show(
                                     context,
                                     title: 'Close Project?',
                                     message:
-                                        'Mark "${p.name}" as closed? This cannot be undone.',
-                                    confirmLabel: 'Close',
+                                        'Mark "${p.name}" as closed? Active work will be stopped.',
+                                    confirmLabel: 'Close Project',
                                   );
                                   if (confirmed) {
                                     await ref
                                         .read(projectRepositoryProvider)
                                         .closeProject(p.id);
+                                  }
+                                },
+                              ),
+                            if (p.code != 'ADMIN-OVH')
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                                tooltip: 'Delete Project',
+                                color: theme.colorScheme.error,
+                                onPressed: () async {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: Row(
+                                        children: [
+                                          Icon(Icons.delete_forever_rounded, color: Colors.red.shade700),
+                                          const SizedBox(width: 8),
+                                          const Text('Delete Project?'),
+                                        ],
+                                      ),
+                                      content: Text(
+                                        'Are you sure you want to permanently delete "${p.name}" (${p.code})?\n\n'
+                                        'All transactions, purchases, and records linked to this project will be removed.',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(ctx, false),
+                                          child: const Text('Cancel'),
+                                        ),
+                                        FilledButton(
+                                          onPressed: () => Navigator.pop(ctx, true),
+                                          style: FilledButton.styleFrom(
+                                              backgroundColor: Colors.red.shade700),
+                                          child: const Text('Delete Permanently'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirmed == true) {
+                                    try {
+                                      await ref
+                                          .read(projectRepositoryProvider)
+                                          .deleteProject(p.id);
+                                      if (!context.mounted) return;
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('✓ Project "${p.name}" deleted.'),
+                                          backgroundColor: const Color(0xFF059669),
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      if (!context.mounted) return;
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Error: $e'),
+                                          backgroundColor: Colors.red.shade700,
+                                        ),
+                                      );
+                                    }
                                   }
                                 },
                               ),

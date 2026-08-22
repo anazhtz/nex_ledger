@@ -14,12 +14,14 @@ import 'tables/workers_table.dart';
 import 'tables/attendance_table.dart';
 import 'tables/deposits_table.dart';
 import 'tables/expense_categories_table.dart';
+import 'tables/bank_accounts_table.dart';
 import 'daos/project_dao.dart';
 import 'daos/transaction_dao.dart';
 import 'daos/purchase_dao.dart';
 import 'daos/labour_dao.dart';
 import 'daos/deposit_dao.dart';
 import 'daos/expense_category_dao.dart';
+import 'daos/bank_account_dao.dart';
 
 export 'tables/projects_table.dart';
 export 'tables/transactions_table.dart';
@@ -29,12 +31,14 @@ export 'tables/workers_table.dart';
 export 'tables/attendance_table.dart';
 export 'tables/deposits_table.dart';
 export 'tables/expense_categories_table.dart';
+export 'tables/bank_accounts_table.dart';
 export 'daos/project_dao.dart';
 export 'daos/transaction_dao.dart';
 export 'daos/purchase_dao.dart';
 export 'daos/labour_dao.dart';
 export 'daos/deposit_dao.dart';
 export 'daos/expense_category_dao.dart';
+export 'daos/bank_account_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -52,6 +56,7 @@ part 'app_database.g.dart';
     Attendance,
     Deposits,
     ExpenseCategories,
+    BankAccounts,
   ],
   daos: [
     ProjectDao,
@@ -60,13 +65,14 @@ part 'app_database.g.dart';
     LabourDao,
     DepositDao,
     ExpenseCategoryDao,
+    BankAccountDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -116,10 +122,30 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(purchases, purchases.isAdvanceStock);
             await m.addColumn(purchases, purchases.allocatedAmount);
           }
+          if (from < 9) {
+            await m.addColumn(purchases, purchases.quantity);
+            await m.addColumn(purchases, purchases.unitRate);
+            await m.addColumn(purchases, purchases.unit);
+            await m.addColumn(purchases, purchases.paidAmount);
+            await customStatement(
+              '''
+              UPDATE purchases
+              SET paid_amount = (
+                SELECT amount FROM transactions WHERE transactions.id = purchases.transaction_id
+              )
+              WHERE payment_status = 'paid'
+              ''',
+            );
+          }
+          if (from < 10) {
+            await m.createTable(bankAccounts);
+            await m.addColumn(transactions, transactions.bankAccountId);
+            await _seedBankAccounts();
+          }
         },
       );
 
-  /// Seed an "Admin / Overhead" project + all default expense categories on first run.
+  /// Seed an "Admin / Overhead" project + all default expense categories and bank accounts on first run.
   Future<void> _seedInitialData() async {
     await into(projects).insert(
       ProjectsCompanion.insert(
@@ -133,6 +159,31 @@ class AppDatabase extends _$AppDatabase {
       ),
     );
     await _seedExpenseCategories();
+    await _seedBankAccounts();
+  }
+
+  /// Seed default Petty Cash and Bank accounts if empty.
+  Future<void> _seedBankAccounts() async {
+    final existing = await select(bankAccounts).get();
+    if (existing.isEmpty) {
+      await into(bankAccounts).insert(
+        BankAccountsCompanion.insert(
+          accountName: 'Petty Cash Drawer',
+          isCashAccount: const Value(true),
+          isDefault: const Value(true),
+          openingBalance: const Value(0.0),
+        ),
+      );
+      await into(bankAccounts).insert(
+        BankAccountsCompanion.insert(
+          accountName: 'Primary Bank Current A/c',
+          bankName: const Value('Main Business Bank'),
+          isCashAccount: const Value(false),
+          isDefault: const Value(true),
+          openingBalance: const Value(0.0),
+        ),
+      );
+    }
   }
 
   /// Seed all 18 default expense categories (flat list).

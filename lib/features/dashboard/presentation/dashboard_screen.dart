@@ -165,42 +165,79 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   final totalCosts =
                       pnl.expenses + pnl.purchases + pnl.labourCosts;
                   return DataRow(cells: [
-                    DataCell(Text(
-                      pnl.project.code,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    )),
                     DataCell(
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(pnl.project.name),
-                          if (pnl.project.clientName != null)
-                            Text(
-                              pnl.project.clientName!,
-                              style: TextStyle(
-                                fontSize: 11.sp,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    DataCell(Text(CurrencyFormatter.format(pnl.income))),
-                    DataCell(Text(CurrencyFormatter.format(totalCosts))),
-                    DataCell(
-                      Text(
-                        CurrencyFormatter.format(pnl.netPnl),
-                        style: TextStyle(
-                          color: netColor,
-                          fontWeight: FontWeight.w600,
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: 90.w),
+                        child: Text(
+                          pnl.project.code,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
                     DataCell(
-                      Text(CurrencyFormatter.format(pnl.depositsHeld)),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: 180.w),
+                        child: Tooltip(
+                          message: '${pnl.project.code} — ${pnl.project.name}',
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                pnl.project.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (pnl.project.clientName != null)
+                                Text(
+                                  pnl.project.clientName!,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 11.sp,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    DataCell(
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(CurrencyFormatter.format(pnl.income)),
+                      ),
+                    ),
+                    DataCell(
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(CurrencyFormatter.format(totalCosts)),
+                      ),
+                    ),
+                    DataCell(
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          CurrencyFormatter.format(pnl.netPnl),
+                          style: TextStyle(
+                            color: netColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    DataCell(
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(CurrencyFormatter.format(pnl.depositsHeld)),
+                      ),
                     ),
                   ]);
                 }).toList(),

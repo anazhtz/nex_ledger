@@ -44,6 +44,63 @@ class DepositLedgerRow {
   });
 }
 
+/// Day-book transaction item for daily sheets.
+class DayBookEntry {
+  final Transaction transaction;
+  final Project project;
+  final BankAccount? bankAccount;
+  final String? categoryName;
+  final String? vendorName;
+  final String? workerName;
+
+  DayBookEntry({
+    required this.transaction,
+    required this.project,
+    this.bankAccount,
+    this.categoryName,
+    this.vendorName,
+    this.workerName,
+  });
+
+  bool get isInflow =>
+      transaction.type == TransactionType.income ||
+      transaction.type == TransactionType.deposit;
+
+  bool get isOutflow =>
+      transaction.type == TransactionType.expense ||
+      transaction.type == TransactionType.labourPayment ||
+      transaction.type == TransactionType.depositRefund ||
+      transaction.type == TransactionType.purchasePayment ||
+      (transaction.type == TransactionType.purchase && transaction.affectsCash);
+}
+
+/// Comprehensive daily day-book summary for a single date.
+class DayBookReport {
+  final DateTime date;
+  final double openingBalance;
+  final double totalInflow;
+  final double totalOutflow;
+  final double netMovement;
+  final double closingBalance;
+  final double pnlIncome;
+  final double pnlExpense;
+  final double netPnl;
+  final List<DayBookEntry> entries;
+
+  DayBookReport({
+    required this.date,
+    required this.openingBalance,
+    required this.totalInflow,
+    required this.totalOutflow,
+    required this.netMovement,
+    required this.closingBalance,
+    required this.pnlIncome,
+    required this.pnlExpense,
+    required this.netPnl,
+    required this.entries,
+  });
+}
+
 /// Expense breakdown — Group → SubCategory → total amount
 typedef ExpenseCategoryBreakdown = Map<String, Map<String, double>>;
 
@@ -54,7 +111,11 @@ class ReportRepository {
   final ExpenseCategoryDao _categoryDao;
 
   ReportRepository(
-      this._txnDao, this._projectDao, this._depositDao, this._categoryDao);
+    this._txnDao,
+    this._projectDao,
+    this._depositDao,
+    this._categoryDao,
+  );
 
   /// Reactive stream of P&L for a single project.
   /// Automatically updates whenever transactions, deposits, or project details change.
@@ -73,7 +134,8 @@ class ReportRepository {
         double expenses = 0.0;
         double purchases = 0.0;
         double labourCosts = 0.0;
-        double accountsPayable = 0.0;
+        double positivePayable = 0.0;
+        double paidPayable = 0.0;
 
         for (final t in txns) {
           if (t.affectsPnl) {
@@ -86,7 +148,7 @@ class ReportRepository {
               purchases += t.amount;
               // If it's a purchase and affectsCash is false, cash hasn't moved — it's a vendor liability.
               if (t.type == TransactionType.purchase && !t.affectsCash) {
-                accountsPayable += t.amount;
+                positivePayable += t.amount;
               }
             } else if (t.type == TransactionType.labourPayment) {
               labourCosts += t.amount;
@@ -95,10 +157,12 @@ class ReportRepository {
           // purchasePayment (affectsPnl:false, affectsCash:true) reduces accounts payable
           // when the vendor bill is eventually settled.
           if (t.type == TransactionType.purchasePayment) {
-            accountsPayable -= t.amount;
-            if (accountsPayable < 0) accountsPayable = 0;
+            paidPayable += t.amount;
           }
         }
+
+        final accountsPayable =
+            (positivePayable - paidPayable).clamp(0.0, double.infinity);
 
         double depositsHeld = 0.0;
         for (final d in deposits) {
@@ -154,7 +218,8 @@ class ReportRepository {
           double expenses = 0.0;
           double purchases = 0.0;
           double labourCosts = 0.0;
-          double accountsPayable = 0.0;
+          double positivePayable = 0.0;
+          double paidPayable = 0.0;
 
           for (final t in txns) {
             if (t.affectsPnl) {
@@ -166,17 +231,19 @@ class ReportRepository {
                   t.type == TransactionType.stockAllocation) {
                 purchases += t.amount;
                 if (t.type == TransactionType.purchase && !t.affectsCash) {
-                  accountsPayable += t.amount;
+                  positivePayable += t.amount;
                 }
               } else if (t.type == TransactionType.labourPayment) {
                 labourCosts += t.amount;
               }
             }
             if (t.type == TransactionType.purchasePayment) {
-              accountsPayable -= t.amount;
-              if (accountsPayable < 0) accountsPayable = 0;
+              paidPayable += t.amount;
             }
           }
+
+          final accountsPayable =
+              (positivePayable - paidPayable).clamp(0.0, double.infinity);
 
           double depositsHeld = 0.0;
           for (final d in deposits) {
@@ -256,6 +323,118 @@ class ReportRepository {
     int? projectId,
   }) =>
       watchExpenseCategoryBreakdown(projectId: projectId).first;
+
+  /// Reactive stream of daily day-book transactions & opening/closing summary for [selectedDate].
+  Stream<DayBookReport> watchDayBook(
+    DateTime selectedDate, {
+    int? projectId,
+    int? bankAccountId,
+  }) {
+    final startOfDay = DateTime(selectedDate.year, selectedDate.month, selectedDate.day, 0, 0, 0);
+    final endOfDay = DateTime(selectedDate.year, selectedDate.month, selectedDate.day, 23, 59, 59, 999);
+
+    final rawTxnsStream = _txnDao.watchAllRawTransactions();
+    final projectsStream = _projectDao.watchAllProjects();
+
+    return _combine2<List<Transaction>, List<Project>, DayBookReport>(
+      () => rawTxnsStream,
+      () => projectsStream,
+      (allTxns, allProjects) {
+        final projectMap = {for (final p in allProjects) p.id: p};
+
+        // Compute Opening Balance before startOfDay
+        double openingBalance = 0.0;
+        for (final t in allTxns) {
+          if (t.date.isBefore(startOfDay)) {
+            if (bankAccountId != null && t.bankAccountId != bankAccountId) {
+              continue;
+            }
+            if (t.affectsCash) {
+              if (t.type == TransactionType.income ||
+                  t.type == TransactionType.deposit) {
+                openingBalance += t.amount;
+              } else if (t.type == TransactionType.expense ||
+                  t.type == TransactionType.labourPayment ||
+                  t.type == TransactionType.depositRefund ||
+                  t.type == TransactionType.purchasePayment ||
+                  (t.type == TransactionType.purchase && t.affectsCash)) {
+                openingBalance -= t.amount;
+              }
+            }
+          }
+        }
+
+        // Filter transactions for this day
+        final dayTxns = allTxns.where((t) {
+          if (t.date.isBefore(startOfDay) || t.date.isAfter(endOfDay)) return false;
+          if (projectId != null && t.projectId != projectId) return false;
+          if (bankAccountId != null && t.bankAccountId != bankAccountId) return false;
+          return true;
+        }).toList();
+
+        double totalInflow = 0.0;
+        double totalOutflow = 0.0;
+        double pnlIncome = 0.0;
+        double pnlExpense = 0.0;
+
+        final entries = <DayBookEntry>[];
+        for (final t in dayTxns) {
+          final p = projectMap[t.projectId] ??
+              Project(
+                id: t.projectId,
+                code: 'PRJ-${t.projectId}',
+                name: 'Project #${t.projectId}',
+                type: ProjectType.project,
+                status: ProjectStatus.active,
+                startDate: t.date,
+                createdAt: t.date,
+              );
+
+          final entry = DayBookEntry(
+            transaction: t,
+            project: p,
+          );
+          entries.add(entry);
+
+          if (t.affectsCash) {
+            if (entry.isInflow) {
+              totalInflow += t.amount;
+            } else if (entry.isOutflow) {
+              totalOutflow += t.amount;
+            }
+          }
+
+          if (t.affectsPnl) {
+            if (t.type == TransactionType.income) {
+              pnlIncome += t.amount;
+            } else if (t.type == TransactionType.expense ||
+                t.type == TransactionType.purchase ||
+                t.type == TransactionType.labourPayment ||
+                t.type == TransactionType.stockAllocation) {
+              pnlExpense += t.amount;
+            }
+          }
+        }
+
+        final netMovement = totalInflow - totalOutflow;
+        final closingBalance = openingBalance + netMovement;
+        final netPnl = pnlIncome - pnlExpense;
+
+        return DayBookReport(
+          date: selectedDate,
+          openingBalance: openingBalance,
+          totalInflow: totalInflow,
+          totalOutflow: totalOutflow,
+          netMovement: netMovement,
+          closingBalance: closingBalance,
+          pnlIncome: pnlIncome,
+          pnlExpense: pnlExpense,
+          netPnl: netPnl,
+          entries: entries,
+        );
+      },
+    );
+  }
 }
 
 /// Helper to combine two streams into one.

@@ -5,12 +5,16 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
+import 'package:nex_ledger/core/utils/currency_formatter.dart';
+import 'package:nex_ledger/features/bank_accounts/data/bank_account_repository.dart';
+import 'package:nex_ledger/features/bank_accounts/providers/bank_account_providers.dart';
 import 'package:nex_ledger/features/cash_book/providers/cash_book_providers.dart';
 import 'package:nex_ledger/features/expense_categories/providers/expense_category_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 
 class CashBookEntryForm extends ConsumerStatefulWidget {
-  const CashBookEntryForm({super.key});
+  final int? transactionId;
+  const CashBookEntryForm({super.key, this.transactionId});
 
   @override
   ConsumerState<CashBookEntryForm> createState() => _CashBookEntryFormState();
@@ -23,18 +27,44 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
   final _refCtrl = TextEditingController();
 
   int? _selectedProject;
-  TransactionType _type = TransactionType.income;
+  TransactionType _type = TransactionType.expense;
   PaymentMode? _paymentMode;
+  int? _selectedBankAccountId;
   DateTime _date = DateTime.now();
   bool _loading = false;
 
   // Category selection (flat single-dropdown)
   int? _selectedCategoryId;
 
+  bool get _isEditing => widget.transactionId != null;
+
   @override
   void initState() {
     super.initState();
     _selectedProject = ref.read(selectedProjectIdProvider);
+    if (_isEditing) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadTransaction());
+    }
+  }
+
+  Future<void> _loadTransaction() async {
+    final repo = ref.read(cashBookRepositoryProvider);
+    final txn = await repo.getTransactionById(widget.transactionId!);
+    if (txn != null && mounted) {
+      setState(() {
+        _selectedProject = txn.projectId;
+        _type = txn.type;
+        _date = txn.date;
+        _amountCtrl.text = txn.amount % 1 == 0
+            ? txn.amount.toInt().toString()
+            : txn.amount.toStringAsFixed(2);
+        _narrationCtrl.text = txn.narration ?? '';
+        _refCtrl.text = txn.referenceNo ?? '';
+        _paymentMode = txn.paymentMode;
+        _selectedBankAccountId = txn.bankAccountId;
+        _selectedCategoryId = txn.expenseCategoryId;
+      });
+    }
   }
 
   @override
@@ -63,18 +93,113 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
       );
       return;
     }
+
+    final cleanAmountStr =
+        _amountCtrl.text.replaceAll(',', '').replaceAll(' ', '').trim();
+    final amount = double.tryParse(cleanAmountStr);
+    if (amount == null || amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid positive amount.')),
+      );
+      return;
+    }
+
+    // Negative cash balance protection check on expenses
+    if (_type == TransactionType.expense) {
+      final accountsWithBalances =
+          ref.read(bankAccountsWithBalancesProvider).asData?.value;
+      if (accountsWithBalances != null && accountsWithBalances.isNotEmpty) {
+        final targetAcc = accountsWithBalances
+            .cast<BankAccountWithBalance?>()
+            .firstWhere(
+              (a) => a?.account.id == _selectedBankAccountId,
+              orElse: () => null,
+            );
+        final currentBal = targetAcc != null
+            ? targetAcc.currentBalance
+            : (ref.read(liquiditySummaryProvider).asData?.value.totalLiquidity ??
+                0.0);
+
+        if (currentBal - amount < 0) {
+          final proceed = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: Row(
+                children: [
+                  Icon(Icons.warning_amber_rounded,
+                      color: Colors.orange.shade800),
+                  const SizedBox(width: 8),
+                  const Text('Negative Balance Warning'),
+                ],
+              ),
+              content: Text(
+                'This expense of ${CurrencyFormatter.format(amount)} exceeds the current balance in ${targetAcc?.account.accountName ?? 'Total Liquidity'} (${CurrencyFormatter.format(currentBal)}).\n\n'
+                'Recording this entry will make the balance negative (${CurrencyFormatter.format(currentBal - amount)}).\n\n'
+                'Do you wish to proceed anyway?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Cancel / Change Account'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  style: FilledButton.styleFrom(
+                      backgroundColor: Colors.orange.shade800),
+                  child: const Text('Proceed Anyway'),
+                ),
+              ],
+            ),
+          );
+          if (proceed != true) return;
+        }
+      }
+    }
+
     setState(() => _loading = true);
     try {
       final repo = ref.read(cashBookRepositoryProvider);
-      final amount = double.parse(_amountCtrl.text);
+      if (_isEditing) {
+        await repo.updateTransaction(
+          id: widget.transactionId!,
+          projectId: _selectedProject!,
+          date: _date,
+          type: _type,
+          amount: amount,
+          paymentMode: _paymentMode,
+          bankAccountId: _selectedBankAccountId,
+          narration: _narrationCtrl.text.isNotEmpty
+              ? _narrationCtrl.text.trim()
+              : null,
+          referenceNo:
+              _refCtrl.text.isNotEmpty ? _refCtrl.text.trim() : null,
+          expenseCategoryId:
+              _type == TransactionType.expense ? _selectedCategoryId : null,
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✓ Cash Book entry updated successfully!'),
+              backgroundColor: Color(0xFF059669),
+            ),
+          );
+          context.go('/cash-book');
+        }
+        return;
+      }
+
       if (_type == TransactionType.income) {
         await repo.addIncome(
           projectId: _selectedProject!,
           date: _date,
           amount: amount,
           paymentMode: _paymentMode,
-          narration: _narrationCtrl.text.isNotEmpty ? _narrationCtrl.text : null,
-          referenceNo: _refCtrl.text.isNotEmpty ? _refCtrl.text : null,
+          bankAccountId: _selectedBankAccountId,
+          narration: _narrationCtrl.text.isNotEmpty
+              ? _narrationCtrl.text.trim()
+              : null,
+          referenceNo:
+              _refCtrl.text.isNotEmpty ? _refCtrl.text.trim() : null,
         );
       } else {
         await repo.addExpense(
@@ -82,16 +207,31 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
           date: _date,
           amount: amount,
           paymentMode: _paymentMode,
-          narration: _narrationCtrl.text.isNotEmpty ? _narrationCtrl.text : null,
-          referenceNo: _refCtrl.text.isNotEmpty ? _refCtrl.text : null,
+          bankAccountId: _selectedBankAccountId,
+          narration: _narrationCtrl.text.isNotEmpty
+              ? _narrationCtrl.text.trim()
+              : null,
+          referenceNo:
+              _refCtrl.text.isNotEmpty ? _refCtrl.text.trim() : null,
           expenseCategoryId: _selectedCategoryId,
         );
       }
-      if (mounted) context.go('/cash-book');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✓ Cash Book entry recorded successfully!'),
+            backgroundColor: Color(0xFF059669),
+          ),
+        );
+        context.go('/cash-book');
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(
+            content: Text('Error saving entry: $e'),
+            backgroundColor: Colors.red.shade700,
+          ),
         );
       }
     } finally {
@@ -104,6 +244,7 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
     final theme = Theme.of(context);
     final projectsAsync = ref.watch(projectListProvider);
     final categoriesAsync = ref.watch(expenseCategoryListProvider);
+    final accountsAsync = ref.watch(bankAccountsWithBalancesProvider);
 
     return CallbackShortcuts(
       bindings: {
@@ -136,7 +277,7 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'New Cash Book Entry',
+                          _isEditing ? 'Edit Cash Book Entry' : 'New Cash Book Entry',
                           style: TextStyle(
                             fontSize: 20.sp,
                             fontWeight: FontWeight.bold,
@@ -144,7 +285,9 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
                           ),
                         ),
                         Text(
-                          'Record an income or expense transaction',
+                          _isEditing
+                              ? 'Modify this income or expense transaction'
+                              : 'Record an income or expense transaction',
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: const Color(0xFF64748B),
@@ -269,6 +412,64 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
                           ),
                           SizedBox(height: 16.h),
 
+                          // Bank / Cash Account Dropdown
+                          accountsAsync.when(
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => const SizedBox.shrink(),
+                            data: (accounts) {
+                              if (accounts.isEmpty) return const SizedBox.shrink();
+                              return Column(
+                                children: [
+                                  DropdownButtonFormField<int?>(
+                                    value: _selectedBankAccountId,
+                                    decoration: InputDecoration(
+                                      labelText: _type == TransactionType.income
+                                          ? 'Deposit Into (Bank / Cash Account)'
+                                          : 'Paid From (Bank / Cash Account)',
+                                      prefixIcon: const Icon(
+                                          Icons.account_balance_outlined,
+                                          size: 20),
+                                    ),
+                                    items: [
+                                      const DropdownMenuItem(
+                                        value: null,
+                                        child: Text(
+                                            '— Auto (Default Account) —'),
+                                      ),
+                                      ...accounts.map(
+                                        (a) => DropdownMenuItem(
+                                          value: a.account.id,
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                '${a.account.accountName} (${a.account.isCashAccount ? 'Cash' : 'Bank'})',
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                '• Bal: ${CurrencyFormatter.format(a.currentBalance)}',
+                                                style: TextStyle(
+                                                  fontSize: 11.sp,
+                                                  color: a.currentBalance < 0
+                                                      ? Colors.red.shade700
+                                                      : Colors.green.shade700,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                    onChanged: (v) => setState(
+                                        () => _selectedBankAccountId = v),
+                                  ),
+                                  SizedBox(height: 16.h),
+                                ],
+                              );
+                            },
+                          ),
+
                           // ─── Expense Category Picker (only shown for Expense) ───
                           if (_type == TransactionType.expense) ...[
                             categoriesAsync.when(
@@ -322,7 +523,11 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
                                         ),
                                       )
                                     : Icon(Icons.save_rounded, size: 18.sp),
-                                label: Text(_loading ? 'Saving...' : 'Save Cash Book Entry'),
+                                label: Text(_loading
+                                    ? 'Saving...'
+                                    : (_isEditing
+                                        ? 'Update Entry'
+                                        : 'Save Cash Book Entry')),
                               ),
                             ],
                           ),
@@ -449,8 +654,11 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
       }
     }
 
+    final selectedProjectValue =
+        projects.any((p) => p.id == _selectedProject) ? _selectedProject : null;
+
     return DropdownButtonFormField<int>(
-      value: _selectedProject,
+      value: selectedProjectValue,
       decoration: const InputDecoration(labelText: 'Select Target Project *'),
       items: projects
           .map((p) => DropdownMenuItem(

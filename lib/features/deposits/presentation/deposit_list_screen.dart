@@ -153,6 +153,7 @@ class DepositListScreen extends ConsumerWidget {
                       DataCell(Text(dd.deposit.adjustmentReference ?? '—')),
                       DataCell(
                         Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             if (dd.deposit.status == DepositStatus.held ||
                                 dd.deposit.status ==
@@ -170,6 +171,14 @@ class DepositListScreen extends ConsumerWidget {
                                 onTap: () => _showRefundDialog(
                                     context, ref, dd),
                               ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline_rounded,
+                                  size: 16),
+                              tooltip: 'Delete Deposit',
+                              color: Colors.red.shade700,
+                              onPressed: () =>
+                                  _deleteDeposit(context, ref, dd),
+                            ),
                           ],
                         ),
                       ),
@@ -275,6 +284,64 @@ class DepositListScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _deleteDeposit(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic dd,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.delete_forever_rounded, color: Colors.red.shade700),
+            const SizedBox(width: 8),
+            const Text('Delete Deposit Record?'),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to permanently delete this deposit record of ${CurrencyFormatter.format(dd.transaction.amount)} for project "${dd.project.name}"?\n\n'
+          'This will permanently delete the deposit record and its linked transaction, updating the cash balance.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style:
+                FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            child: const Text('Delete Deposit'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await ref
+            .read(depositRepositoryProvider)
+            .deleteDeposit(dd.deposit.id);
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✓ Deposit record deleted successfully.'),
+            backgroundColor: Color(0xFF059669),
+          ),
+        );
+      } catch (e) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting deposit: $e'),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
+      }
+    }
   }
 }
 

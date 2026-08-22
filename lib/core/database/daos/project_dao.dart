@@ -59,4 +59,9 @@ class ProjectDao extends DatabaseAccessor<AppDatabase>
     final result = await q.getSingleOrNull();
     return result != null;
   }
+
+  /// Get Admin / Overhead project.
+  Future<Project?> getAdminOverheadProject() => (select(projects)
+        ..where((p) => p.type.equalsValue(ProjectType.adminOverhead)))
+      .getSingleOrNull();
 }

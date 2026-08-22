@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
@@ -176,10 +177,28 @@ class PurchaseListScreen extends ConsumerWidget {
                         ),
                       )),
                       DataCell(
-                        SizedBox(
-                          width: 160,
-                          child: Text(pd.purchase.itemDescription,
-                              overflow: TextOverflow.ellipsis),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: 190.w),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                pd.purchase.itemDescription,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                              if (pd.purchase.quantity > 0 && pd.purchase.unitRate > 0)
+                                Text(
+                                  '${pd.purchase.quantity % 1 == 0 ? pd.purchase.quantity.toInt() : pd.purchase.quantity} ${pd.purchase.unit ?? 'units'} × ₹${pd.purchase.unitRate % 1 == 0 ? pd.purchase.unitRate.toInt() : pd.purchase.unitRate.toStringAsFixed(2)}',
+                                  style: TextStyle(
+                                    fontSize: 11.sp,
+                                    color: const Color(0xFF64748B),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       ),
                       DataCell(
@@ -204,8 +223,31 @@ class PurchaseListScreen extends ConsumerWidget {
                                 ),
                               ),
                       ),
-                      DataCell(Text(
-                          CurrencyFormatter.format(pd.transaction.amount))),
+                      DataCell(
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                CurrencyFormatter.format(pd.transaction.amount),
+                                style: const TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                              if (pd.purchase.paymentStatus == PaymentStatus.partial)
+                                Text(
+                                  'Due: ${CurrencyFormatter.format((pd.transaction.amount - pd.purchase.paidAmount).clamp(0.0, double.infinity))}',
+                                  style: TextStyle(
+                                    fontSize: 10.sp,
+                                    color: Colors.red.shade700,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
                       DataCell(_PaymentStatusChip(
                           status: pd.purchase.paymentStatus)),
                       DataCell(Text(
@@ -214,6 +256,20 @@ class PurchaseListScreen extends ConsumerWidget {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit_outlined, size: 17),
+                              tooltip: 'Edit Bill',
+                              onPressed: () => context
+                                  .go('/purchases/${pd.purchase.id}/edit'),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline_rounded,
+                                  size: 17),
+                              tooltip: 'Delete Bill',
+                              color: theme.colorScheme.error,
+                              onPressed: () =>
+                                  _deletePurchase(context, ref, pd),
+                            ),
                             if (isPending)
                               TextButton.icon(
                                 onPressed: () => _showMarkPaidDialog(
@@ -231,7 +287,6 @@ class PurchaseListScreen extends ConsumerWidget {
                                 ),
                               ),
                             if (canAllocate) ...[
-                              if (isPending) const SizedBox(width: 6),
                               FilledButton.tonalIcon(
                                 onPressed: () => _showAllocateStockDialog(
                                   context,
@@ -248,8 +303,6 @@ class PurchaseListScreen extends ConsumerWidget {
                                 ),
                               ),
                             ],
-                            if (!isPending && !canAllocate)
-                              const Text('—'),
                           ],
                         ),
                       ),
@@ -284,6 +337,63 @@ class PurchaseListScreen extends ConsumerWidget {
       context: context,
       builder: (_) => _AllocateStockDialog(pd: pd),
     );
+  }
+
+  Future<void> _deletePurchase(
+    BuildContext context,
+    WidgetRef ref,
+    PurchaseDetail pd,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.delete_forever_rounded, color: Colors.red.shade700),
+            const SizedBox(width: 8),
+            const Text('Delete Purchase Bill?'),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to permanently delete purchase "${pd.purchase.itemDescription}" from vendor "${pd.vendor.name}" (${CurrencyFormatter.format(pd.transaction.amount)})?\n\n'
+          'This will permanently remove the purchase bill and linked financial transaction.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            child: const Text('Delete Bill'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await ref
+            .read(purchaseRepositoryProvider)
+            .deletePurchase(pd.purchase.id);
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✓ Purchase bill deleted successfully.'),
+            backgroundColor: Color(0xFF059669),
+          ),
+        );
+      } catch (e) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting purchase: $e'),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
+      }
+    }
   }
 }
 
@@ -525,7 +635,6 @@ class _AllocateStockDialogState extends ConsumerState<_AllocateStockDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final projectsAsync = ref.watch(projectListProvider);
     final totalStock = widget.pd.transaction.amount;
     final allocated = widget.pd.purchase.allocatedAmount;
@@ -742,10 +851,6 @@ class _AllocateStockDialogState extends ConsumerState<_AllocateStockDialog> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Mark as Paid dialog
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _MarkPaidDialog extends ConsumerStatefulWidget {
   final PurchaseDetail pd;
   const _MarkPaidDialog({required this.pd});
@@ -755,13 +860,26 @@ class _MarkPaidDialog extends ConsumerStatefulWidget {
 }
 
 class _MarkPaidDialogState extends ConsumerState<_MarkPaidDialog> {
+  late final TextEditingController _amountPaidCtrl;
+  final _refController = TextEditingController();
   DateTime _paymentDate = DateTime.now();
   PaymentMode? _paymentMode;
-  final _refController = TextEditingController();
   bool _saving = false;
 
   @override
+  void initState() {
+    super.initState();
+    final total = widget.pd.transaction.amount;
+    final alreadyPaid = widget.pd.purchase.paidAmount;
+    final due = (total - alreadyPaid).clamp(0.0, double.infinity);
+    _amountPaidCtrl = TextEditingController(
+      text: due % 1 == 0 ? due.toInt().toString() : due.toStringAsFixed(2),
+    );
+  }
+
+  @override
   void dispose() {
+    _amountPaidCtrl.dispose();
     _refController.dispose();
     super.dispose();
   }
@@ -769,68 +887,143 @@ class _MarkPaidDialogState extends ConsumerState<_MarkPaidDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final amount = widget.pd.transaction.amount;
+    final total = widget.pd.transaction.amount;
+    final alreadyPaid = widget.pd.purchase.paidAmount;
+    final due = (total - alreadyPaid).clamp(0.0, double.infinity);
 
     return AlertDialog(
-      title: const Text('Mark Purchase as Paid'),
+      title: Row(
+        children: [
+          Icon(Icons.payment_rounded, color: theme.colorScheme.primary, size: 22.sp),
+          SizedBox(width: 8.w),
+          const Text('Record Vendor Payment'),
+        ],
+      ),
       content: SizedBox(
-        width: 420,
+        width: 440.w,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Summary row
+            // Bill & Due Breakdown Card
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(8),
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(8.r),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(widget.pd.purchase.itemDescription,
-                      style: theme.textTheme.titleSmall
-                          ?.copyWith(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 4),
-                  Row(children: [
-                    Text('Vendor: ', style: theme.textTheme.bodySmall),
-                    Text(widget.pd.vendor.name,
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(fontWeight: FontWeight.w600)),
-                    const Spacer(),
-                    Text(CurrencyFormatter.format(amount),
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: theme.colorScheme.error,
-                          fontWeight: FontWeight.w700,
-                        )),
-                  ]),
+                  Text(
+                    widget.pd.purchase.itemDescription,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13.sp,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                  SizedBox(height: 6.h),
+                  Row(
+                    children: [
+                      Text(
+                        'Vendor: ${widget.pd.vendor.name}',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        'Total Bill: ${CurrencyFormatter.format(total)}',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (alreadyPaid > 0) ...[
+                    SizedBox(height: 4.h),
+                    Row(
+                      children: [
+                        Text(
+                          'Already Paid: ${CurrencyFormatter.format(alreadyPaid)}',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: Colors.green.shade700,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          'Credit Due: ${CurrencyFormatter.format(due)}',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: Colors.red.shade700,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 16.h),
+
+            // Amount to pay field + quick fill
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _amountPaidCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Amount to Pay Now (₹) *',
+                      prefixText: '₹ ',
+                      isDense: true,
+                    ),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                OutlinedButton(
+                  onPressed: () {
+                    setState(() {
+                      _amountPaidCtrl.text = due % 1 == 0
+                          ? due.toInt().toString()
+                          : due.toStringAsFixed(2);
+                    });
+                  },
+                  child: const Text('Pay Full Due'),
+                ),
+              ],
+            ),
+            SizedBox(height: 14.h),
 
             // Payment date
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.calendar_today_outlined),
               title: Text(
-                  'Payment Date: ${DateFormatter.format(_paymentDate)}'),
+                'Payment Date: ${DateFormatter.format(_paymentDate)}',
+                style: TextStyle(fontSize: 13.sp),
+              ),
               onTap: () async {
                 final picked = await showDatePicker(
                   context: context,
                   initialDate: _paymentDate,
                   firstDate: DateTime(2020),
-                  lastDate: DateTime.now(),
+                  lastDate: DateTime(2100),
                 );
                 if (picked != null) {
                   setState(() => _paymentDate = picked);
                 }
               },
             ),
-
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
 
             // Payment mode
             DropdownButtonFormField<PaymentMode?>(
@@ -849,14 +1042,13 @@ class _MarkPaidDialogState extends ConsumerState<_MarkPaidDialog> {
               ],
               onChanged: (v) => setState(() => _paymentMode = v),
             ),
-
-            const SizedBox(height: 16),
+            SizedBox(height: 14.h),
 
             // Reference
             TextField(
               controller: _refController,
               decoration: const InputDecoration(
-                labelText: 'Reference / Cheque No. (optional)',
+                labelText: 'Reference / Cheque / UTR No. (optional)',
                 isDense: true,
               ),
             ),
@@ -871,27 +1063,51 @@ class _MarkPaidDialogState extends ConsumerState<_MarkPaidDialog> {
         FilledButton.icon(
           onPressed: _saving ? null : _save,
           icon: _saving
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2))
+              ? SizedBox(
+                  width: 16.w,
+                  height: 16.h,
+                  child: const CircularProgressIndicator(strokeWidth: 2))
               : const Icon(Icons.check, size: 18),
-          label: Text(_saving ? 'Saving…' : 'Confirm Payment'),
+          label: Text(_saving ? 'Recording…' : 'Record Payment'),
         ),
       ],
     );
   }
 
   Future<void> _save() async {
+    final cleanStr =
+        _amountPaidCtrl.text.replaceAll(',', '').replaceAll(' ', '').trim();
+    final amountPaid = double.tryParse(cleanStr);
+    if (amountPaid == null || amountPaid <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Please enter a valid positive payment amount.')),
+      );
+      return;
+    }
+
+    final total = widget.pd.transaction.amount;
+    final alreadyPaid = widget.pd.purchase.paidAmount;
+    final due = (total - alreadyPaid).clamp(0.0, double.infinity);
+
+    if (amountPaid > due + 0.01) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Payment amount (${CurrencyFormatter.format(amountPaid)}) cannot exceed outstanding due (${CurrencyFormatter.format(due)}).'),
+        ),
+      );
+      return;
+    }
+
     setState(() => _saving = true);
     try {
       final db = ref.read(appDatabaseProvider);
-      final repo =
-          PurchaseRepository(db.purchaseDao, db.transactionDao, db);
+      final repo = PurchaseRepository(db.purchaseDao, db.transactionDao, db);
       await repo.markPurchasePaid(
         purchaseId: widget.pd.purchase.id,
         paymentDate: _paymentDate,
-        amountPaid: widget.pd.transaction.amount,
+        amountPaid: amountPaid,
         paymentMode: _paymentMode,
         referenceNo: _refController.text.trim().isEmpty
             ? null
@@ -902,9 +1118,9 @@ class _MarkPaidDialogState extends ConsumerState<_MarkPaidDialog> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Payment recorded for ${widget.pd.purchase.itemDescription}',
+            '✓ Payment of ${CurrencyFormatter.format(amountPaid)} recorded for ${widget.pd.purchase.itemDescription}',
           ),
-          backgroundColor: Colors.green,
+          backgroundColor: const Color(0xFF059669),
         ),
       );
     } catch (e) {
@@ -913,7 +1129,7 @@ class _MarkPaidDialogState extends ConsumerState<_MarkPaidDialog> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.red.shade700,
         ),
       );
     }

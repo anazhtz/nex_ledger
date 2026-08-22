@@ -43,17 +43,17 @@ class DataTableCard extends StatelessWidget {
           final cardWidth = constraints.maxWidth;
 
           // Calculate dynamic column spacing so table columns span 100% of card width without trailing empty space
-          double computedSpacing = 24.w;
+          double computedSpacing = 20.w;
           final numCols = columns.length;
           if (numCols > 1 && cardWidth.isFinite && cardWidth > 0) {
             final targetWidth = math.max(minWidth ?? 0.0, cardWidth);
-            final double approxColWidth = 100.w;
+            final double approxColWidth = 110.w;
             final double totalContentWidth = numCols * approxColWidth;
             final double totalMargins = 32.w;
             final double spaceForGaps =
                 targetWidth - totalContentWidth - totalMargins;
             if (spaceForGaps > 0) {
-              computedSpacing = math.max(24.w, spaceForGaps / (numCols - 1));
+              computedSpacing = (spaceForGaps / (numCols - 1)).clamp(16.w, 32.w);
             }
           }
 

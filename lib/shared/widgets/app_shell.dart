@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
-import 'package:nex_ledger/core/constants/enums.dart';
-import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/features/auth/providers/auth_provider.dart';
 import 'package:nex_ledger/features/cash_book/providers/cash_book_providers.dart';
@@ -86,6 +84,12 @@ class _AppShellState extends ConsumerState<AppShell> {
 
     // Financials & Settings
     NavItem(
+      icon: Icons.account_balance_outlined,
+      label: 'Bank & Accounts',
+      path: '/bank-accounts',
+      section: 'FINANCIALS',
+    ),
+    NavItem(
       icon: Icons.account_balance_wallet_rounded,
       label: 'Deposits',
       path: '/deposits',
@@ -95,6 +99,12 @@ class _AppShellState extends ConsumerState<AppShell> {
       icon: Icons.assessment_rounded,
       label: 'Reports & P&L',
       path: '/reports/project-pnl',
+      section: 'FINANCIALS',
+    ),
+    NavItem(
+      icon: Icons.today_rounded,
+      label: 'Daily Day-Book',
+      path: '/reports/day-book',
       section: 'FINANCIALS',
     ),
     NavItem(
@@ -140,7 +150,9 @@ class _AppShellState extends ConsumerState<AppShell> {
         // Gateway Navigation
         const SingleActivator(LogicalKeyboardKey.keyD, alt: true): () => context.go('/'),
         const SingleActivator(LogicalKeyboardKey.keyC, alt: true): () => context.go('/cash-book'),
+        const SingleActivator(LogicalKeyboardKey.keyB, alt: true): () => context.go('/bank-accounts'),
         const SingleActivator(LogicalKeyboardKey.keyR, alt: true): () => context.go('/reports/project-pnl'),
+        const SingleActivator(LogicalKeyboardKey.keyY, alt: true): () => context.go('/reports/day-book'),
         const SingleActivator(LogicalKeyboardKey.keyS, alt: true): () => context.go('/settings'),
 
         // Security & Help
@@ -382,48 +394,55 @@ class _AppShellState extends ConsumerState<AppShell> {
                     children: [
                       // Live Cash Balance Pill
                       cashBalanceAsync.when(
-                        data: (bal) => Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 12.w, vertical: 6.h),
-                          decoration: BoxDecoration(
-                            color: bal >= 0
-                                ? const Color(0xFFECFDF5)
-                                : const Color(0xFFFEF2F2),
+                        data: (bal) => Tooltip(
+                          message: 'Click to manage Bank & Cash Accounts (Alt+B)',
+                          child: InkWell(
                             borderRadius: BorderRadius.circular(8.r),
-                            border: Border.all(
+                            onTap: () => context.go('/bank-accounts'),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 12.w, vertical: 6.h),
+                              decoration: BoxDecoration(
                                 color: bal >= 0
-                                    ? const Color(0xFFA7F3D0)
-                                    : const Color(0xFFFCA5A5)),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.account_balance_wallet_rounded,
-                                size: 15.sp,
-                                color: bal >= 0
-                                    ? const Color(0xFF059669)
-                                    : const Color(0xFFDC2626),
+                                    ? const Color(0xFFECFDF5)
+                                    : const Color(0xFFFEF2F2),
+                                borderRadius: BorderRadius.circular(8.r),
+                                border: Border.all(
+                                    color: bal >= 0
+                                        ? const Color(0xFFA7F3D0)
+                                        : const Color(0xFFFCA5A5)),
                               ),
-                              SizedBox(width: 6.w),
-                              Text(
-                                'Cash Balance: ',
-                                style: TextStyle(
-                                  fontSize: 11.sp,
-                                  color: const Color(0xFF64748B),
-                                  fontWeight: FontWeight.w500,
-                                ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.account_balance_wallet_rounded,
+                                    size: 15.sp,
+                                    color: bal >= 0
+                                        ? const Color(0xFF059669)
+                                        : const Color(0xFFDC2626),
+                                  ),
+                                  SizedBox(width: 6.w),
+                                  Text(
+                                    'Cash Balance: ',
+                                    style: TextStyle(
+                                      fontSize: 11.sp,
+                                      color: const Color(0xFF64748B),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    CurrencyFormatter.format(bal),
+                                    style: TextStyle(
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.w700,
+                                      color: bal >= 0
+                                          ? const Color(0xFF047857)
+                                          : const Color(0xFFB91C1C),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              Text(
-                                CurrencyFormatter.format(bal),
-                                style: TextStyle(
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w700,
-                                  color: bal >= 0
-                                      ? const Color(0xFF047857)
-                                      : const Color(0xFFB91C1C),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                         loading: () => const SizedBox.shrink(),
