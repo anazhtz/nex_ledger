@@ -398,14 +398,21 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
                           // Payment mode
                           DropdownButtonFormField<PaymentMode?>(
                             value: _paymentMode,
+                            isExpanded: true,
                             decoration: const InputDecoration(
                               labelText: 'Payment Mode',
                               prefixIcon: Icon(Icons.payment_rounded, size: 20),
                             ),
                             items: [
-                              const DropdownMenuItem(value: null, child: Text('— Select Payment Mode —')),
+                              const DropdownMenuItem(
+                                  value: null,
+                                  child: Text('— Select Payment Mode —',
+                                      overflow: TextOverflow.ellipsis)),
                               ...PaymentMode.values.map(
-                                (m) => DropdownMenuItem(value: m, child: Text(m.displayName)),
+                                (m) => DropdownMenuItem(
+                                    value: m,
+                                    child: Text(m.displayName,
+                                        overflow: TextOverflow.ellipsis)),
                               ),
                             ],
                             onChanged: (v) => setState(() => _paymentMode = v),
@@ -422,6 +429,7 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
                                 children: [
                                   DropdownButtonFormField<int?>(
                                     value: _selectedBankAccountId,
+                                    isExpanded: true,
                                     decoration: InputDecoration(
                                       labelText: _type == TransactionType.income
                                           ? 'Deposit Into (Bank / Cash Account)'
@@ -434,18 +442,22 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
                                       const DropdownMenuItem(
                                         value: null,
                                         child: Text(
-                                            '— Auto (Default Account) —'),
+                                            '— Auto (Default Account) —',
+                                            overflow: TextOverflow.ellipsis),
                                       ),
                                       ...accounts.map(
                                         (a) => DropdownMenuItem(
                                           value: a.account.id,
                                           child: Row(
-                                            mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Text(
-                                                '${a.account.accountName} (${a.account.isCashAccount ? 'Cash' : 'Bank'})',
+                                              Expanded(
+                                                child: Text(
+                                                  '${a.account.accountName} (${a.account.isCashAccount ? 'Cash' : 'Bank'})',
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
                                               ),
-                                              const SizedBox(width: 8),
+                                              const SizedBox(width: 4),
                                               Text(
                                                 '• Bal: ${CurrencyFormatter.format(a.currentBalance)}',
                                                 style: TextStyle(

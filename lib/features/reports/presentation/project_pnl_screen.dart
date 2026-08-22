@@ -77,6 +77,7 @@ class ProjectPnlScreen extends ConsumerWidget {
                 width: 340,
                 child: DropdownButtonFormField<int?>(
                   value: selectedProjectId,
+                  isExpanded: true,
                   decoration:
                       const InputDecoration(labelText: 'Select Target Project'),
                   items: [

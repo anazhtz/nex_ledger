@@ -511,13 +511,14 @@ class _MarkPaidDialogState extends State<_MarkPaidDialog> {
             ),
             DropdownButtonFormField<PaymentMode?>(
               value: _mode,
+              isExpanded: true,
               decoration: const InputDecoration(
                   labelText: 'Payment Mode', isDense: true),
               items: [
                 const DropdownMenuItem(
-                    value: null, child: Text('— Select Mode —')),
+                    value: null, child: Text('— Select Mode —', overflow: TextOverflow.ellipsis)),
                 ...PaymentMode.values.map((m) =>
-                    DropdownMenuItem(value: m, child: Text(m.displayName))),
+                    DropdownMenuItem(value: m, child: Text(m.displayName, overflow: TextOverflow.ellipsis))),
               ],
               onChanged: (v) => setState(() => _mode = v),
             ),

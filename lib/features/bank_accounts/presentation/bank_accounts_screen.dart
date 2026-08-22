@@ -544,6 +544,7 @@ class BankAccountsScreen extends ConsumerWidget {
                   SizedBox(height: 16.h),
                   DropdownButtonFormField<int>(
                     value: fromId,
+                    isExpanded: true,
                     decoration: const InputDecoration(
                       labelText: 'Transfer From (Source)',
                     ),
@@ -551,7 +552,9 @@ class BankAccountsScreen extends ConsumerWidget {
                       return DropdownMenuItem(
                         value: a.id,
                         child: Text(
-                            '${a.accountName} (${a.isCashAccount ? 'Cash' : 'Bank'})'),
+                          '${a.accountName} (${a.isCashAccount ? 'Cash' : 'Bank'})',
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       );
                     }).toList(),
                     onChanged: (v) {
@@ -561,6 +564,7 @@ class BankAccountsScreen extends ConsumerWidget {
                   SizedBox(height: 12.h),
                   DropdownButtonFormField<int>(
                     value: toId,
+                    isExpanded: true,
                     decoration: const InputDecoration(
                       labelText: 'Transfer To (Destination)',
                     ),
@@ -568,7 +572,9 @@ class BankAccountsScreen extends ConsumerWidget {
                       return DropdownMenuItem(
                         value: a.id,
                         child: Text(
-                            '${a.accountName} (${a.isCashAccount ? 'Cash' : 'Bank'})'),
+                          '${a.accountName} (${a.isCashAccount ? 'Cash' : 'Bank'})',
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       );
                     }).toList(),
                     onChanged: (v) {

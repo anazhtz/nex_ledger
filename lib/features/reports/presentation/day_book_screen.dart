@@ -256,6 +256,7 @@ class DayBookScreen extends ConsumerWidget {
                   width: 260.w,
                   child: DropdownButtonFormField<int?>(
                     value: selectedBankAccountId,
+                    isExpanded: true,
                     isDense: true,
                     decoration: InputDecoration(
                       contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),

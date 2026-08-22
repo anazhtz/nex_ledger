@@ -216,12 +216,13 @@ class _ProjectFormScreenState extends ConsumerState<ProjectFormScreen> {
                               Expanded(
                                 child: DropdownButtonFormField<ProjectType>(
                                   value: _type,
+                                  isExpanded: true,
                                   decoration: const InputDecoration(
                                       labelText: 'Type'),
                                   items: ProjectType.values
                                       .map((t) => DropdownMenuItem(
                                             value: t,
-                                            child: Text(t.displayName),
+                                            child: Text(t.displayName, overflow: TextOverflow.ellipsis),
                                           ))
                                       .toList(),
                                   onChanged: (v) =>
@@ -232,12 +233,13 @@ class _ProjectFormScreenState extends ConsumerState<ProjectFormScreen> {
                               Expanded(
                                 child: DropdownButtonFormField<ProjectStatus>(
                                   value: _status,
+                                  isExpanded: true,
                                   decoration: const InputDecoration(
                                       labelText: 'Status'),
                                   items: ProjectStatus.values
                                       .map((s) => DropdownMenuItem(
                                             value: s,
-                                            child: Text(s.displayName),
+                                            child: Text(s.displayName, overflow: TextOverflow.ellipsis),
                                           ))
                                       .toList(),
                                   onChanged: (v) =>

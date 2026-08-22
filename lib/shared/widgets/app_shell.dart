@@ -373,7 +373,10 @@ class _AppShellState extends ConsumerState<AppShell> {
                                             ),
                                           ),
                                           SizedBox(width: 8.w),
-                                          Text(p.name),
+                                          ConstrainedBox(
+                                            constraints: BoxConstraints(maxWidth: 160.w),
+                                            child: Text(p.name, overflow: TextOverflow.ellipsis),
+                                          ),
                                         ],
                                       ),
                                     );

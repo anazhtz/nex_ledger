@@ -705,6 +705,7 @@ class _AllocateStockDialogState extends ConsumerState<_AllocateStockDialog> {
                 error: (_, __) => const SizedBox.shrink(),
                 data: (projects) => DropdownButtonFormField<int>(
                   value: _targetProjectId,
+                  isExpanded: true,
                   decoration: const InputDecoration(
                     labelText: 'Target Project to Charge *',
                     isDense: true,
@@ -1028,16 +1029,17 @@ class _MarkPaidDialogState extends ConsumerState<_MarkPaidDialog> {
             // Payment mode
             DropdownButtonFormField<PaymentMode?>(
               value: _paymentMode,
+              isExpanded: true,
               decoration: const InputDecoration(
                 labelText: 'Payment Mode',
                 isDense: true,
               ),
               items: [
                 const DropdownMenuItem(
-                    value: null, child: Text('— Select Mode —')),
+                    value: null, child: Text('— Select Mode —', overflow: TextOverflow.ellipsis)),
                 ...PaymentMode.values.map(
                   (m) => DropdownMenuItem(
-                      value: m, child: Text(m.displayName)),
+                      value: m, child: Text(m.displayName, overflow: TextOverflow.ellipsis)),
                 ),
               ],
               onChanged: (v) => setState(() => _paymentMode = v),

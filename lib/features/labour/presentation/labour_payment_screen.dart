@@ -376,6 +376,7 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                       children: [
                                         DropdownButtonFormField<int?>(
                                           value: _selectedBankAccountId,
+                                          isExpanded: true,
                                           decoration: const InputDecoration(
                                             labelText: 'Paid From (Account)',
                                             prefixIcon: Icon(Icons.account_balance_outlined),
@@ -383,18 +384,20 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                           items: [
                                             const DropdownMenuItem(
                                               value: null,
-                                              child: Text('— Auto (Default) —'),
+                                              child: Text('— Auto (Default) —', overflow: TextOverflow.ellipsis),
                                             ),
                                             ...accounts.map(
                                               (a) => DropdownMenuItem(
                                                 value: a.account.id,
                                                 child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
                                                   children: [
-                                                    Text(
-                                                      '${a.account.accountName} (${a.account.isCashAccount ? 'Cash' : 'Bank'})',
+                                                    Expanded(
+                                                      child: Text(
+                                                        '${a.account.accountName} (${a.account.isCashAccount ? 'Cash' : 'Bank'})',
+                                                        overflow: TextOverflow.ellipsis,
+                                                      ),
                                                     ),
-                                                    const SizedBox(width: 8),
+                                                    const SizedBox(width: 4),
                                                     Text(
                                                       '• ${CurrencyFormatter.format(a.currentBalance)}',
                                                       style: TextStyle(
@@ -519,6 +522,7 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
 
     return DropdownButtonFormField<int>(
       value: _selectedProject,
+      isExpanded: true,
       decoration: const InputDecoration(labelText: 'Select Target Project *'),
       items: projects
           .map((p) => DropdownMenuItem(

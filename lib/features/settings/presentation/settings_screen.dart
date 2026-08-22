@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
+import 'package:nex_ledger/core/database/database_provider.dart';
 import 'package:nex_ledger/core/services/update_service.dart';
 import 'package:nex_ledger/features/auth/providers/auth_provider.dart';
 import 'package:nex_ledger/features/expense_categories/providers/expense_category_providers.dart';
@@ -205,15 +206,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     setState(() => _backing = true);
     try {
-      final dbPath = await AppDatabase.getDatabasePath();
-      final dbFile = File(dbPath);
-      if (await dbFile.exists()) {
-        await dbFile.delete();
-      }
-      final walFile = File('$dbPath-wal');
-      if (await walFile.exists()) await walFile.delete();
-      final shmFile = File('$dbPath-shm');
-      if (await shmFile.exists()) await shmFile.delete();
+      await ref.read(appDatabaseProvider).wipeAndResetData();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

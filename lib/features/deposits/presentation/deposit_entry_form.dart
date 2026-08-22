@@ -193,15 +193,16 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
                         const SizedBox(height: 16),
                         DropdownButtonFormField<PaymentMode?>(
                           value: _paymentMode,
+                          isExpanded: true,
                           decoration: const InputDecoration(
                               labelText: 'Payment Mode'),
                           items: [
                             const DropdownMenuItem(
-                                value: null, child: Text('— Select —')),
+                                value: null, child: Text('— Select —', overflow: TextOverflow.ellipsis)),
                             ...PaymentMode.values.map(
                               (m) => DropdownMenuItem(
                                 value: m,
-                                child: Text(m.displayName),
+                                child: Text(m.displayName, overflow: TextOverflow.ellipsis),
                               ),
                             ),
                           ],
@@ -317,6 +318,7 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
 
     return DropdownButtonFormField<int>(
       value: _selectedProject,
+      isExpanded: true,
       decoration:
           const InputDecoration(labelText: 'Select Target Project *'),
       items: projects

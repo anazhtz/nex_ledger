@@ -224,6 +224,23 @@ class AppDatabase extends _$AppDatabase {
         'Other Expense',
       ];
 
+  /// Safely wipes all transactional data and resets the ledger on any OS (including Windows)
+  /// without deleting or locking the physical SQLite database file.
+  Future<void> wipeAndResetData() async {
+    await transaction(() async {
+      await delete(transactions).go();
+      await delete(purchases).go();
+      await delete(attendance).go();
+      await delete(deposits).go();
+      await delete(workers).go();
+      await delete(vendors).go();
+      await (delete(projects)..where((tbl) => tbl.code.isNotValue('ADMIN-OVH'))).go();
+      await (delete(bankAccounts)..where((tbl) => tbl.isDefault.equals(false))).go();
+      await (update(bankAccounts)..where((tbl) => tbl.isDefault.equals(true)))
+          .write(const BankAccountsCompanion(openingBalance: Value(0.0)));
+    });
+  }
+
   /// Returns the absolute path of the database file (used for backup and Section 6a requirement).
   static Future<String> getDatabasePath() async {
     final dir = await getApplicationSupportDirectory();

@@ -791,21 +791,26 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                     Expanded(
                                       child: DropdownButtonFormField<PaymentMode?>(
                                         value: _paymentMode,
+                                        isExpanded: true,
                                         decoration: const InputDecoration(
                                           labelText: 'Payment Mode',
                                           prefixIcon: Icon(Icons.payments_outlined),
                                         ),
                                         items: [
                                           const DropdownMenuItem(
-                                              value: null, child: Text('— Select Mode —')),
+                                              value: null,
+                                              child: Text('— Select Mode —',
+                                                  overflow: TextOverflow.ellipsis)),
                                           ...PaymentMode.values.map(
                                             (m) => DropdownMenuItem(
                                               value: m,
-                                              child: Text(m.displayName),
+                                              child: Text(m.displayName,
+                                                  overflow: TextOverflow.ellipsis),
                                             ),
                                           ),
                                         ],
-                                        onChanged: (v) => setState(() => _paymentMode = v),
+                                        onChanged: (v) =>
+                                            setState(() => _paymentMode = v),
                                       ),
                                     ),
                                     SizedBox(width: 14.w),
@@ -813,29 +818,38 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                       loading: () => const SizedBox.shrink(),
                                       error: (_, __) => const SizedBox.shrink(),
                                       data: (accounts) {
-                                        if (accounts.isEmpty) return const SizedBox.shrink();
+                                        if (accounts.isEmpty) {
+                                          return const SizedBox.shrink();
+                                        }
                                         return Expanded(
                                           child: DropdownButtonFormField<int?>(
                                             value: _selectedBankAccountId,
+                                            isExpanded: true,
                                             decoration: const InputDecoration(
                                               labelText: 'Paid From (Account)',
-                                              prefixIcon: Icon(Icons.account_balance_outlined),
+                                              prefixIcon: Icon(
+                                                  Icons.account_balance_outlined),
                                             ),
                                             items: [
                                               const DropdownMenuItem(
                                                 value: null,
-                                                child: Text('— Auto (Default) —'),
+                                                child: Text('— Auto (Default) —',
+                                                    overflow:
+                                                        TextOverflow.ellipsis),
                                               ),
                                               ...accounts.map(
                                                 (a) => DropdownMenuItem(
                                                   value: a.account.id,
                                                   child: Row(
-                                                    mainAxisSize: MainAxisSize.min,
                                                     children: [
-                                                      Text(
-                                                        '${a.account.accountName} (${a.account.isCashAccount ? 'Cash' : 'Bank'})',
+                                                      Expanded(
+                                                        child: Text(
+                                                          '${a.account.accountName} (${a.account.isCashAccount ? 'Cash' : 'Bank'})',
+                                                          overflow:
+                                                              TextOverflow.ellipsis,
+                                                        ),
                                                       ),
-                                                      const SizedBox(width: 6),
+                                                      const SizedBox(width: 4),
                                                       Text(
                                                         '• ${CurrencyFormatter.format(a.currentBalance)}',
                                                         style: TextStyle(
@@ -843,7 +857,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                                           color: a.currentBalance < 0
                                                               ? Colors.red.shade700
                                                               : Colors.green.shade700,
-                                                          fontWeight: FontWeight.w600,
+                                                          fontWeight:
+                                                              FontWeight.w600,
                                                         ),
                                                       ),
                                                     ],

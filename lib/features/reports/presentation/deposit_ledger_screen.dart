@@ -86,6 +86,7 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
                 width: 300,
                 child: DropdownButtonFormField<int?>(
                   value: _selectedProject,
+                  isExpanded: true,
                   decoration:
                       const InputDecoration(labelText: 'Select Project'),
                   items: [
