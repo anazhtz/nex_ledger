@@ -39,6 +39,7 @@ export 'daos/labour_dao.dart';
 export 'daos/deposit_dao.dart';
 export 'daos/expense_category_dao.dart';
 export 'daos/bank_account_dao.dart';
+export 'database_provider.dart';
 
 part 'app_database.g.dart';
 
