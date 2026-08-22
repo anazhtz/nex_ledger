@@ -170,6 +170,74 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _resetDatabase() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.red.shade700),
+            const SizedBox(width: 8),
+            const Text('Reset All Ledger Data?'),
+          ],
+        ),
+        content: const Text(
+          'This action will permanently delete all transactions, projects, purchases, labour logs, and bank records.\n\n'
+          'The database will be freshly reset with clean default categories and starting accounts.\n\n'
+          'Are you sure you want to proceed?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            child: const Text('Yes, Wipe & Start Fresh'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _backing = true);
+    try {
+      final dbPath = await AppDatabase.getDatabasePath();
+      final dbFile = File(dbPath);
+      if (await dbFile.exists()) {
+        await dbFile.delete();
+      }
+      final walFile = File('$dbPath-wal');
+      if (await walFile.exists()) await walFile.delete();
+      final shmFile = File('$dbPath-shm');
+      if (await shmFile.exists()) await shmFile.delete();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✓ All ledger data wiped successfully! App is fresh and clean.'),
+            backgroundColor: Color(0xFF059669),
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error resetting data: $e'),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _backing = false);
+    }
+  }
+
   void _showChangePinDialog() {
     final oldPinCtrl = TextEditingController();
     final newPinCtrl = TextEditingController();
@@ -517,9 +585,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               child: OutlinedButton.icon(
                                 onPressed: _backing ? null : _restoreDatabase,
                                 icon: Icon(Icons.upload_file_rounded, size: 18.sp, color: const Color(0xFF4F46E5)),
-                                label: const Text('Import / Restore (.db)', style: TextStyle(color: Color(0xFF4F46E5))),
+                                label: const Text('Import (.db)', style: TextStyle(color: Color(0xFF4F46E5))),
                                 style: OutlinedButton.styleFrom(
                                   side: const BorderSide(color: Color(0xFF6366F1)),
+                                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.r),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 10.w),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _backing ? null : _resetDatabase,
+                                icon: Icon(Icons.delete_forever_rounded, size: 18.sp, color: const Color(0xFFDC2626)),
+                                label: const Text('Wipe & Start Fresh', style: TextStyle(color: Color(0xFFDC2626))),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: Color(0xFFFCA5A5)),
                                   padding: EdgeInsets.symmetric(vertical: 14.h),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10.r),
