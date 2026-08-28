@@ -64,12 +64,14 @@ class DayBookEntry {
 
   bool get isInflow =>
       transaction.type == TransactionType.income ||
-      transaction.type == TransactionType.deposit;
+      transaction.type == TransactionType.deposit ||
+      transaction.type == TransactionType.depositRecovery;
 
   bool get isOutflow =>
       transaction.type == TransactionType.expense ||
       transaction.type == TransactionType.labourPayment ||
       transaction.type == TransactionType.depositRefund ||
+      transaction.type == TransactionType.depositPaid ||
       transaction.type == TransactionType.purchasePayment ||
       (transaction.type == TransactionType.purchase && transaction.affectsCash);
 }
@@ -139,7 +141,8 @@ class ReportRepository {
 
         for (final t in txns) {
           if (t.affectsPnl) {
-            if (t.type == TransactionType.income) {
+            if (t.type == TransactionType.income ||
+                t.type == TransactionType.depositAdjustment) {
               income += t.amount;
             } else if (t.type == TransactionType.expense) {
               expenses += t.amount;
@@ -223,7 +226,8 @@ class ReportRepository {
 
           for (final t in txns) {
             if (t.affectsPnl) {
-              if (t.type == TransactionType.income) {
+              if (t.type == TransactionType.income ||
+                  t.type == TransactionType.depositAdjustment) {
                 income += t.amount;
               } else if (t.type == TransactionType.expense) {
                 expenses += t.amount;
@@ -351,11 +355,13 @@ class ReportRepository {
             }
             if (t.affectsCash) {
               if (t.type == TransactionType.income ||
-                  t.type == TransactionType.deposit) {
+                  t.type == TransactionType.deposit ||
+                  t.type == TransactionType.depositRecovery) {
                 openingBalance += t.amount;
               } else if (t.type == TransactionType.expense ||
                   t.type == TransactionType.labourPayment ||
                   t.type == TransactionType.depositRefund ||
+                  t.type == TransactionType.depositPaid ||
                   t.type == TransactionType.purchasePayment ||
                   (t.type == TransactionType.purchase && t.affectsCash)) {
                 openingBalance -= t.amount;
@@ -405,7 +411,8 @@ class ReportRepository {
           }
 
           if (t.affectsPnl) {
-            if (t.type == TransactionType.income) {
+            if (t.type == TransactionType.income ||
+                t.type == TransactionType.depositAdjustment) {
               pnlIncome += t.amount;
             } else if (t.type == TransactionType.expense ||
                 t.type == TransactionType.purchase ||

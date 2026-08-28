@@ -15,9 +15,11 @@ class DepositListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final depositsAsync = ref.watch(filteredDepositListProvider);
-    final totalHeldAsync = ref.watch(totalDepositsHeldProvider);
+    final totalPaidHeldAsync = ref.watch(totalDepositsPaidHeldProvider);
+    final totalReceivedHeldAsync = ref.watch(totalDepositsReceivedHeldProvider);
     final projectsAsync = ref.watch(projectListProvider);
     final filterProject = ref.watch(depositProjectFilterProvider);
+    final filterType = ref.watch(depositTypeFilterProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -29,28 +31,49 @@ class DepositListScreen extends ConsumerWidget {
           children: [
             Row(
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Deposits',
-                      style: theme.textTheme.headlineMedium
-                          ?.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                    totalHeldAsync.when(
-                      loading: () => const SizedBox.shrink(),
-                      error: (_, __) => const SizedBox.shrink(),
-                      data: (held) => Text(
-                        'Total Held: ${CurrencyFormatter.format(held)}  •  Liability',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.orange.shade700,
-                          fontWeight: FontWeight.w600,
-                        ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Security Deposits',
+                        style: theme.textTheme.headlineMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
-                    ),
-                  ],
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          totalPaidHeldAsync.when(
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => const SizedBox.shrink(),
+                            data: (paidHeld) => Text(
+                              'Paid to Govt/Client: ${CurrencyFormatter.format(paidHeld)} (Asset)',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: Colors.blue.shade700,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const Text('•', style: TextStyle(color: Colors.grey)),
+                          totalReceivedHeldAsync.when(
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => const SizedBox.shrink(),
+                            data: (receivedHeld) => Text(
+                              'Received from Clients: ${CurrencyFormatter.format(receivedHeld)} (Liability)',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: Colors.orange.shade700,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 16),
                 OutlinedButton.icon(
                   onPressed: () async {
                     final deposits = await ref.read(depositListProvider.future);
@@ -84,26 +107,62 @@ class DepositListScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
 
-            // Filter
+            // Filters
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: projectsAsync.when(
-                  loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
-                  data: (projects) => Row(
-                    children: [
-                      SizedBox(
-                        width: 220,
+                child: Wrap(
+                  spacing: 16,
+                  runSpacing: 12,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    // Type filter
+                    SizedBox(
+                      width: 280,
+                      child: DropdownButtonFormField<DepositType?>(
+                        value: filterType,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Filter by Type',
+                          isDense: true,
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                              value: null,
+                              child: Text('All Deposit Types',
+                                  overflow: TextOverflow.ellipsis)),
+                          DropdownMenuItem(
+                              value: DepositType.paid,
+                              child: Text('Deposits Paid (To Govt/Client)',
+                                  overflow: TextOverflow.ellipsis)),
+                          DropdownMenuItem(
+                              value: DepositType.received,
+                              child: Text('Deposits Received (From Client)',
+                                  overflow: TextOverflow.ellipsis)),
+                        ],
+                        onChanged: (v) => ref
+                            .read(depositTypeFilterProvider.notifier)
+                            .state = v,
+                      ),
+                    ),
+                    // Project filter
+                    projectsAsync.when(
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
+                      data: (projects) => SizedBox(
+                        width: 260,
                         child: DropdownButtonFormField<int?>(
                           value: filterProject,
+                          isExpanded: true,
                           decoration: const InputDecoration(
                             labelText: 'Filter by Project',
                             isDense: true,
                           ),
                           items: [
                             const DropdownMenuItem(
-                                value: null, child: Text('All Projects')),
+                                value: null,
+                                child: Text('All Projects',
+                                    overflow: TextOverflow.ellipsis)),
                             ...projects.map(
                               (p) => DropdownMenuItem(
                                 value: p.id,
@@ -117,8 +176,8 @@ class DepositListScreen extends ConsumerWidget {
                               .state = v,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -134,6 +193,7 @@ class DepositListScreen extends ConsumerWidget {
                       'No deposits recorded. Click "Record Deposit" to add one.',
                   columns: const [
                     DataColumn(label: Text('Date')),
+                    DataColumn(label: Text('Type')),
                     DataColumn(label: Text('Project')),
                     DataColumn(label: Text('Amount'), numeric: true),
                     DataColumn(label: Text('Status')),
@@ -141,9 +201,11 @@ class DepositListScreen extends ConsumerWidget {
                     DataColumn(label: Text('Actions')),
                   ],
                   rows: deposits.map((dd) {
+                    final isPaidType = dd.deposit.depositType == DepositType.paid;
                     return DataRow(cells: [
                       DataCell(Text(
                           DateFormatter.format(dd.transaction.date))),
+                      DataCell(_DepositTypeBadge(depositType: dd.deposit.depositType)),
                       DataCell(Text(dd.project.name,
                           overflow: TextOverflow.ellipsis)),
                       DataCell(Text(CurrencyFormatter.format(
@@ -155,22 +217,37 @@ class DepositListScreen extends ConsumerWidget {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (dd.deposit.status == DepositStatus.held ||
-                                dd.deposit.status ==
-                                    DepositStatus.partiallyAdjusted)
+                            // If Paid to Govt: Action is "Receive Back / Recover"
+                            if (isPaidType &&
+                                (dd.deposit.status == DepositStatus.held ||
+                                 dd.deposit.status == DepositStatus.partiallyAdjusted))
+                              _ActionButton(
+                                label: 'Receive Back',
+                                color: const Color(0xFF059669),
+                                onTap: () => _showRecoverDialog(
+                                    context, ref, dd),
+                              ),
+
+                            // If Received from Client: Actions are "Adjust to Income" or "Refund"
+                            if (!isPaidType &&
+                                (dd.deposit.status == DepositStatus.held ||
+                                 dd.deposit.status == DepositStatus.partiallyAdjusted))
                               _ActionButton(
                                 label: 'Adjust',
                                 color: Colors.blue.shade700,
                                 onTap: () => _showAdjustDialog(
                                     context, ref, dd),
                               ),
-                            if (dd.deposit.status != DepositStatus.refunded)
+                            if (!isPaidType &&
+                                dd.deposit.status != DepositStatus.refunded &&
+                                dd.deposit.status != DepositStatus.adjusted)
                               _ActionButton(
                                 label: 'Refund',
                                 color: Colors.red.shade700,
                                 onTap: () => _showRefundDialog(
                                     context, ref, dd),
                               ),
+
                             IconButton(
                               icon: const Icon(Icons.delete_outline_rounded,
                                   size: 16),
@@ -189,6 +266,83 @@ class DepositListScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showRecoverDialog(BuildContext context, WidgetRef ref, dynamic dd) {
+    final remaining = (dd.transaction.amount - dd.deposit.adjustedAmount).clamp(0.0, double.infinity);
+    final amountCtrl = TextEditingController(
+      text: remaining > 0 ? remaining.toStringAsFixed(2) : dd.transaction.amount.toStringAsFixed(2),
+    );
+    final refCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Receive Back Deposit from Govt/Client'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Original deposit paid: ${CurrencyFormatter.format(dd.transaction.amount)}'
+              '${dd.deposit.adjustedAmount > 0 ? " (Already recovered: ${CurrencyFormatter.format(dd.deposit.adjustedAmount)})" : ""}',
+              style: const TextStyle(color: Colors.black54),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFECFDF5),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: const Color(0xFFA7F3D0)),
+              ),
+              child: const Text(
+                'Receiving back your security deposit increases cash balance. It is NOT income and does NOT affect P&L.',
+                style: TextStyle(fontSize: 12, color: Color(0xFF065F46)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: amountCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Amount Recovered / Received Back (₹)',
+                prefixText: '₹ ',
+              ),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: refCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Challan / Refund Order / Cheque Reference',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: const Color(0xFF059669)),
+            onPressed: () async {
+              final amount = double.tryParse(amountCtrl.text);
+              if (amount == null || amount <= 0) return;
+              Navigator.pop(ctx);
+              await ref.read(depositRepositoryProvider).recoverDeposit(
+                    depositId: dd.deposit.id,
+                    projectId: dd.project.id,
+                    recoveredAmount: amount,
+                    date: DateTime.now(),
+                    referenceNo: refCtrl.text.isNotEmpty ? refCtrl.text : null,
+                  );
+            },
+            child: const Text('Confirm Deposit Received Back'),
+          ),
+        ],
       ),
     );
   }
@@ -257,7 +411,7 @@ class DepositListScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Refund Deposit'),
+        title: const Text('Refund Deposit to Client'),
         content: Text(
           'Refund ${CurrencyFormatter.format(dd.transaction.amount)} to the client?\n\n'
           'This will decrease cash balance. P&L will not be affected.',
@@ -345,6 +499,34 @@ class DepositListScreen extends ConsumerWidget {
   }
 }
 
+class _DepositTypeBadge extends StatelessWidget {
+  final DepositType depositType;
+  const _DepositTypeBadge({required this.depositType});
+
+  @override
+  Widget build(BuildContext context) {
+    final isPaid = depositType == DepositType.paid;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: isPaid ? Colors.blue.shade50 : Colors.orange.shade50,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: isPaid ? Colors.blue.shade200 : Colors.orange.shade200,
+        ),
+      ),
+      child: Text(
+        isPaid ? 'Paid to Govt' : 'From Client',
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: isPaid ? Colors.blue.shade800 : Colors.orange.shade900,
+        ),
+      ),
+    );
+  }
+}
+
 class _DepositStatusChip extends StatelessWidget {
   final DepositStatus status;
   const _DepositStatusChip({required this.status});
@@ -353,6 +535,7 @@ class _DepositStatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final (color, bg) = switch (status) {
       DepositStatus.held => (Colors.orange.shade800, Colors.orange.shade50),
+      DepositStatus.recovered => (const Color(0xFF065F46), const Color(0xFFECFDF5)),
       DepositStatus.adjusted => (Colors.green.shade700, Colors.green.shade50),
       DepositStatus.partiallyAdjusted => (Colors.blue.shade700, Colors.blue.shade50),
       DepositStatus.refunded => (Colors.grey.shade700, Colors.grey.shade100),

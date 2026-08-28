@@ -37,6 +37,7 @@ class UpdateService {
   /// Check for updates via Firebase Remote Config first (works with 100% private repo),
   /// with fallback to GitHub Releases API.
   Future<AppUpdateInfo?> checkForUpdates() async {
+    if (Platform.environment.containsKey('FLUTTER_TEST')) return null;
     String currentVersion = '1.0.0';
     try {
       final packageInfo = await PackageInfo.fromPlatform();

@@ -158,4 +158,77 @@ void main() {
     expect(cash, equals(365000.0),
         reason: 'Final: Physical Cash in Bank/Hand must be ₹3,65,000');
   });
+
+  test('Government Tender Workflow — Developer Pays Security Deposit & Recovers it with ₹0 P&L impact',
+      () async {
+    // 1. Initial income / cash inflow into the company
+    await cashBookRepo.addIncome(
+      projectId: projectId,
+      date: DateTime.now(),
+      amount: 1000000.0,
+      narration: 'Initial working capital / Project Mobilization',
+    );
+
+    double cash = await db.transactionDao.watchCashBalance().first;
+    expect(cash, equals(1000000.0));
+
+    // 2. Developer pays EMD / Security Deposit of ₹2,00,000 to Government
+    await depositRepo.paySecurityDeposit(
+      projectId: projectId,
+      date: DateTime.now(),
+      amount: 200000.0,
+      referenceNo: 'EMD-GOVT-2026-99',
+      narration: 'EMD paid for Government Tender',
+    );
+
+    cash = await db.transactionDao.watchCashBalance().first;
+    double paidHeld = await db.depositDao.watchTotalDepositsPaidHeld().first;
+    ProjectPnl pnl1 = await reportRepo.getProjectPnl(projectId);
+
+    // Cash decreased by ₹2,00,000
+    expect(cash, equals(800000.0), reason: 'Cash must decrease to ₹8,00,000');
+    // Deposit asset created
+    expect(paidHeld, equals(200000.0), reason: 'Deposit asset with Govt must be ₹2,00,000');
+    // P&L must NOT be affected by security deposit paid (only the ₹10L income is in P&L)
+    expect(pnl1.income, equals(1000000.0));
+    expect(pnl1.netPnl, equals(1000000.0));
+
+    // 3. Project execution: materials purchased ₹1,00,000
+    await purchaseRepo.addPurchase(
+      projectId: projectId,
+      vendorId: vendorId,
+      date: DateTime.now(),
+      itemDescription: 'Steel and cement',
+      amount: 100000.0,
+      paymentStatus: PaymentStatus.paid,
+    );
+
+    cash = await db.transactionDao.watchCashBalance().first;
+    expect(cash, equals(700000.0));
+
+    // 4. Work completed: Government returns ₹2,00,000 security deposit back to Developer
+    final deposits = await db.depositDao.watchDepositsByProject(projectId).first;
+    final govtDeposit = deposits.firstWhere((d) => d.deposit.depositType == DepositType.paid);
+
+    await depositRepo.recoverDeposit(
+      depositId: govtDeposit.deposit.id,
+      projectId: projectId,
+      recoveredAmount: 200000.0,
+      date: DateTime.now(),
+      referenceNo: 'REFUND-ORDER-99',
+      narration: 'Security deposit refund received from Govt after completion',
+    );
+
+    cash = await db.transactionDao.watchCashBalance().first;
+    paidHeld = await db.depositDao.watchTotalDepositsPaidHeld().first;
+    final finalPnl = await reportRepo.getProjectPnl(projectId);
+
+    // Cash increases back by ₹2,00,000
+    expect(cash, equals(900000.0), reason: 'Cash must be ₹9,00,000 (700,000 + 200,000 refunded)');
+    // Deposit asset cleared
+    expect(paidHeld, equals(0.0), reason: 'Deposits with Govt must be ₹0 (fully recovered)');
+    // CRITICAL: P&L is NOT affected by the deposit returned (Income stays ₹10,00,000, NOT ₹12,00,000)
+    expect(finalPnl.income, equals(1000000.0), reason: 'Returned deposit is NEVER treated as Income in P&L!');
+    expect(finalPnl.netPnl, equals(900000.0), reason: 'Net P&L = 10,00,000 income - 1,00,000 purchase = 9,00,000');
+  });
 }

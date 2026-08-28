@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -22,7 +23,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    if (!_hasCheckedUpdate) {
+    if (!Platform.environment.containsKey('FLUTTER_TEST') && !_hasCheckedUpdate) {
       _hasCheckedUpdate = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _checkUpdateInBackground();
@@ -31,6 +32,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Future<void> _checkUpdateInBackground() async {
+    if (Platform.environment.containsKey('FLUTTER_TEST')) return;
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
     final info = await UpdateService.instance.checkForUpdates();
@@ -102,7 +104,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     value: CurrencyFormatter.format(summary.totalDepositsHeld),
                     icon: Icons.savings_outlined,
                     iconColor: Colors.orange.shade700,
-                    subtitle: 'Liability — not income',
+                    subtitle: 'Refundable — ₹0 P&L impact',
                     onTap: () => _showDepositsHeldBreakdown(context, summary),
                     tooltip: 'Click to view Project-wise Security Deposits Breakdown',
                   );

@@ -5,6 +5,11 @@ enum ProjectType { project, adminOverhead }
 
 enum ProjectStatus { active, onHold, closed }
 
+enum DepositType {
+  paid,     // Security Deposit Paid to Govt / Client (Asset, Outflow)
+  received, // Security Deposit Received from Client / Subcontractor (Liability, Inflow)
+}
+
 enum TransactionType {
   income,
   expense,
@@ -12,9 +17,11 @@ enum TransactionType {
   purchasePayment, // cash outflow when settling a pending/partial purchase bill
   stockAllocation, // material/stock allocated to a project from advance stock (hits P&L, no cash)
   labourPayment,
-  deposit,
-  depositRefund,
-  depositAdjustment,
+  deposit,           // Deposit received from client (Inflow, Liability, P&L = 0)
+  depositRefund,     // Deposit refunded to client (Outflow, Liability cleared, P&L = 0)
+  depositAdjustment, // Deposit adjusted to income (No cash, P&L Income recognized)
+  depositPaid,       // Security Deposit Paid to Govt/Client (Outflow, Asset, P&L = 0)
+  depositRecovery,   // Security Deposit Recovered/Returned from Govt/Client (Inflow, Asset cleared, P&L = 0)
 }
 
 enum PaymentMode { cash, bank, cheque, online }
@@ -23,7 +30,13 @@ enum PaymentStatus { paid, pending, partial }
 
 enum AttendanceStatus { present, halfDay, absent }
 
-enum DepositStatus { held, adjusted, partiallyAdjusted, refunded }
+enum DepositStatus {
+  held,              // Currently held (with Govt or as Liability)
+  recovered,         // Fully recovered/received back from Govt
+  adjusted,          // Fully adjusted to income
+  partiallyAdjusted, // Partially adjusted or partially recovered
+  refunded,          // Refunded to client
+}
 
 // ---------------------------------------------------------------------------
 // Display name helpers
@@ -44,6 +57,13 @@ extension ProjectStatusX on ProjectStatus {
       };
 }
 
+extension DepositTypeX on DepositType {
+  String get displayName => switch (this) {
+        DepositType.paid => 'Deposit Paid (To Govt / Client)',
+        DepositType.received => 'Deposit Received (From Client)',
+      };
+}
+
 extension TransactionTypeX on TransactionType {
   String get displayName => switch (this) {
         TransactionType.income => 'Income',
@@ -52,30 +72,35 @@ extension TransactionTypeX on TransactionType {
         TransactionType.purchasePayment => 'Purchase Payment',
         TransactionType.stockAllocation => 'Stock Allocation',
         TransactionType.labourPayment => 'Labour Payment',
-        TransactionType.deposit => 'Security Deposit',
+        TransactionType.deposit => 'Deposit Received',
         TransactionType.depositRefund => 'Deposit Refund',
         TransactionType.depositAdjustment => 'Deposit Adjustment',
+        TransactionType.depositPaid => 'Security Deposit Paid',
+        TransactionType.depositRecovery => 'Deposit Recovered / Returned',
       };
 
   /// Whether this transaction type affects P&L by default.
   /// purchasePayment is false — P&L was already hit when the bill was recorded.
-  /// Deposit-related types are always false.
+  /// Deposit-related types (except adjustment to income) are always false.
   bool get defaultAffectsPnl => switch (this) {
         TransactionType.deposit => false,
         TransactionType.depositRefund => false,
-        TransactionType.depositAdjustment => false,
+        TransactionType.depositPaid => false,
+        TransactionType.depositRecovery => false,
+        TransactionType.depositAdjustment => true,
         TransactionType.purchasePayment => false, // P&L already hit at bill entry
         _ => true,
       };
 
   /// Whether this is a cash outflow (debit).
-  /// Note: stockAllocation does NOT move cash (cash was already paid during bulk purchase).
+  /// Note: stockAllocation and depositAdjustment do NOT move physical cash.
   bool get isDebit => switch (this) {
         TransactionType.expense => true,
         TransactionType.purchase => true,
         TransactionType.purchasePayment => true, // actual cash out when bill is settled
         TransactionType.labourPayment => true,
         TransactionType.depositRefund => true,
+        TransactionType.depositPaid => true, // cash out when paying security deposit to govt
         _ => false,
       };
 }
@@ -115,8 +140,9 @@ extension AttendanceStatusX on AttendanceStatus {
 extension DepositStatusX on DepositStatus {
   String get displayName => switch (this) {
         DepositStatus.held => 'Held',
+        DepositStatus.recovered => 'Fully Recovered',
         DepositStatus.adjusted => 'Fully Adjusted',
-        DepositStatus.partiallyAdjusted => 'Partially Adjusted',
+        DepositStatus.partiallyAdjusted => 'Partially Adjusted / Recovered',
         DepositStatus.refunded => 'Refunded',
       };
 }

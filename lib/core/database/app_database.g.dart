@@ -3489,6 +3489,13 @@ class $DepositsTable extends Deposits with TableInfo<$DepositsTable, Deposit> {
       defaultConstraints: GeneratedColumn.constraintIsAlways(
           'REFERENCES projects (id) ON DELETE RESTRICT'));
   @override
+  late final GeneratedColumnWithTypeConverter<DepositType, String> depositType =
+      GeneratedColumn<String>('deposit_type', aliasedName, false,
+              type: DriftSqlType.string,
+              requiredDuringInsert: false,
+              defaultValue: Constant(DepositType.paid.name))
+          .withConverter<DepositType>($DepositsTable.$converterdepositType);
+  @override
   late final GeneratedColumnWithTypeConverter<DepositStatus, String> status =
       GeneratedColumn<String>('status', aliasedName, false,
               type: DriftSqlType.string, requiredDuringInsert: true)
@@ -3512,6 +3519,7 @@ class $DepositsTable extends Deposits with TableInfo<$DepositsTable, Deposit> {
         id,
         transactionId,
         projectId,
+        depositType,
         status,
         adjustedAmount,
         adjustmentReference
@@ -3570,6 +3578,9 @@ class $DepositsTable extends Deposits with TableInfo<$DepositsTable, Deposit> {
           .read(DriftSqlType.int, data['${effectivePrefix}transaction_id'])!,
       projectId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}project_id'])!,
+      depositType: $DepositsTable.$converterdepositType.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}deposit_type'])!),
       status: $DepositsTable.$converterstatus.fromSql(attachedDatabase
           .typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}status'])!),
@@ -3585,6 +3596,8 @@ class $DepositsTable extends Deposits with TableInfo<$DepositsTable, Deposit> {
     return $DepositsTable(attachedDatabase, alias);
   }
 
+  static JsonTypeConverter2<DepositType, String, String> $converterdepositType =
+      const EnumNameConverter<DepositType>(DepositType.values);
   static JsonTypeConverter2<DepositStatus, String, String> $converterstatus =
       const EnumNameConverter<DepositStatus>(DepositStatus.values);
 }
@@ -3593,17 +3606,19 @@ class Deposit extends DataClass implements Insertable<Deposit> {
   final int id;
   final int transactionId;
   final int projectId;
+  final DepositType depositType;
   final DepositStatus status;
 
-  /// Total portion of this deposit adjusted to income so far.
+  /// Total portion of this deposit recovered (if paid) or adjusted to income (if received) so far.
   final double adjustedAmount;
 
-  /// Invoice / work-order reference the deposit was applied against.
+  /// FDR / EMD / Challan / Work-order / Invoice reference.
   final String? adjustmentReference;
   const Deposit(
       {required this.id,
       required this.transactionId,
       required this.projectId,
+      required this.depositType,
       required this.status,
       required this.adjustedAmount,
       this.adjustmentReference});
@@ -3613,6 +3628,10 @@ class Deposit extends DataClass implements Insertable<Deposit> {
     map['id'] = Variable<int>(id);
     map['transaction_id'] = Variable<int>(transactionId);
     map['project_id'] = Variable<int>(projectId);
+    {
+      map['deposit_type'] = Variable<String>(
+          $DepositsTable.$converterdepositType.toSql(depositType));
+    }
     {
       map['status'] =
           Variable<String>($DepositsTable.$converterstatus.toSql(status));
@@ -3629,6 +3648,7 @@ class Deposit extends DataClass implements Insertable<Deposit> {
       id: Value(id),
       transactionId: Value(transactionId),
       projectId: Value(projectId),
+      depositType: Value(depositType),
       status: Value(status),
       adjustedAmount: Value(adjustedAmount),
       adjustmentReference: adjustmentReference == null && nullToAbsent
@@ -3644,6 +3664,8 @@ class Deposit extends DataClass implements Insertable<Deposit> {
       id: serializer.fromJson<int>(json['id']),
       transactionId: serializer.fromJson<int>(json['transactionId']),
       projectId: serializer.fromJson<int>(json['projectId']),
+      depositType: $DepositsTable.$converterdepositType
+          .fromJson(serializer.fromJson<String>(json['depositType'])),
       status: $DepositsTable.$converterstatus
           .fromJson(serializer.fromJson<String>(json['status'])),
       adjustedAmount: serializer.fromJson<double>(json['adjustedAmount']),
@@ -3658,6 +3680,8 @@ class Deposit extends DataClass implements Insertable<Deposit> {
       'id': serializer.toJson<int>(id),
       'transactionId': serializer.toJson<int>(transactionId),
       'projectId': serializer.toJson<int>(projectId),
+      'depositType': serializer.toJson<String>(
+          $DepositsTable.$converterdepositType.toJson(depositType)),
       'status': serializer
           .toJson<String>($DepositsTable.$converterstatus.toJson(status)),
       'adjustedAmount': serializer.toJson<double>(adjustedAmount),
@@ -3669,6 +3693,7 @@ class Deposit extends DataClass implements Insertable<Deposit> {
           {int? id,
           int? transactionId,
           int? projectId,
+          DepositType? depositType,
           DepositStatus? status,
           double? adjustedAmount,
           Value<String?> adjustmentReference = const Value.absent()}) =>
@@ -3676,6 +3701,7 @@ class Deposit extends DataClass implements Insertable<Deposit> {
         id: id ?? this.id,
         transactionId: transactionId ?? this.transactionId,
         projectId: projectId ?? this.projectId,
+        depositType: depositType ?? this.depositType,
         status: status ?? this.status,
         adjustedAmount: adjustedAmount ?? this.adjustedAmount,
         adjustmentReference: adjustmentReference.present
@@ -3689,6 +3715,8 @@ class Deposit extends DataClass implements Insertable<Deposit> {
           ? data.transactionId.value
           : this.transactionId,
       projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      depositType:
+          data.depositType.present ? data.depositType.value : this.depositType,
       status: data.status.present ? data.status.value : this.status,
       adjustedAmount: data.adjustedAmount.present
           ? data.adjustedAmount.value
@@ -3705,6 +3733,7 @@ class Deposit extends DataClass implements Insertable<Deposit> {
           ..write('id: $id, ')
           ..write('transactionId: $transactionId, ')
           ..write('projectId: $projectId, ')
+          ..write('depositType: $depositType, ')
           ..write('status: $status, ')
           ..write('adjustedAmount: $adjustedAmount, ')
           ..write('adjustmentReference: $adjustmentReference')
@@ -3713,8 +3742,8 @@ class Deposit extends DataClass implements Insertable<Deposit> {
   }
 
   @override
-  int get hashCode => Object.hash(id, transactionId, projectId, status,
-      adjustedAmount, adjustmentReference);
+  int get hashCode => Object.hash(id, transactionId, projectId, depositType,
+      status, adjustedAmount, adjustmentReference);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3722,6 +3751,7 @@ class Deposit extends DataClass implements Insertable<Deposit> {
           other.id == this.id &&
           other.transactionId == this.transactionId &&
           other.projectId == this.projectId &&
+          other.depositType == this.depositType &&
           other.status == this.status &&
           other.adjustedAmount == this.adjustedAmount &&
           other.adjustmentReference == this.adjustmentReference);
@@ -3731,6 +3761,7 @@ class DepositsCompanion extends UpdateCompanion<Deposit> {
   final Value<int> id;
   final Value<int> transactionId;
   final Value<int> projectId;
+  final Value<DepositType> depositType;
   final Value<DepositStatus> status;
   final Value<double> adjustedAmount;
   final Value<String?> adjustmentReference;
@@ -3738,6 +3769,7 @@ class DepositsCompanion extends UpdateCompanion<Deposit> {
     this.id = const Value.absent(),
     this.transactionId = const Value.absent(),
     this.projectId = const Value.absent(),
+    this.depositType = const Value.absent(),
     this.status = const Value.absent(),
     this.adjustedAmount = const Value.absent(),
     this.adjustmentReference = const Value.absent(),
@@ -3746,6 +3778,7 @@ class DepositsCompanion extends UpdateCompanion<Deposit> {
     this.id = const Value.absent(),
     required int transactionId,
     required int projectId,
+    this.depositType = const Value.absent(),
     required DepositStatus status,
     this.adjustedAmount = const Value.absent(),
     this.adjustmentReference = const Value.absent(),
@@ -3756,6 +3789,7 @@ class DepositsCompanion extends UpdateCompanion<Deposit> {
     Expression<int>? id,
     Expression<int>? transactionId,
     Expression<int>? projectId,
+    Expression<String>? depositType,
     Expression<String>? status,
     Expression<double>? adjustedAmount,
     Expression<String>? adjustmentReference,
@@ -3764,6 +3798,7 @@ class DepositsCompanion extends UpdateCompanion<Deposit> {
       if (id != null) 'id': id,
       if (transactionId != null) 'transaction_id': transactionId,
       if (projectId != null) 'project_id': projectId,
+      if (depositType != null) 'deposit_type': depositType,
       if (status != null) 'status': status,
       if (adjustedAmount != null) 'adjusted_amount': adjustedAmount,
       if (adjustmentReference != null)
@@ -3775,6 +3810,7 @@ class DepositsCompanion extends UpdateCompanion<Deposit> {
       {Value<int>? id,
       Value<int>? transactionId,
       Value<int>? projectId,
+      Value<DepositType>? depositType,
       Value<DepositStatus>? status,
       Value<double>? adjustedAmount,
       Value<String?>? adjustmentReference}) {
@@ -3782,6 +3818,7 @@ class DepositsCompanion extends UpdateCompanion<Deposit> {
       id: id ?? this.id,
       transactionId: transactionId ?? this.transactionId,
       projectId: projectId ?? this.projectId,
+      depositType: depositType ?? this.depositType,
       status: status ?? this.status,
       adjustedAmount: adjustedAmount ?? this.adjustedAmount,
       adjustmentReference: adjustmentReference ?? this.adjustmentReference,
@@ -3799,6 +3836,10 @@ class DepositsCompanion extends UpdateCompanion<Deposit> {
     }
     if (projectId.present) {
       map['project_id'] = Variable<int>(projectId.value);
+    }
+    if (depositType.present) {
+      map['deposit_type'] = Variable<String>(
+          $DepositsTable.$converterdepositType.toSql(depositType.value));
     }
     if (status.present) {
       map['status'] =
@@ -3819,6 +3860,7 @@ class DepositsCompanion extends UpdateCompanion<Deposit> {
           ..write('id: $id, ')
           ..write('transactionId: $transactionId, ')
           ..write('projectId: $projectId, ')
+          ..write('depositType: $depositType, ')
           ..write('status: $status, ')
           ..write('adjustedAmount: $adjustedAmount, ')
           ..write('adjustmentReference: $adjustmentReference')
@@ -7079,6 +7121,7 @@ typedef $$DepositsTableCreateCompanionBuilder = DepositsCompanion Function({
   Value<int> id,
   required int transactionId,
   required int projectId,
+  Value<DepositType> depositType,
   required DepositStatus status,
   Value<double> adjustedAmount,
   Value<String?> adjustmentReference,
@@ -7087,6 +7130,7 @@ typedef $$DepositsTableUpdateCompanionBuilder = DepositsCompanion Function({
   Value<int> id,
   Value<int> transactionId,
   Value<int> projectId,
+  Value<DepositType> depositType,
   Value<DepositStatus> status,
   Value<double> adjustedAmount,
   Value<String?> adjustmentReference,
@@ -7137,6 +7181,11 @@ class $$DepositsTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<DepositType, DepositType, String>
+      get depositType => $composableBuilder(
+          column: $table.depositType,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
 
   ColumnWithTypeConverterFilters<DepositStatus, DepositStatus, String>
       get status => $composableBuilder(
@@ -7204,6 +7253,9 @@ class $$DepositsTableOrderingComposer
   ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get depositType => $composableBuilder(
+      column: $table.depositType, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get status => $composableBuilder(
       column: $table.status, builder: (column) => ColumnOrderings(column));
 
@@ -7267,6 +7319,10 @@ class $$DepositsTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<DepositType, String> get depositType =>
+      $composableBuilder(
+          column: $table.depositType, builder: (column) => column);
 
   GeneratedColumnWithTypeConverter<DepositStatus, String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
@@ -7344,6 +7400,7 @@ class $$DepositsTableTableManager extends RootTableManager<
             Value<int> id = const Value.absent(),
             Value<int> transactionId = const Value.absent(),
             Value<int> projectId = const Value.absent(),
+            Value<DepositType> depositType = const Value.absent(),
             Value<DepositStatus> status = const Value.absent(),
             Value<double> adjustedAmount = const Value.absent(),
             Value<String?> adjustmentReference = const Value.absent(),
@@ -7352,6 +7409,7 @@ class $$DepositsTableTableManager extends RootTableManager<
             id: id,
             transactionId: transactionId,
             projectId: projectId,
+            depositType: depositType,
             status: status,
             adjustedAmount: adjustedAmount,
             adjustmentReference: adjustmentReference,
@@ -7360,6 +7418,7 @@ class $$DepositsTableTableManager extends RootTableManager<
             Value<int> id = const Value.absent(),
             required int transactionId,
             required int projectId,
+            Value<DepositType> depositType = const Value.absent(),
             required DepositStatus status,
             Value<double> adjustedAmount = const Value.absent(),
             Value<String?> adjustmentReference = const Value.absent(),
@@ -7368,6 +7427,7 @@ class $$DepositsTableTableManager extends RootTableManager<
             id: id,
             transactionId: transactionId,
             projectId: projectId,
+            depositType: depositType,
             status: status,
             adjustedAmount: adjustedAmount,
             adjustmentReference: adjustmentReference,

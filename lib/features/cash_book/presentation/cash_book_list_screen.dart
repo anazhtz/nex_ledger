@@ -392,6 +392,14 @@ class _TypeBadge extends StatelessWidget {
           Colors.indigo.shade700,
           Colors.indigo.shade50
         ),
+      TransactionType.depositPaid => (
+          Colors.blueGrey.shade800,
+          Colors.blueGrey.shade50
+        ),
+      TransactionType.depositRecovery => (
+          const Color(0xFF059669),
+          const Color(0xFFECFDF5)
+        ),
       TransactionType.purchasePayment => (
           Colors.brown.shade700,
           Colors.brown.shade50

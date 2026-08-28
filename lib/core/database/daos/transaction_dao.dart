@@ -102,10 +102,10 @@ class TransactionDao extends DatabaseAccessor<AppDatabase>
       (delete(transactions)..where((t) => t.id.equals(id))).go();
 
   /// Sum of all cash-affecting amounts (credits - debits) = cash balance.
-  /// Credits: income, deposit. Debits: expense, purchase, labourPayment, depositRefund.
+  /// Credits: income, deposit, depositRecovery. Debits: expense, purchase, purchasePayment, labourPayment, depositRefund, depositPaid.
   Stream<double> watchCashBalance() {
     final balanceExp = CustomExpression<double>(
-      "SUM(CASE WHEN type IN ('income', 'deposit') THEN amount ELSE -amount END)"
+      "SUM(CASE WHEN type IN ('income', 'deposit', 'depositRecovery') THEN amount ELSE -amount END)"
     );
 
     final query = selectOnly(transactions)

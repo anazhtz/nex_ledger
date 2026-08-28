@@ -19,6 +19,7 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
   final _narrationCtrl = TextEditingController();
   final _refCtrl = TextEditingController();
 
+  DepositType _depositType = DepositType.paid; // Default to Deposit Paid (To Govt/Client)
   int? _selectedProject;
   PaymentMode? _paymentMode;
   DateTime _date = DateTime.now();
@@ -58,17 +59,31 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
     }
     setState(() => _loading = true);
     try {
-      await ref.read(depositRepositoryProvider).receiveDeposit(
-            projectId: _selectedProject!,
-            date: _date,
-            amount: double.parse(_amountCtrl.text),
-            paymentMode: _paymentMode,
-            narration: _narrationCtrl.text.isNotEmpty
-                ? _narrationCtrl.text
-                : null,
-            referenceNo:
-                _refCtrl.text.isNotEmpty ? _refCtrl.text : null,
-          );
+      if (_depositType == DepositType.paid) {
+        await ref.read(depositRepositoryProvider).paySecurityDeposit(
+              projectId: _selectedProject!,
+              date: _date,
+              amount: double.parse(_amountCtrl.text),
+              paymentMode: _paymentMode,
+              narration: _narrationCtrl.text.isNotEmpty
+                  ? _narrationCtrl.text
+                  : null,
+              referenceNo:
+                  _refCtrl.text.isNotEmpty ? _refCtrl.text : null,
+            );
+      } else {
+        await ref.read(depositRepositoryProvider).receiveDeposit(
+              projectId: _selectedProject!,
+              date: _date,
+              amount: double.parse(_amountCtrl.text),
+              paymentMode: _paymentMode,
+              narration: _narrationCtrl.text.isNotEmpty
+                  ? _narrationCtrl.text
+                  : null,
+              referenceNo:
+                  _refCtrl.text.isNotEmpty ? _refCtrl.text : null,
+            );
+      }
       if (mounted) context.go('/deposits');
     } catch (e) {
       if (mounted) {
@@ -86,9 +101,11 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
     final theme = Theme.of(context);
     final projectsAsync = ref.watch(projectListProvider);
 
+    final isPaid = _depositType == DepositType.paid;
+
     return Scaffold(
       backgroundColor: theme.colorScheme.surfaceContainerLowest,
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,38 +117,85 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
                   onPressed: () => context.go('/deposits'),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'Record Security Deposit',
-                  style: theme.textTheme.headlineMedium
-                      ?.copyWith(fontWeight: FontWeight.w700),
+                Expanded(
+                  child: Text(
+                    isPaid
+                        ? 'Record Security Deposit Paid'
+                        : 'Record Client Deposit Received',
+                    style: theme.textTheme.headlineMedium
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
+
+            // Segmented toggle: Paid vs Received
+            SegmentedButton<DepositType>(
+              segments: const [
+                ButtonSegment<DepositType>(
+                  value: DepositType.paid,
+                  label: Text('Deposit Paid (Govt)'),
+                  icon: Icon(Icons.outbox_rounded, size: 16),
+                ),
+                ButtonSegment<DepositType>(
+                  value: DepositType.received,
+                  label: Text('Deposit Received (Client)'),
+                  icon: Icon(Icons.move_to_inbox_rounded, size: 16),
+                ),
+              ],
+              selected: {_depositType},
+              onSelectionChanged: (set) {
+                if (set.isNotEmpty) {
+                  setState(() => _depositType = set.first);
+                }
+              },
+            ),
+            const SizedBox(height: 12),
+
             Container(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: Colors.orange.shade50,
-                border: Border.all(color: Colors.orange.shade200),
+                color: isPaid ? Colors.blue.shade50 : Colors.orange.shade50,
+                border: Border.all(
+                    color: isPaid
+                        ? Colors.blue.shade200
+                        : Colors.orange.shade200),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline,
-                      color: Colors.orange.shade700, size: 16),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Deposits are recorded as a liability — they do NOT affect P&L until adjusted to income.',
-                    style: TextStyle(
-                        color: Colors.orange.shade800, fontSize: 13),
+                  Icon(
+                    Icons.info_outline,
+                    color: isPaid
+                        ? Colors.blue.shade700
+                        : Colors.orange.shade700,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      isPaid
+                          ? 'Security deposit paid to Government/Client is a refundable Asset (Outflow). It does NOT affect P&L (₹0) and will be credited back when returned after project completion.'
+                          : 'Deposit received from client is recorded as a Liability (Inflow). It does NOT affect P&L (₹0) until adjusted against a bill.',
+                      style: TextStyle(
+                        color: isPaid
+                            ? Colors.blue.shade900
+                            : Colors.orange.shade900,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
+
             ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 520),
+              constraints: const BoxConstraints(maxWidth: 540),
               child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
@@ -140,7 +204,7 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
                     child: Column(
                       children: [
                         projectsAsync.when(
-                          loading: () => const LinearProgressIndicator(),
+                          loading: () => const SizedBox.shrink(),
                           error: (_, __) => const SizedBox.shrink(),
                           data: (projects) {
                             final globalId = ref.watch(selectedProjectIdProvider);
@@ -212,25 +276,30 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _refCtrl,
-                          decoration: const InputDecoration(
-                              labelText: 'Reference / Contract No.'),
+                          decoration: InputDecoration(
+                            labelText: isPaid
+                                ? 'EMD / FDR / Challan / Agreement Ref'
+                                : 'Work Order / Client Ref',
+                          ),
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _narrationCtrl,
                           decoration:
-                              const InputDecoration(labelText: 'Narration'),
+                              const InputDecoration(labelText: 'Narration / Remarks'),
                           maxLines: 2,
                         ),
                         const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                        Wrap(
+                          alignment: WrapAlignment.end,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 12,
+                          runSpacing: 8,
                           children: [
                             TextButton(
                               onPressed: () => context.go('/deposits'),
                               child: const Text('Cancel'),
                             ),
-                            const SizedBox(width: 12),
                             FilledButton(
                               onPressed: _loading ? null : _submit,
                               child: _loading
@@ -240,7 +309,9 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
                                       child: CircularProgressIndicator(
                                           strokeWidth: 2),
                                     )
-                                  : const Text('Record Security Deposit'),
+                                  : Text(isPaid
+                                      ? 'Save Security Deposit'
+                                      : 'Save Client Deposit'),
                             ),
                           ],
                         ),
@@ -285,15 +356,18 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
-              Text(
-                '${activeProject.code} — ${activeProject.name}',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
+              Expanded(
+                child: Text(
+                  '${activeProject.code} — ${activeProject.name}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

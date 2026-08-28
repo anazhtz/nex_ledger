@@ -398,7 +398,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                               ),
                               SizedBox(height: 12.h),
                               projectsAsync.when(
-                                loading: () => const LinearProgressIndicator(),
+                                loading: () => const SizedBox.shrink(),
                                 error: (e, _) => Text('Error loading projects: $e'),
                                 data: (projects) => _buildProjectSelector(
                                   projects,
@@ -408,7 +408,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                               ),
                               SizedBox(height: 16.h),
                               vendorsAsync.when(
-                                loading: () => const LinearProgressIndicator(),
+                                loading: () => const SizedBox.shrink(),
                                 error: (_, __) => const SizedBox.shrink(),
                                 data: (vendors) {
                                   final selectedVendorValue =
@@ -529,6 +529,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                       value: _commonUnits.contains(_unitCtrl.text)
                                           ? _unitCtrl.text
                                           : 'Nos',
+                                      isExpanded: true,
                                       decoration: const InputDecoration(labelText: 'Unit'),
                                       items: _commonUnits
                                           .map((u) => DropdownMenuItem(
@@ -813,64 +814,62 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                             setState(() => _paymentMode = v),
                                       ),
                                     ),
-                                    SizedBox(width: 14.w),
-                                    accountsAsync.when(
-                                      loading: () => const SizedBox.shrink(),
-                                      error: (_, __) => const SizedBox.shrink(),
+                                    accountsAsync.maybeWhen(
                                       data: (accounts) {
-                                        if (accounts.isEmpty) {
-                                          return const SizedBox.shrink();
-                                        }
+                                        if (accounts.isEmpty) return const SizedBox.shrink();
                                         return Expanded(
-                                          child: DropdownButtonFormField<int?>(
-                                            value: _selectedBankAccountId,
-                                            isExpanded: true,
-                                            decoration: const InputDecoration(
-                                              labelText: 'Paid From (Account)',
-                                              prefixIcon: Icon(
-                                                  Icons.account_balance_outlined),
-                                            ),
-                                            items: [
-                                              const DropdownMenuItem(
-                                                value: null,
-                                                child: Text('— Auto (Default) —',
-                                                    overflow:
-                                                        TextOverflow.ellipsis),
+                                          child: Padding(
+                                            padding: EdgeInsets.only(left: 14.w),
+                                            child: DropdownButtonFormField<int?>(
+                                              value: _selectedBankAccountId,
+                                              isExpanded: true,
+                                              decoration: const InputDecoration(
+                                                labelText: 'Paid From (Account)',
+                                                prefixIcon: Icon(
+                                                    Icons.account_balance_outlined),
                                               ),
-                                              ...accounts.map(
-                                                (a) => DropdownMenuItem(
-                                                  value: a.account.id,
-                                                  child: Row(
-                                                    children: [
-                                                      Expanded(
-                                                        child: Text(
-                                                          '${a.account.accountName} (${a.account.isCashAccount ? 'Cash' : 'Bank'})',
-                                                          overflow:
-                                                              TextOverflow.ellipsis,
+                                              items: [
+                                                const DropdownMenuItem(
+                                                  value: null,
+                                                  child: Text('— Auto (Default) —',
+                                                      overflow:
+                                                          TextOverflow.ellipsis),
+                                                ),
+                                                ...accounts.map(
+                                                  (a) => DropdownMenuItem(
+                                                    value: a.account.id,
+                                                    child: Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: Text(
+                                                            '${a.account.accountName} (${a.account.isCashAccount ? 'Cash' : 'Bank'})',
+                                                            overflow:
+                                                                TextOverflow.ellipsis,
+                                                          ),
                                                         ),
-                                                      ),
-                                                      const SizedBox(width: 4),
-                                                      Text(
-                                                        '• ${CurrencyFormatter.format(a.currentBalance)}',
-                                                        style: TextStyle(
-                                                          fontSize: 10.sp,
-                                                          color: a.currentBalance < 0
-                                                              ? Colors.red.shade700
-                                                              : Colors.green.shade700,
-                                                          fontWeight:
-                                                              FontWeight.w600,
+                                                        Text(
+                                                          CurrencyFormatter.format(
+                                                              a.currentBalance),
+                                                          style: TextStyle(
+                                                            fontSize: 11.sp,
+                                                            color: a.currentBalance >= 0
+                                                                ? const Color(0xFF059669)
+                                                                : const Color(0xFFDC2626),
+                                                            fontWeight: FontWeight.w600,
+                                                          ),
                                                         ),
-                                                      ),
-                                                    ],
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            ],
-                                            onChanged: (v) => setState(
-                                                () => _selectedBankAccountId = v),
+                                              ],
+                                              onChanged: (v) =>
+                                                  setState(() => _selectedBankAccountId = v),
+                                            ),
                                           ),
                                         );
                                       },
+                                      orElse: () => const SizedBox.shrink(),
                                     ),
                                     SizedBox(width: 14.w),
                                   ],
@@ -922,13 +921,16 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                             : theme.colorScheme.onSurface,
                                       ),
                                       SizedBox(width: 8.w),
-                                      Text(
-                                        'Hold as Advance Stock / Asset',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          color: _isAdvanceStock
-                                              ? const Color(0xFF92400E)
-                                              : theme.colorScheme.onSurface,
+                                      Expanded(
+                                        child: Text(
+                                          'Hold as Advance Stock / Asset',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: _isAdvanceStock
+                                                ? const Color(0xFF92400E)
+                                                : theme.colorScheme.onSurface,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                     ],

@@ -62,7 +62,57 @@ class DepositDao extends DatabaseAccessor<AppDatabase> with _$DepositDaoMixin {
         );
   }
 
-  /// Watch total deposits still held (subtracting any partial adjustments).
+  /// Watch total security deposits paid to Govt/Client still held (Asset pending recovery).
+  Stream<double> watchTotalDepositsPaidHeld() {
+    final heldStatuses = [
+      DepositStatus.held.name,
+      DepositStatus.partiallyAdjusted.name,
+    ];
+    final query = select(deposits).join([
+      innerJoin(
+          transactions, transactions.id.equalsExp(deposits.transactionId)),
+    ])
+      ..where(deposits.depositType.equals(DepositType.paid.name) &
+          deposits.status.isIn(heldStatuses));
+    return query.watch().map((rows) {
+      return rows.fold<double>(
+        0.0,
+        (sum, r) {
+          final original = r.readTable(transactions).amount;
+          final adjusted = r.readTable(deposits).adjustedAmount;
+          final remaining = original - adjusted;
+          return sum + (remaining > 0 ? remaining : 0.0);
+        },
+      );
+    });
+  }
+
+  /// Watch total deposits received from clients still held (Liability).
+  Stream<double> watchTotalDepositsReceivedHeld() {
+    final heldStatuses = [
+      DepositStatus.held.name,
+      DepositStatus.partiallyAdjusted.name,
+    ];
+    final query = select(deposits).join([
+      innerJoin(
+          transactions, transactions.id.equalsExp(deposits.transactionId)),
+    ])
+      ..where(deposits.depositType.equals(DepositType.received.name) &
+          deposits.status.isIn(heldStatuses));
+    return query.watch().map((rows) {
+      return rows.fold<double>(
+        0.0,
+        (sum, r) {
+          final original = r.readTable(transactions).amount;
+          final adjusted = r.readTable(deposits).adjustedAmount;
+          final remaining = original - adjusted;
+          return sum + (remaining > 0 ? remaining : 0.0);
+        },
+      );
+    });
+  }
+
+  /// Watch total deposits still held (paid + received).
   Stream<double> watchTotalDepositsHeld() {
     final heldStatuses = [
       DepositStatus.held.name,

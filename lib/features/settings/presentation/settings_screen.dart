@@ -349,61 +349,91 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(10.r),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEEF2FF),
-                                borderRadius: BorderRadius.circular(12.r),
-                              ),
-                              child: Icon(
-                                Icons.shield_rounded,
-                                color: const Color(0xFF4F46E5),
-                                size: 22.sp,
-                              ),
-                            ),
-                            SizedBox(width: 14.w),
-                            Expanded(
-                              child: Column(
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isNarrow = constraints.maxWidth < 650;
+                            final infoRow = Row(
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.all(10.r),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFEEF2FF),
+                                    borderRadius: BorderRadius.circular(12.r),
+                                  ),
+                                  child: Icon(
+                                    Icons.shield_rounded,
+                                    color: const Color(0xFF4F46E5),
+                                    size: 22.sp,
+                                  ),
+                                ),
+                                SizedBox(width: 14.w),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'App Security & Master PIN',
+                                        style: TextStyle(
+                                          fontSize: 15.sp,
+                                          fontWeight: FontWeight.bold,
+                                          color: const Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      Text(
+                                        'Protected with SHA-256 local encrypted PIN lock',
+                                        style: TextStyle(
+                                          fontSize: 11.sp,
+                                          color: const Color(0xFF64748B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+
+                            final actionBtns = Row(
+                              mainAxisSize: isNarrow ? MainAxisSize.max : MainAxisSize.min,
+                              children: [
+                                OutlinedButton.icon(
+                                  onPressed: _showChangePinDialog,
+                                  icon: const Icon(Icons.key_rounded, size: 16),
+                                  label: const Text('Change PIN'),
+                                ),
+                                SizedBox(width: 8.w),
+                                FilledButton.icon(
+                                  onPressed: () {
+                                    ref.read(authProvider.notifier).lock();
+                                    context.go('/login');
+                                  },
+                                  icon: const Icon(Icons.lock_rounded, size: 16),
+                                  label: const Text('Lock App'),
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: const Color(0xFF334155),
+                                  ),
+                                ),
+                              ],
+                            );
+
+                            if (isNarrow) {
+                              return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    'App Security & Master PIN',
-                                    style: TextStyle(
-                                      fontSize: 15.sp,
-                                      fontWeight: FontWeight.bold,
-                                      color: const Color(0xFF0F172A),
-                                    ),
-                                  ),
-                                  Text(
-                                    'Protected with SHA-256 local encrypted PIN lock',
-                                    style: TextStyle(
-                                      fontSize: 11.sp,
-                                      color: const Color(0xFF64748B),
-                                    ),
-                                  ),
+                                  infoRow,
+                                  SizedBox(height: 12.h),
+                                  actionBtns,
                                 ],
-                              ),
-                            ),
-                            OutlinedButton.icon(
-                              onPressed: _showChangePinDialog,
-                              icon: const Icon(Icons.key_rounded, size: 16),
-                              label: const Text('Change PIN'),
-                            ),
-                            SizedBox(width: 8.w),
-                            FilledButton.icon(
-                              onPressed: () {
-                                ref.read(authProvider.notifier).lock();
-                                context.go('/login');
-                              },
-                              icon: const Icon(Icons.lock_rounded, size: 16),
-                              label: const Text('Lock App'),
-                              style: FilledButton.styleFrom(
-                                backgroundColor: const Color(0xFF334155),
-                              ),
-                            ),
-                          ],
+                              );
+                            }
+
+                            return Row(
+                              children: [
+                                Expanded(child: infoRow),
+                                SizedBox(width: 12.w),
+                                actionBtns,
+                              ],
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -541,69 +571,90 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         SizedBox(height: 20.h),
 
                         // Backup & Restore Action Buttons
-                        Row(
-                          children: [
-                            Expanded(
-                              child: FilledButton.icon(
-                                onPressed: _backing ? null : () => _backupDatabase(isQuick: false),
-                                icon: _backing
-                                    ? SizedBox(
-                                        width: 16.w,
-                                        height: 16.h,
-                                        child: const CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : Icon(Icons.folder_open_rounded, size: 18.sp),
-                                label: Text(_backing ? 'Exporting...' : 'Export Backup Folder'),
-                              ),
-                            ),
-                            SizedBox(width: 10.w),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: _backing ? null : () => _backupDatabase(isQuick: true),
-                                icon: Icon(Icons.download_for_offline_rounded, size: 18.sp),
-                                label: const Text('Quick Export (Downloads)'),
-                                style: OutlinedButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(vertical: 14.h),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.r),
-                                  ),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isNarrow = constraints.maxWidth < 680;
+                            final btn1 = FilledButton.icon(
+                              onPressed: _backing ? null : () => _backupDatabase(isQuick: false),
+                              icon: _backing
+                                  ? SizedBox(
+                                      width: 16.w,
+                                      height: 16.h,
+                                      child: const CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : Icon(Icons.folder_open_rounded, size: 18.sp),
+                              label: Text(_backing ? 'Exporting...' : 'Export Backup Folder'),
+                              style: FilledButton.styleFrom(
+                                padding: EdgeInsets.symmetric(vertical: 14.h),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10.r),
                                 ),
                               ),
-                            ),
-                            SizedBox(width: 10.w),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: _backing ? null : _restoreDatabase,
-                                icon: Icon(Icons.upload_file_rounded, size: 18.sp, color: const Color(0xFF4F46E5)),
-                                label: const Text('Import (.db)', style: TextStyle(color: Color(0xFF4F46E5))),
-                                style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(color: Color(0xFF6366F1)),
-                                  padding: EdgeInsets.symmetric(vertical: 14.h),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.r),
-                                  ),
+                            );
+
+                            final btn2 = OutlinedButton.icon(
+                              onPressed: _backing ? null : () => _backupDatabase(isQuick: true),
+                              icon: Icon(Icons.download_for_offline_rounded, size: 18.sp),
+                              label: const Text('Quick Export (Downloads)'),
+                              style: OutlinedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(vertical: 14.h),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10.r),
                                 ),
                               ),
-                            ),
-                            SizedBox(width: 10.w),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: _backing ? null : _resetDatabase,
-                                icon: Icon(Icons.delete_forever_rounded, size: 18.sp, color: const Color(0xFFDC2626)),
-                                label: const Text('Wipe & Start Fresh', style: TextStyle(color: Color(0xFFDC2626))),
-                                style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(color: Color(0xFFFCA5A5)),
-                                  padding: EdgeInsets.symmetric(vertical: 14.h),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.r),
-                                  ),
+                            );
+
+                            final btn3 = OutlinedButton.icon(
+                              onPressed: _backing ? null : _restoreDatabase,
+                              icon: Icon(Icons.upload_file_rounded, size: 18.sp, color: const Color(0xFF4F46E5)),
+                              label: const Text('Import (.db)', style: TextStyle(color: Color(0xFF4F46E5))),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: Color(0xFF6366F1)),
+                                padding: EdgeInsets.symmetric(vertical: 14.h),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10.r),
                                 ),
                               ),
-                            ),
-                          ],
+                            );
+
+                            final btn4 = OutlinedButton.icon(
+                              onPressed: _backing ? null : _resetDatabase,
+                              icon: Icon(Icons.delete_forever_rounded, size: 18.sp, color: const Color(0xFFDC2626)),
+                              label: const Text('Wipe & Start Fresh', style: TextStyle(color: Color(0xFFDC2626))),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: Color(0xFFFCA5A5)),
+                                padding: EdgeInsets.symmetric(vertical: 14.h),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10.r),
+                                ),
+                              ),
+                            );
+
+                            if (isNarrow) {
+                              return Column(
+                                children: [
+                                  Row(children: [Expanded(child: btn1), SizedBox(width: 10.w), Expanded(child: btn2)]),
+                                  SizedBox(height: 10.h),
+                                  Row(children: [Expanded(child: btn3), SizedBox(width: 10.w), Expanded(child: btn4)]),
+                                ],
+                              );
+                            }
+
+                            return Row(
+                              children: [
+                                Expanded(child: btn1),
+                                SizedBox(width: 10.w),
+                                Expanded(child: btn2),
+                                SizedBox(width: 10.w),
+                                Expanded(child: btn3),
+                                SizedBox(width: 10.w),
+                                Expanded(child: btn4),
+                              ],
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -636,25 +687,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ),
                         ),
                         SizedBox(width: 16.w),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'NexLedger Mini ERP',
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF0F172A),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'NexLedger Mini ERP',
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF0F172A),
+                                ),
                               ),
-                            ),
-                            Text(
-                              'v1.0.0  •  Local SQLite Engine  •  SHA-256 PIN Security',
-                              style: TextStyle(
-                                fontSize: 11.sp,
-                                color: const Color(0xFF64748B),
+                              Text(
+                                'v1.0.0  •  Local SQLite Engine  •  SHA-256 PIN Security',
+                                style: TextStyle(
+                                  fontSize: 11.sp,
+                                  color: const Color(0xFF64748B),
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -680,52 +734,78 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(10.r),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFF7ED),
-                                borderRadius: BorderRadius.circular(10.r),
-                              ),
-                              child: Icon(
-                                Icons.label_rounded,
-                                color: const Color(0xFFEA580C),
-                                size: 22.sp,
-                              ),
-                            ),
-                            SizedBox(width: 14.w),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Expense Categories',
-                                    style: TextStyle(
-                                      fontSize: 15.sp,
-                                      fontWeight: FontWeight.bold,
-                                      color: const Color(0xFF0F172A),
-                                    ),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isNarrow = constraints.maxWidth < 650;
+                            final infoRow = Row(
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.all(10.r),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFF7ED),
+                                    borderRadius: BorderRadius.circular(10.r),
                                   ),
-                                  Text(
-                                    'Manage tags for cash book expense entries. Built-in categories cannot be deleted.',
-                                    style: TextStyle(
-                                      fontSize: 11.sp,
-                                      color: const Color(0xFF64748B),
-                                    ),
+                                  child: Icon(
+                                    Icons.label_rounded,
+                                    color: const Color(0xFFEA580C),
+                                    size: 22.sp,
                                   ),
-                                ],
-                              ),
-                            ),
-                            FilledButton.icon(
+                                ),
+                                SizedBox(width: 14.w),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Expense Categories',
+                                        style: TextStyle(
+                                          fontSize: 15.sp,
+                                          fontWeight: FontWeight.bold,
+                                          color: const Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      Text(
+                                        'Manage tags for cash book expense entries. Built-in categories cannot be deleted.',
+                                        style: TextStyle(
+                                          fontSize: 11.sp,
+                                          color: const Color(0xFF64748B),
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+
+                            final actionBtn = FilledButton.icon(
                               onPressed: () => _showAddCategoryDialog(context),
                               icon: const Icon(Icons.add_rounded, size: 16),
                               label: const Text('Add Category'),
                               style: FilledButton.styleFrom(
                                 backgroundColor: const Color(0xFFEA580C),
                               ),
-                            ),
-                          ],
+                            );
+
+                            if (isNarrow) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  infoRow,
+                                  SizedBox(height: 10.h),
+                                  actionBtn,
+                                ],
+                              );
+                            }
+
+                            return Row(
+                              children: [
+                                Expanded(child: infoRow),
+                                SizedBox(width: 12.w),
+                                actionBtn,
+                              ],
+                            );
+                          },
                         ),
                         SizedBox(height: 16.h),
                         Consumer(
@@ -734,7 +814,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 ref.watch(expenseCategoryListProvider);
                             return categoriesAsync.when(
                               loading: () =>
-                                  const LinearProgressIndicator(),
+                                  const SizedBox.shrink(),
                               error: (e, _) =>
                                   Text('Error loading categories: $e'),
                               data: (categories) => Wrap(
@@ -1060,44 +1140,51 @@ class _SoftwareUpdateCardState extends State<_SoftwareUpdateCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(10.r),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
-                  child: Icon(
-                    Icons.cloud_sync_rounded,
-                    color: const Color(0xFF2563EB),
-                    size: 22.sp,
-                  ),
-                ),
-                SizedBox(width: 14.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Software Releases & Updates',
-                        style: TextStyle(
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF0F172A),
-                        ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 650;
+                final infoRow = Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10.r),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
-                      Text(
-                        'Pulls latest builds & bug fixes automatically from GitHub releases',
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          color: const Color(0xFF64748B),
-                        ),
+                      child: Icon(
+                        Icons.cloud_sync_rounded,
+                        color: const Color(0xFF2563EB),
+                        size: 22.sp,
                       ),
-                    ],
-                  ),
-                ),
-                FilledButton.icon(
+                    ),
+                    SizedBox(width: 14.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Software Releases & Updates',
+                            style: TextStyle(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF0F172A),
+                            ),
+                          ),
+                          Text(
+                            'Pulls latest builds & bug fixes automatically from GitHub releases',
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              color: const Color(0xFF64748B),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+
+                final actionBtn = FilledButton.icon(
                   onPressed: _checking ? null : _checkUpdate,
                   icon: _checking
                       ? SizedBox(
@@ -1113,8 +1200,27 @@ class _SoftwareUpdateCardState extends State<_SoftwareUpdateCard> {
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF2563EB),
                   ),
-                ),
-              ],
+                );
+
+                if (isNarrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      infoRow,
+                      SizedBox(height: 10.h),
+                      actionBtn,
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(child: infoRow),
+                    SizedBox(width: 12.w),
+                    actionBtn,
+                  ],
+                );
+              },
             ),
             if (_statusMessage != null) ...[
               SizedBox(height: 14.h),

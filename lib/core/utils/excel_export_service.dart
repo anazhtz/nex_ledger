@@ -228,28 +228,30 @@ class ExcelExportService {
     );
   }
 
-  /// 3. Export Client Deposit Liabilities to Excel
+  /// 3. Export Security Deposits to Excel
   static Future<String?> exportDeposits({
     required List<DepositDetail> deposits,
   }) async {
     final excel = Excel.createExcel();
-    final sheet = excel['Deposit Liabilities'];
+    final sheet = excel['Security Deposits'];
     excel.delete('Sheet1');
 
-    sheet.appendRow([TextCellValue('NEXLEDGER CLIENT DEPOSIT LIABILITIES LEDGER')]);
+    sheet.appendRow([TextCellValue('NEXLEDGER SECURITY DEPOSITS LEDGER')]);
     sheet.appendRow([TextCellValue('Generated On: ${DateFormatter.format(DateTime.now())}')]);
     sheet.appendRow([TextCellValue('')]);
 
     sheet.appendRow([
       TextCellValue('Deposit ID'),
-      TextCellValue('Date Received'),
+      TextCellValue('Date'),
+      TextCellValue('Deposit Type'),
       TextCellValue('Project Code'),
       TextCellValue('Project Name'),
-      TextCellValue('Original Deposit (₹)'),
-      TextCellValue('Adjusted to Income (₹)'),
+      TextCellValue('Original Amount (₹)'),
+      TextCellValue('Recovered / Adjusted Amount (₹)'),
       TextCellValue('Refunded Amount (₹)'),
-      TextCellValue('Net Deposit Held (Liability) (₹)'),
+      TextCellValue('Net Balance Held (₹)'),
       TextCellValue('Status'),
+      TextCellValue('Reference'),
     ]);
 
     double totalOriginal = 0.0;
@@ -274,13 +276,15 @@ class ExcelExportService {
       sheet.appendRow([
         IntCellValue(d.id),
         TextCellValue(DateFormatter.format(t.date)),
+        TextCellValue(d.depositType.displayName),
         TextCellValue(p.code),
         TextCellValue(p.name),
         DoubleCellValue(originalAmount),
         DoubleCellValue(adjustedAmount),
         DoubleCellValue(d.status == DepositStatus.refunded ? originalAmount : 0.0),
         DoubleCellValue(netHeld),
-        TextCellValue(d.status.name.toUpperCase()),
+        TextCellValue(d.status.displayName),
+        TextCellValue(d.adjustmentReference ?? t.referenceNo ?? '—'),
       ]);
     }
 
@@ -290,16 +294,18 @@ class ExcelExportService {
       TextCellValue(''),
       TextCellValue(''),
       TextCellValue(''),
+      TextCellValue(''),
       DoubleCellValue(totalOriginal),
       DoubleCellValue(totalAdjusted),
       TextCellValue(''),
       DoubleCellValue(totalHeld),
       TextCellValue(''),
+      TextCellValue(''),
     ]);
 
     return _saveExcelFile(
       excel,
-      'Deposit_Liabilities_Ledger_${DateFormatter.format(DateTime.now()).replaceAll(' ', '_')}.xlsx',
+      'Security_Deposits_Ledger_${DateFormatter.format(DateTime.now()).replaceAll(' ', '_')}.xlsx',
     );
   }
 

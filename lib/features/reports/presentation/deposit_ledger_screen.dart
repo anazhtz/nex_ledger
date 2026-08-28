@@ -37,25 +37,25 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Column(
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 700;
+                final titleCol = Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Deposit Ledger',
+                      'Security Deposit Ledger',
                       style: theme.textTheme.headlineMedium
                           ?.copyWith(fontWeight: FontWeight.w700),
                     ),
                     Text(
-                      'Track received, adjusted, and refunded deposits per project',
+                      'Track deposits paid to Govt/clients (Assets) and deposits received from clients (Liabilities)',
                       style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant),
                     ),
                   ],
-                ),
-                const Spacer(),
-                FilledButton.icon(
+                );
+                final exportBtn = FilledButton.icon(
                   onPressed: () async {
                     final deposits = await ref.read(depositListProvider.future);
                     final path = await ExcelExportService.exportDeposits(deposits: deposits);
@@ -73,8 +73,27 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF059669),
                   ),
-                ),
-              ],
+                );
+
+                if (isNarrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      titleCol,
+                      const SizedBox(height: 12),
+                      exportBtn,
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(child: titleCol),
+                    const SizedBox(width: 16),
+                    exportBtn,
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 20),
 
@@ -122,15 +141,24 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
                         child: CircularProgressIndicator()),
                     error: (e, _) => Center(child: Text('Error: $e')),
                     data: (deposits) {
+                      double totalPaid = 0;
+                      double totalPaidHeld = 0;
                       double totalReceived = 0;
-                      double totalHeld = 0;
+                      double totalReceivedHeld = 0;
 
                       for (final d in deposits) {
-                        totalReceived += d.transaction.amount;
-                        if (d.deposit.status == DepositStatus.held ||
-                            d.deposit.status ==
-                                DepositStatus.partiallyAdjusted) {
-                          totalHeld += d.transaction.amount;
+                        final isPaid = d.deposit.depositType == DepositType.paid;
+                        final amount = d.transaction.amount;
+                        final isHeld = d.deposit.status == DepositStatus.held ||
+                            d.deposit.status == DepositStatus.partiallyAdjusted;
+                        final remaining = (amount - d.deposit.adjustedAmount).clamp(0.0, double.infinity);
+
+                        if (isPaid) {
+                          totalPaid += amount;
+                          if (isHeld) totalPaidHeld += remaining;
+                        } else {
+                          totalReceived += amount;
+                          if (isHeld) totalReceivedHeld += remaining;
                         }
                       }
 
@@ -142,19 +170,22 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
                               final isCompact = constraints.maxWidth < 750;
 
                               final s1 = _SummaryCard(
-                                label: 'Total Received',
-                                value: totalReceived,
+                                label: 'Deposits Paid to Govt (Asset)',
+                                value: totalPaid,
+                                subtitle: 'Held with Govt: ${CurrencyFormatter.format(totalPaidHeld)}',
                                 color: Colors.blue.shade700,
                               );
                               final s2 = _SummaryCard(
-                                label: 'Currently Held',
-                                value: totalHeld,
-                                color: Colors.orange.shade700,
+                                label: 'Deposits Recovered Back',
+                                value: totalPaid - totalPaidHeld,
+                                subtitle: 'Received into bank/cash',
+                                color: const Color(0xFF059669),
                               );
                               final s3 = _SummaryCard(
-                                label: 'Adjusted / Released',
-                                value: totalReceived - totalHeld,
-                                color: Colors.green.shade700,
+                                label: 'Client Deposits Received (Liability)',
+                                value: totalReceived,
+                                subtitle: 'Liability Held: ${CurrencyFormatter.format(totalReceivedHeld)}',
+                                color: Colors.orange.shade700,
                               );
 
                               if (isCompact) {
@@ -187,24 +218,44 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
                                   'No deposits found for this filter.',
                               columns: const [
                                 DataColumn(label: Text('Date')),
+                                DataColumn(label: Text('Type')),
                                 DataColumn(label: Text('Project')),
                                 DataColumn(
-                                    label: Text('Received'), numeric: true),
+                                    label: Text('Amount'), numeric: true),
                                 DataColumn(label: Text('Status')),
                                 DataColumn(label: Text('Reference')),
                                 DataColumn(label: Text('Narration')),
                               ],
                               rows: deposits.map((dd) {
+                                final isPaid = dd.deposit.depositType == DepositType.paid;
                                 return DataRow(cells: [
                                   DataCell(Text(DateFormatter.format(
                                       dd.transaction.date))),
+                                  DataCell(Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: isPaid ? Colors.blue.shade50 : Colors.orange.shade50,
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(
+                                        color: isPaid ? Colors.blue.shade200 : Colors.orange.shade200,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      isPaid ? 'Paid to Govt' : 'From Client',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: isPaid ? Colors.blue.shade800 : Colors.orange.shade900,
+                                      ),
+                                    ),
+                                  )),
                                   DataCell(Text(dd.project.name,
                                       overflow: TextOverflow.ellipsis)),
                                   DataCell(Text(
                                     CurrencyFormatter.format(
                                         dd.transaction.amount),
                                     style: TextStyle(
-                                        color: Colors.blue.shade700,
+                                        color: isPaid ? Colors.blue.shade700 : Colors.orange.shade700,
                                         fontWeight: FontWeight.w500),
                                   )),
                                   DataCell(_StatusText(
@@ -235,9 +286,14 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
 class _SummaryCard extends StatelessWidget {
   final String label;
   final double value;
+  final String? subtitle;
   final Color color;
-  const _SummaryCard(
-      {required this.label, required this.value, required this.color});
+  const _SummaryCard({
+    required this.label,
+    required this.value,
+    this.subtitle,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -257,6 +313,17 @@ class _SummaryCard extends StatelessWidget {
               style: TextStyle(
                   fontSize: 18, fontWeight: FontWeight.w700, color: color),
             ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                subtitle!,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: color,
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -272,6 +339,7 @@ class _StatusText extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = switch (status) {
       DepositStatus.held => Colors.orange.shade700,
+      DepositStatus.recovered => const Color(0xFF059669),
       DepositStatus.adjusted => Colors.green.shade700,
       DepositStatus.partiallyAdjusted => Colors.blue.shade700,
       DepositStatus.refunded => Colors.grey.shade600,

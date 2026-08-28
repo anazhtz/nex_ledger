@@ -35,24 +35,27 @@ class BankAccountsScreen extends ConsumerWidget {
                   onPressed: () => context.go('/cash-book'),
                 ),
                 SizedBox(width: 8.w),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Bank & Cash Accounts Master',
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Bank & Cash Accounts Master',
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                    Text(
-                      'Track physical cash drawers, bank accounts, opening balances, and contra transfers',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: const Color(0xFF64748B),
+                      Text(
+                        'Track physical cash drawers, bank accounts, opening balances, and contra transfers',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: const Color(0xFF64748B),
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                const Spacer(),
+                SizedBox(width: 16.w),
                 OutlinedButton.icon(
                   onPressed: () => _showTransferDialog(context, ref),
                   icon: const Icon(Icons.swap_horiz_rounded, size: 18),

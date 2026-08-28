@@ -135,28 +135,29 @@ lib/
 - Use `AsyncValue` + `.when(data:, loading:, error:)` for all DB-driven UI — no manual loading booleans.
 - Form state (unsaved input) can use local `StateProvider`/`TextEditingController` — does not need to go through the repository until submit.
 
-## 6. CRITICAL Business Rule — Deposit vs P&L (implement exactly as described)
+## 6. CRITICAL Business Rule — Dual-Direction Deposit System & P&L Separation
 
-A deposit is a **liability**, never income, at the moment it's received.
+NexLedger supports **TWO distinct deposit flows**:
 
-`Transactions` table has TWO independent boolean flags — do not collapse
-these into one:
+### Flow A: Security Deposit Paid to Govt / Client (Asset Flow — Most Common in Contracting)
+When developer bids for or wins Govt/Client work, developer pays EMD / Security Deposit:
+- **Deposit Paid to Govt/Client** → insert `Transaction(type: depositPaid, affectsPnl: false, affectsCash: true)`. Cash balance decreases (Outflow). Asset created (Security Deposit Held with Govt). P&L is **₹0 (Unaffected)**.
+- **Deposit Recovered / Returned from Govt** → insert `Transaction(type: depositRecovery, affectsPnl: false, affectsCash: true)` and update `Deposit.status` to `recovered` or `partiallyAdjusted`. Cash increases (Inflow). Asset cleared. **CRITICAL: NEVER treated as income in P&L! (P&L = ₹0)**.
+
+### Flow B: Security Deposit Received from Client / Subcontractor (Liability Flow)
+When a private client or subcontractor pays deposit/advance to developer:
+- **Deposit received** → insert `Transaction(type: deposit, affectsPnl: false, affectsCash: true)`. Cash increases (Inflow). Liability recorded. P&L is **₹0 (Unaffected)**.
+- **Deposit adjusted to income against bill** → insert a NEW `Transaction(type: depositAdjustment, affectsPnl: true, affectsCash: false)` for the adjusted amount, and update `Deposit.status` to `adjusted` or `partiallyAdjusted`. `affectsCash: false` prevents double-counting cash already received. P&L now reflects income.
+- **Deposit refunded to client** → insert `Transaction(type: depositRefund, affectsPnl: false, affectsCash: true)`. Cash decreases, liability cleared, P&L is **₹0 (Unaffected)**.
+
+### Flag Rules:
+`Transactions` table has TWO independent boolean flags:
 - `affectsPnl` — does this row count in Income/Expense reports?
 - `affectsCash` — does this row move physical cash in/out?
 
-These are independent because a deposit adjustment moves money from
-"liability" to "income" on paper, but the cash was already received earlier
-— it must not be counted as a cash movement a second time.
-
-- **Deposit received** → insert `Transaction(type: deposit, affectsPnl: false, affectsCash: true)`. Cash balance increases. P&L unaffected.
-- **Deposit adjusted to income** → insert a NEW `Transaction(type: income, affectsPnl: true, affectsCash: false)` for the adjusted amount, and update the linked `Deposit.status` to `adjusted` or `partiallyAdjusted`. Never mutate the original deposit transaction — always add a new linked row so the audit trail is preserved. `affectsCash: false` here is what prevents double-counting cash that was already received in step 1.
-- **Deposit refunded** → insert `Transaction(type: depositRefund, affectsPnl: false, affectsCash: true)`. Cash decreases, deposit liability decreases, P&L still unaffected.
-- All ordinary Income/Expense/Purchase/Labour transactions → `affectsPnl: true, affectsCash: true` (both flags true, since real money changed hands and it counts toward profit).
-
+All ordinary Income/Expense/Purchase/Labour transactions → `affectsPnl: true, affectsCash: true`.
 All P&L report queries must filter `WHERE affectsPnl = true`.
 All Cash Balance queries must filter `WHERE affectsCash = true`.
-This is the single most important rule in the whole app — get it wrong and
-every report is incorrect.
 
 ## 6a. Local Database Storage Location (do not skip this)
 

@@ -86,27 +86,30 @@ class DayBookScreen extends ConsumerWidget {
           child: Icon(Icons.today_rounded, color: const Color(0xFF4F46E5), size: 28.sp),
         ),
         SizedBox(width: 14.w),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Daily Day-Book Sheet',
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFF0F172A),
-                letterSpacing: -0.5,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Daily Day-Book Sheet',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF0F172A),
+                  letterSpacing: -0.5,
+                ),
               ),
-            ),
-            SizedBox(height: 2.h),
-            Text(
-              'Complete day-by-day cash book, income, expenses & closing audit',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: const Color(0xFF64748B),
+              SizedBox(height: 2.h),
+              Text(
+                'Complete day-by-day cash book, income, expenses & closing audit',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: const Color(0xFF64748B),
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        const Spacer(),
+        SizedBox(width: 16.w),
 
         // Date Picker & Navigator Pill
         Container(
@@ -554,6 +557,16 @@ class DayBookScreen extends ConsumerWidget {
         bg = const Color(0xFFFCE7F3);
         fg = const Color(0xFF9D174D);
         label = 'Deposit Refund';
+        break;
+      case TransactionType.depositPaid:
+        bg = const Color(0xFFF1F5F9);
+        fg = const Color(0xFF334155);
+        label = 'Deposit Paid (Govt)';
+        break;
+      case TransactionType.depositRecovery:
+        bg = const Color(0xFFECFDF5);
+        fg = const Color(0xFF047857);
+        label = 'Deposit Recovered';
         break;
       case TransactionType.depositAdjustment:
         bg = const Color(0xFFEDE9FE);

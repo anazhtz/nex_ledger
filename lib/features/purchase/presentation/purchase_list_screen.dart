@@ -35,22 +35,25 @@ class PurchaseListScreen extends ConsumerWidget {
             // ── Header ──────────────────────────────────────────────────────
             Row(
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Purchases',
-                      style: theme.textTheme.headlineMedium
-                          ?.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                    Text(
-                      'Vendor-linked purchase entries & advance stock assets',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant),
-                    ),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Purchases',
+                        style: theme.textTheme.headlineMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        'Vendor-linked purchase entries & advance stock assets',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 16),
                 FilledButton.icon(
                   onPressed: () => context.go('/purchases/new'),
                   icon: const Icon(Icons.add, size: 18),
@@ -101,16 +104,19 @@ class PurchaseListScreen extends ConsumerWidget {
                   data: (projects) => Row(
                     children: [
                       SizedBox(
-                        width: 240,
+                        width: 260,
                         child: DropdownButtonFormField<int?>(
                           value: filterProject,
+                          isExpanded: true,
                           decoration: const InputDecoration(
                             labelText: 'Filter by Project',
                             isDense: true,
                           ),
                           items: [
                             const DropdownMenuItem(
-                                value: null, child: Text('All Projects & Stock')),
+                                value: null,
+                                child: Text('All Projects & Stock',
+                                    overflow: TextOverflow.ellipsis)),
                             ...projects.map(
                               (p) => DropdownMenuItem(
                                 value: p.id,
