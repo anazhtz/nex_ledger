@@ -33,6 +33,9 @@ import 'package:nex_ledger/features/subcontract/presentation/work_order_form_scr
 import 'package:nex_ledger/features/subcontract/presentation/measurement_bill_form_screen.dart';
 import 'package:nex_ledger/features/subcontract/presentation/subcontract_payment_form_screen.dart';
 import 'package:nex_ledger/features/subcontract/presentation/work_order_detail_screen.dart';
+import 'package:nex_ledger/features/client_billing/presentation/client_billing_hub_screen.dart';
+import 'package:nex_ledger/features/client_billing/presentation/client_ra_bill_form_screen.dart';
+import 'package:nex_ledger/features/client_billing/presentation/client_receipt_form_screen.dart';
 import 'package:nex_ledger/shared/widgets/app_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -175,6 +178,28 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (c, s) => SubcontractPaymentFormScreen(
                   initialSubcontractorId: int.tryParse(
                       s.uri.queryParameters['subcontractorId'] ?? ''),
+                ),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/client-billing',
+            builder: (c, s) => const ClientBillingHubScreen(),
+            routes: [
+              GoRoute(
+                path: 'ra-bills/new',
+                builder: (c, s) => ClientRaBillFormScreen(
+                  initialProjectId: int.tryParse(
+                      s.uri.queryParameters['projectId'] ?? ''),
+                ),
+              ),
+              GoRoute(
+                path: 'receipt/new',
+                builder: (c, s) => ClientReceiptFormScreen(
+                  initialProjectId: int.tryParse(
+                      s.uri.queryParameters['projectId'] ?? ''),
+                  initialRaBillId: int.tryParse(
+                      s.uri.queryParameters['raBillId'] ?? ''),
                 ),
               ),
             ],

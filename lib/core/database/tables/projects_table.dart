@@ -16,5 +16,10 @@ class Projects extends Table {
 
   DateTimeColumn get startDate => dateTime()();
   RealColumn get budget => real().nullable()();
+  RealColumn get clientContractValue => real().withDefault(const Constant(0.0))();
+  RealColumn get clientRetentionPercentage => real().withDefault(const Constant(5.0))();
+  TextColumn get clientContact => text().nullable()();
+  TextColumn get clientAddress => text().nullable()();
+  TextColumn get clientGstOrPan => text().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }

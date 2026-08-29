@@ -424,6 +424,14 @@ class _TypeBadge extends StatelessWidget {
           const Color(0xFFD97706),
           const Color(0xFFFEF3C7)
         ),
+      TransactionType.clientRaBill => (
+          const Color(0xFF059669),
+          const Color(0xFFECFDF5)
+        ),
+      TransactionType.clientReceipt => (
+          const Color(0xFF2563EB),
+          const Color(0xFFEFF6FF)
+        ),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

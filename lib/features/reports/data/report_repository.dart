@@ -64,6 +64,7 @@ class DayBookEntry {
 
   bool get isInflow =>
       transaction.type == TransactionType.income ||
+      transaction.type == TransactionType.clientReceipt ||
       transaction.type == TransactionType.deposit ||
       transaction.type == TransactionType.depositRecovery ||
       transaction.type == TransactionType.ownerCapital;
@@ -145,6 +146,7 @@ class ReportRepository {
         for (final t in txns) {
           if (t.affectsPnl) {
             if (t.type == TransactionType.income ||
+                t.type == TransactionType.clientRaBill ||
                 t.type == TransactionType.depositAdjustment) {
               income += t.amount;
             } else if (t.type == TransactionType.expense ||
@@ -231,9 +233,11 @@ class ReportRepository {
           for (final t in txns) {
             if (t.affectsPnl) {
               if (t.type == TransactionType.income ||
+                  t.type == TransactionType.clientRaBill ||
                   t.type == TransactionType.depositAdjustment) {
                 income += t.amount;
-              } else if (t.type == TransactionType.expense) {
+              } else if (t.type == TransactionType.expense ||
+                  t.type == TransactionType.subcontractBill) {
                 expenses += t.amount;
               } else if (t.type == TransactionType.purchase ||
                   t.type == TransactionType.stockAllocation) {
@@ -397,6 +401,8 @@ class ReportRepository {
                 type: ProjectType.project,
                 status: ProjectStatus.active,
                 startDate: t.date,
+                clientContractValue: 0.0,
+                clientRetentionPercentage: 5.0,
                 createdAt: t.date,
               );
 

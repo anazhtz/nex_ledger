@@ -13,6 +13,7 @@ enum DepositType {
 }
 
 enum LedgerType {
+  client,
   supplier,
   labour,
   subcontractor,
@@ -29,6 +30,8 @@ enum TransactionType {
   labourPayment,
   subcontractBill,    // Subcontract measurement/RA bill certified (hits P&L, no cash out)
   subcontractPayment, // Cash/Bank outflow to subcontractor (moves cash, P&L already booked)
+  clientRaBill,       // Progressive RA Bill certified to client (hits P&L income, no cash)
+  clientReceipt,      // Cash/Bank inflow from client (moves cash, P&L already recognized)
   deposit,           // Deposit received from client (Inflow, Liability, P&L = 0)
   depositRefund,     // Deposit refunded to client (Outflow, Liability cleared, P&L = 0)
   depositAdjustment, // Deposit adjusted to income (No cash, P&L Income recognized)
@@ -67,6 +70,7 @@ extension WorkOrderStatusX on WorkOrderStatus {
 
 extension LedgerTypeX on LedgerType {
   String get displayName => switch (this) {
+        LedgerType.client => 'Clients / Customer Contracts',
         LedgerType.supplier => 'Suppliers / Vendors',
         LedgerType.labour => 'Daily Labour / Workers',
         LedgerType.subcontractor => 'Subcontractors / Piece-Rate',
@@ -99,7 +103,9 @@ extension DepositTypeX on DepositType {
 
 extension TransactionTypeX on TransactionType {
   String get displayName => switch (this) {
-        TransactionType.income => 'Income',
+        TransactionType.income => 'Direct Income',
+        TransactionType.clientRaBill => 'Client RA Bill (Progress Invoice)',
+        TransactionType.clientReceipt => 'Client Payment / Receipt',
         TransactionType.expense => 'Expense',
         TransactionType.purchase => 'Purchase',
         TransactionType.purchasePayment => 'Purchase Payment',
@@ -117,7 +123,7 @@ extension TransactionTypeX on TransactionType {
       };
 
   /// Whether this transaction type affects P&L by default.
-  /// purchasePayment and subcontractPayment are false — P&L was already hit when the bill was recorded.
+  /// purchasePayment, subcontractPayment, and clientReceipt are false — P&L was already recognized when the invoice was certified.
   /// Deposit-related and Owner Equity types are always false.
   bool get defaultAffectsPnl => switch (this) {
         TransactionType.deposit => false,
@@ -127,6 +133,7 @@ extension TransactionTypeX on TransactionType {
         TransactionType.ownerCapital => false,
         TransactionType.drawings => false,
         TransactionType.depositAdjustment => true,
+        TransactionType.clientReceipt => false, // P&L already recognized at RA bill certification
         TransactionType.purchasePayment => false, // P&L already hit at bill entry
         TransactionType.subcontractPayment => false, // P&L already hit at RA bill certification
         _ => true,

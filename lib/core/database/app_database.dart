@@ -19,6 +19,8 @@ import 'tables/subcontractors_table.dart';
 import 'tables/work_orders_table.dart';
 import 'tables/measurement_bills_table.dart';
 import 'tables/subcontract_payments_table.dart';
+import 'tables/client_ra_bills_table.dart';
+import 'tables/client_receipts_table.dart';
 import 'daos/project_dao.dart';
 import 'daos/transaction_dao.dart';
 import 'daos/purchase_dao.dart';
@@ -27,6 +29,7 @@ import 'daos/deposit_dao.dart';
 import 'daos/expense_category_dao.dart';
 import 'daos/bank_account_dao.dart';
 import 'daos/subcontract_dao.dart';
+import 'daos/client_billing_dao.dart';
 
 export 'tables/projects_table.dart';
 export 'tables/transactions_table.dart';
@@ -41,6 +44,8 @@ export 'tables/subcontractors_table.dart';
 export 'tables/work_orders_table.dart';
 export 'tables/measurement_bills_table.dart';
 export 'tables/subcontract_payments_table.dart';
+export 'tables/client_ra_bills_table.dart';
+export 'tables/client_receipts_table.dart';
 export 'daos/project_dao.dart';
 export 'daos/transaction_dao.dart';
 export 'daos/purchase_dao.dart';
@@ -49,6 +54,7 @@ export 'daos/deposit_dao.dart';
 export 'daos/expense_category_dao.dart';
 export 'daos/bank_account_dao.dart';
 export 'daos/subcontract_dao.dart';
+export 'daos/client_billing_dao.dart';
 export 'database_provider.dart';
 
 part 'app_database.g.dart';
@@ -72,6 +78,8 @@ part 'app_database.g.dart';
     WorkOrders,
     MeasurementBills,
     SubcontractPayments,
+    ClientRaBills,
+    ClientReceipts,
   ],
   daos: [
     ProjectDao,
@@ -82,13 +90,14 @@ part 'app_database.g.dart';
     ExpenseCategoryDao,
     BankAccountDao,
     SubcontractDao,
+    ClientBillingDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -169,6 +178,15 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(workOrders);
             await m.createTable(measurementBills);
             await m.createTable(subcontractPayments);
+          }
+          if (from < 14) {
+            await m.addColumn(projects, projects.clientContractValue);
+            await m.addColumn(projects, projects.clientRetentionPercentage);
+            await m.addColumn(projects, projects.clientContact);
+            await m.addColumn(projects, projects.clientAddress);
+            await m.addColumn(projects, projects.clientGstOrPan);
+            await m.createTable(clientRaBills);
+            await m.createTable(clientReceipts);
           }
         },
       );

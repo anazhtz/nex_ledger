@@ -86,3 +86,16 @@ final subcontractorLedgerProvider =
     return repo.watchSubcontractorLedger(subcontractorId, projectId: projectId, dateRange: dateRange);
   },
 );
+
+/// Selected Project ID in the Client Contract ledger view.
+final selectedLedgerClientProjectIdProvider = StateProvider<int?>((ref) => null);
+
+/// Client / Customer Contract Ledger Stream
+final clientLedgerProvider =
+    StreamProvider.family<({LedgerSummary summary, List<LedgerEntry> entries}), int>(
+  (ref, projectId) {
+    final repo = ref.watch(ledgerRepositoryProvider);
+    final dateRange = ref.watch(ledgerDateRangeProvider);
+    return repo.watchClientLedger(projectId, dateRange: dateRange);
+  },
+);

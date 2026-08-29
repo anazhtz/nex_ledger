@@ -62,6 +62,12 @@ class _AppShellState extends ConsumerState<AppShell> {
       section: 'OVERVIEW',
     ),
     NavItem(
+      icon: Icons.business_center_rounded,
+      label: 'Client Billing',
+      path: '/client-billing',
+      section: 'OVERVIEW',
+    ),
+    NavItem(
       icon: Icons.handshake_rounded,
       label: 'Subcontracts',
       path: '/subcontracts',

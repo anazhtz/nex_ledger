@@ -244,6 +244,11 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
               child: SegmentedButton<LedgerType>(
                 segments: const [
                   ButtonSegment<LedgerType>(
+                    value: LedgerType.client,
+                    label: Text('Clients / Revenue'),
+                    icon: Icon(Icons.business_center_rounded, size: 18),
+                  ),
+                  ButtonSegment<LedgerType>(
                     value: LedgerType.supplier,
                     label: Text('Suppliers / Vendors'),
                     icon: Icon(Icons.business_rounded, size: 18),
@@ -281,6 +286,7 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
 
             // ─── Active Tab Content ──────────────────────────────────────────
             switch (activeTab) {
+              LedgerType.client => _buildClientLedger(context, theme),
               LedgerType.supplier => _buildSupplierLedger(context, theme),
               LedgerType.subcontractor => _buildSubcontractorLedger(context, theme),
               LedgerType.labour => _buildLabourLedger(context, theme),
@@ -290,6 +296,101 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 0. CLIENT / CUSTOMER CONTRACT LEDGER TAB
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  Widget _buildClientLedger(BuildContext context, ThemeData theme) {
+    final projectsAsync = ref.watch(projectListProvider);
+    final selectedProjectId = ref.watch(selectedLedgerClientProjectIdProvider);
+
+    return projectsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Text('Error loading projects: $e'),
+      data: (projects) {
+        final clientProjects = projects
+            .where((p) => p.type == ProjectType.project)
+            .toList();
+
+        if (clientProjects.isEmpty) {
+          return const _EmptyLedgerCard(
+            title: 'No Client Projects Found',
+            subtitle: 'Create projects and configure client contracts to view statement of accounts.',
+          );
+        }
+
+        final effectiveProjectId =
+            selectedProjectId ?? clientProjects.first.id;
+        final ledgerDataAsync =
+            ref.watch(clientLedgerProvider(effectiveProjectId));
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Filter Bar: Project / Client Selector
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                side: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                child: Wrap(
+                  spacing: 16.w,
+                  runSpacing: 12.h,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 380.w,
+                      child: DropdownButtonFormField<int>(
+                        value: effectiveProjectId,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Select Project & Client Contract',
+                          prefixIcon: Icon(Icons.business_center_outlined, size: 20),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        ),
+                        items: clientProjects
+                            .map((p) => DropdownMenuItem<int>(
+                                  value: p.id,
+                                  child: Text(
+                                    '${p.code} — ${p.name} (Client: ${p.clientName ?? 'Direct'})',
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ))
+                            .toList(),
+                        onChanged: (id) {
+                          if (id != null) {
+                            ref.read(selectedLedgerClientProjectIdProvider.notifier).state = id;
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 20.h),
+
+            // Ledger Statement View
+            ledgerDataAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Text('Error loading ledger: $e'),
+              data: (data) => _buildStatementContent(
+                context: context,
+                theme: theme,
+                title: 'Client Statement of Account',
+                summary: data.summary,
+                entries: data.entries,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

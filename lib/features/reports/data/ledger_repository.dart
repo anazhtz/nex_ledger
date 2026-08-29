@@ -646,6 +646,133 @@ class LedgerRepository {
     });
   }
 
+  // ─── 5. Client / Customer Contract Ledger ──────────────────────────────────
+
+  Stream<({LedgerSummary summary, List<LedgerEntry> entries})>
+      watchClientLedger(
+    int projectId, {
+    DateTimeRange? dateRange,
+  }) {
+    return _db
+        .customSelect(
+          'SELECT 1',
+          readsFrom: {_db.projects, _db.clientRaBills, _db.clientReceipts, _db.transactions},
+        )
+        .watch()
+        .asyncMap((_) async {
+      final project = await (_db.select(_db.projects)..where((p) => p.id.equals(projectId)))
+          .getSingleOrNull();
+
+      final clientName = project?.clientName ?? project?.name ?? 'Client Account';
+      final clientSubtitle = '${project?.code ?? ''} • Contract: ${project?.clientContractValue != null ? CurrencyFormatter.format(project!.clientContractValue) : '—'}';
+
+      final bills = await (_db.select(_db.clientRaBills)
+            ..where((b) => b.projectId.equals(projectId)))
+          .get();
+
+      final receipts = await (_db.select(_db.clientReceipts)
+            ..where((r) => r.projectId.equals(projectId)))
+          .get();
+
+      final rawEvents = <_RawLedgerEvent>[];
+
+      for (final b in bills) {
+        rawEvents.add(_RawLedgerEvent(
+          id: b.id,
+          date: b.billDate,
+          referenceNo: b.billNumber,
+          title: 'RA Bill ${b.billNumber}',
+          subtitle: '${b.stageOrDescription} (Gross: ${CurrencyFormatter.format(b.grossAmount)}, Ret: -${CurrencyFormatter.format(b.retentionAmount)})',
+          projectCode: project?.code,
+          projectName: project?.name,
+          debit: 0.0,
+          credit: b.netCertifiedAmount,
+          transactionType: TransactionType.clientRaBill,
+          notes: b.notes,
+        ));
+      }
+
+      for (final r in receipts) {
+        rawEvents.add(_RawLedgerEvent(
+          id: r.id,
+          date: r.receiptDate,
+          referenceNo: r.referenceNo,
+          title: r.isRetentionRelease
+              ? 'Client Retention Released'
+              : (r.isAdvance
+                  ? 'Mobilization Advance Received'
+                  : 'Client Bill Payment Received'),
+          subtitle: 'Mode: ${r.paymentMode.displayName}${r.referenceNo != null ? ' • Ref: ${r.referenceNo}' : ''}',
+          projectCode: project?.code,
+          projectName: project?.name,
+          debit: r.amount,
+          credit: 0.0,
+          transactionType: TransactionType.clientReceipt,
+          paymentMode: r.paymentMode,
+          notes: r.notes,
+        ));
+      }
+
+      rawEvents.sort((a, b) => a.date.compareTo(b.date));
+
+      double openingBalance = 0.0;
+      double runningBalance = 0.0;
+      double periodDebits = 0.0;
+      double periodCredits = 0.0;
+      final statementEntries = <LedgerEntry>[];
+
+      for (final ev in rawEvents) {
+        final beforeDate = dateRange != null && ev.date.isBefore(dateRange.start);
+        final inRange = dateRange == null ||
+            (ev.date.isAfter(dateRange.start.subtract(const Duration(seconds: 1))) &&
+                ev.date.isBefore(dateRange.end.add(const Duration(days: 1))));
+
+        if (beforeDate) {
+          openingBalance += (ev.credit - ev.debit);
+          runningBalance = openingBalance;
+        } else if (inRange) {
+          runningBalance += (ev.credit - ev.debit);
+          periodDebits += ev.debit;
+          periodCredits += ev.credit;
+
+          statementEntries.add(LedgerEntry(
+            id: ev.id,
+            date: ev.date,
+            referenceNo: ev.referenceNo,
+            title: ev.title,
+            subtitle: ev.subtitle,
+            projectCode: ev.projectCode,
+            projectName: ev.projectName,
+            debit: ev.debit,
+            credit: ev.credit,
+            runningBalance: runningBalance,
+            balanceType: runningBalance >= 0 ? 'Dr (Due from Client)' : 'Cr (Advance Received)',
+            transactionType: ev.transactionType,
+            paymentMode: ev.paymentMode,
+            accountName: ev.accountName,
+            notes: ev.notes,
+          ));
+        }
+      }
+
+      final summary = LedgerSummary(
+        openingBalance: openingBalance,
+        totalDebit: periodDebits,
+        totalCredit: periodCredits,
+        closingBalance: runningBalance,
+        totalEntries: statementEntries.length,
+        entityName: clientName,
+        entitySubtitle: clientSubtitle,
+        debitLabel: 'Total Receipts Collected',
+        creditLabel: 'Total Net Certified Invoiced',
+        balanceLabel: runningBalance >= 0 ? 'Net Receivable Due from Client' : 'Net Advance Overpaid',
+        isPayable: false,
+      );
+
+      return (summary: summary, entries: statementEntries.reversed.toList());
+    });
+  }
+
   // ─── Quick Actions for Owner Transactions ─────────────────────────────────
 
   Future<int> recordOwnerCapital({
