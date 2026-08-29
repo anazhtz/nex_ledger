@@ -72,3 +72,17 @@ final personalLedgerProvider =
     return repo.watchPersonalLedger(dateRange: dateRange);
   },
 );
+
+/// Selected Subcontractor ID in the Subcontractor ledger view.
+final selectedLedgerSubcontractorIdProvider = StateProvider<int?>((ref) => null);
+
+/// Subcontractor / Piece-Rate Ledger Stream
+final subcontractorLedgerProvider =
+    StreamProvider.family<({LedgerSummary summary, List<LedgerEntry> entries}), int>(
+  (ref, subcontractorId) {
+    final repo = ref.watch(ledgerRepositoryProvider);
+    final projectId = ref.watch(ledgerProjectFilterProvider);
+    final dateRange = ref.watch(ledgerDateRangeProvider);
+    return repo.watchSubcontractorLedger(subcontractorId, projectId: projectId, dateRange: dateRange);
+  },
+);

@@ -13,6 +13,7 @@ import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 import 'package:nex_ledger/features/purchase/providers/purchase_providers.dart';
 import 'package:nex_ledger/features/reports/models/ledger_models.dart';
 import 'package:nex_ledger/features/reports/providers/ledger_providers.dart';
+import 'package:nex_ledger/features/subcontract/providers/subcontract_providers.dart';
 import 'package:nex_ledger/shared/widgets/data_table_card.dart';
 import 'package:nex_ledger/shared/widgets/stat_card.dart';
 
@@ -248,6 +249,11 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                     icon: Icon(Icons.business_rounded, size: 18),
                   ),
                   ButtonSegment<LedgerType>(
+                    value: LedgerType.subcontractor,
+                    label: Text('Subcontractors / Piece-Rate'),
+                    icon: Icon(Icons.handshake_rounded, size: 18),
+                  ),
+                  ButtonSegment<LedgerType>(
                     value: LedgerType.labour,
                     label: Text('Labour & Workers'),
                     icon: Icon(Icons.engineering_rounded, size: 18),
@@ -276,6 +282,7 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
             // ─── Active Tab Content ──────────────────────────────────────────
             switch (activeTab) {
               LedgerType.supplier => _buildSupplierLedger(context, theme),
+              LedgerType.subcontractor => _buildSubcontractorLedger(context, theme),
               LedgerType.labour => _buildLabourLedger(context, theme),
               LedgerType.bankCash => _buildBankCashLedger(context, theme),
               LedgerType.personal => _buildPersonalLedger(context, theme),
@@ -399,6 +406,127 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                 context: context,
                 theme: theme,
                 title: 'Supplier Statement',
+                summary: data.summary,
+                entries: data.entries,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 1b. SUBCONTRACTOR / PIECE-RATE LEDGER TAB
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  Widget _buildSubcontractorLedger(BuildContext context, ThemeData theme) {
+    final subsAsync = ref.watch(subcontractorListProvider);
+    final selectedSubId = ref.watch(selectedLedgerSubcontractorIdProvider);
+    final projectsAsync = ref.watch(projectListProvider);
+
+    return subsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Text('Error loading subcontractors: $e'),
+      data: (subs) {
+        if (subs.isEmpty) {
+          return const _EmptyLedgerCard(
+            title: 'No Subcontractors Found',
+            subtitle: 'Add subcontractors and piece-rate work orders to see their running measurement & payment ledgers.',
+          );
+        }
+
+        final effectiveSubId = selectedSubId ?? subs.first.id;
+        final ledgerDataAsync = ref.watch(subcontractorLedgerProvider(effectiveSubId));
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Filter Bar
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                side: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                child: Wrap(
+                  spacing: 16.w,
+                  runSpacing: 12.h,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    // Subcontractor Dropdown
+                    SizedBox(
+                      width: 280.w,
+                      child: DropdownButtonFormField<int>(
+                        value: effectiveSubId,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Select Subcontractor / Gang',
+                          prefixIcon: Icon(Icons.handshake_outlined, size: 20),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        ),
+                        items: subs
+                            .map((s) => DropdownMenuItem<int>(
+                                  value: s.id,
+                                  child: Text(
+                                    '${s.name} (${s.trade})',
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ))
+                            .toList(),
+                        onChanged: (id) {
+                          if (id != null) {
+                            ref.read(selectedLedgerSubcontractorIdProvider.notifier).state = id;
+                          }
+                        },
+                      ),
+                    ),
+
+                    // Project Filter Dropdown
+                    projectsAsync.maybeWhen(
+                      data: (projects) => SizedBox(
+                        width: 240.w,
+                        child: DropdownButtonFormField<int?>(
+                          value: ref.watch(ledgerProjectFilterProvider),
+                          isExpanded: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Filter by Project',
+                            prefixIcon: Icon(Icons.folder_outlined, size: 20),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          ),
+                          items: [
+                            const DropdownMenuItem<int?>(
+                              value: null,
+                              child: Text('All Projects', overflow: TextOverflow.ellipsis),
+                            ),
+                            ...projects.map((p) => DropdownMenuItem<int?>(
+                                  value: p.id,
+                                  child: Text('${p.code} — ${p.name}', overflow: TextOverflow.ellipsis),
+                                )),
+                          ],
+                          onChanged: (pId) {
+                            ref.read(ledgerProjectFilterProvider.notifier).state = pId;
+                          },
+                        ),
+                      ),
+                      orElse: () => const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 20.h),
+
+            // Ledger Statement View
+            ledgerDataAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Text('Error loading ledger: $e'),
+              data: (data) => _buildStatementContent(
+                context: context,
+                theme: theme,
+                title: 'Subcontractor Statement',
                 summary: data.summary,
                 entries: data.entries,
               ),

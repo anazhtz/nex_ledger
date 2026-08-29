@@ -503,6 +503,149 @@ class LedgerRepository {
     });
   }
 
+  // ─── 5. SUBCONTRACTOR / PIECE-RATE LEDGER ─────────────────────────────────
+
+  Stream<({LedgerSummary summary, List<LedgerEntry> entries})> watchSubcontractorLedger(
+    int subcontractorId, {
+    int? projectId,
+    DateTimeRange? dateRange,
+  }) {
+    return _db.subcontractDao.watchAllSubcontractors().asyncMap((subs) async {
+      final sub = await _db.subcontractDao.getSubcontractorById(subcontractorId);
+      final subName = sub?.name ?? 'Contractor #$subcontractorId';
+      final subSubtitle = sub?.trade != null ? 'Trade: ${sub!.trade}' : null;
+
+      final wos = await (_db.select(_db.workOrders)
+            ..where((w) => w.subcontractorId.equals(subcontractorId)))
+          .get();
+
+      final woMap = {for (final w in wos) w.id: w};
+      final woIds = wos.map((w) => w.id).toList();
+
+      final rawEvents = <_RawLedgerEvent>[];
+
+      // 1. Measurement Bills (Credit - contractor earns billable amount)
+      if (woIds.isNotEmpty) {
+        final bills = await (_db.select(_db.measurementBills)
+              ..where((b) => b.workOrderId.isIn(woIds)))
+            .get();
+
+        for (final b in bills) {
+          final wo = woMap[b.workOrderId];
+          final prj = wo != null ? await _db.projectDao.getProjectById(wo.projectId) : null;
+
+          if (projectId != null && wo?.projectId != projectId) continue;
+
+          rawEvents.add(_RawLedgerEvent(
+            id: b.transactionId,
+            date: b.date,
+            referenceNo: b.billNumber,
+            title: 'RA Bill: ${wo?.title ?? 'Subcontract Work'}',
+            subtitle: 'Measured: ${b.measuredQuantity} ${wo?.unit ?? ''} (Retention: ${CurrencyFormatter.format(b.retentionAmount)})',
+            projectCode: prj?.code,
+            projectName: prj?.name,
+            debit: 0.0,
+            credit: b.netAmount, // Net billable credited to contractor
+            transactionType: TransactionType.subcontractBill,
+            notes: b.locationOrDescription,
+          ));
+        }
+      }
+
+      // 2. Payments & Advances (Debit - developer pays contractor)
+      final payments = await (_db.select(_db.subcontractPayments)
+            ..where((p) => p.subcontractorId.equals(subcontractorId)))
+          .get();
+
+      for (final p in payments) {
+        final wo = p.workOrderId != null ? woMap[p.workOrderId] : null;
+        final prj = wo != null ? await _db.projectDao.getProjectById(wo.projectId) : null;
+
+        if (projectId != null && wo != null && wo.projectId != projectId) continue;
+
+        rawEvents.add(_RawLedgerEvent(
+          id: p.transactionId,
+          date: p.paymentDate,
+          referenceNo: p.referenceNo ?? 'PAY-${p.id.toString().padLeft(4, '0')}',
+          title: p.isRetentionRelease
+              ? 'Retention Release'
+              : (p.isAdvance ? 'Site Advance' : 'Bill Settlement'),
+          subtitle: wo?.title,
+          projectCode: prj?.code,
+          projectName: prj?.name,
+          debit: p.amount, // Debit reduces payable to contractor
+          credit: 0.0,
+          transactionType: TransactionType.subcontractPayment,
+          paymentMode: p.paymentMode,
+          notes: p.notes,
+        ));
+      }
+
+      // Sort chronologically (oldest first for running balance)
+      rawEvents.sort((a, b) {
+        final cmp = a.date.compareTo(b.date);
+        return cmp != 0 ? cmp : a.id.compareTo(b.id);
+      });
+
+      double runningBalance = 0.0;
+      double openingBalance = 0.0;
+      double periodDebits = 0.0;
+      double periodCredits = 0.0;
+
+      final statementEntries = <LedgerEntry>[];
+
+      for (final ev in rawEvents) {
+        final beforeDate = dateRange != null && ev.date.isBefore(dateRange.start);
+        final inRange = dateRange == null ||
+            (ev.date.isAfter(dateRange.start.subtract(const Duration(seconds: 1))) &&
+                ev.date.isBefore(dateRange.end.add(const Duration(days: 1))));
+
+        if (beforeDate) {
+          openingBalance += (ev.credit - ev.debit);
+          runningBalance = openingBalance;
+        } else if (inRange) {
+          runningBalance += (ev.credit - ev.debit);
+          periodDebits += ev.debit;
+          periodCredits += ev.credit;
+
+          statementEntries.add(LedgerEntry(
+            id: ev.id,
+            date: ev.date,
+            referenceNo: ev.referenceNo,
+            title: ev.title,
+            subtitle: ev.subtitle,
+            projectCode: ev.projectCode,
+            projectName: ev.projectName,
+            debit: ev.debit,
+            credit: ev.credit,
+            runningBalance: runningBalance,
+            balanceType: runningBalance >= 0 ? 'Cr (Due)' : 'Dr (Advance)',
+            transactionType: ev.transactionType,
+            paymentMode: ev.paymentMode,
+            accountName: ev.accountName,
+            notes: ev.notes,
+          ));
+        }
+      }
+
+      final summary = LedgerSummary(
+        openingBalance: openingBalance,
+        totalDebit: periodDebits,
+        totalCredit: periodCredits,
+        closingBalance: runningBalance,
+        totalEntries: statementEntries.length,
+        entityName: subName,
+        entitySubtitle: subSubtitle,
+        debitLabel: 'Total Payments & Advances',
+        creditLabel: 'Total Certified Net Bills',
+        balanceLabel: runningBalance >= 0 ? 'Net Balance Due to Contractor' : 'Net Advance Overpaid',
+        isPayable: true,
+      );
+
+      return (summary: summary, entries: statementEntries.reversed.toList());
+    });
+  }
+
   // ─── Quick Actions for Owner Transactions ─────────────────────────────────
 
   Future<int> recordOwnerCapital({

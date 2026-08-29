@@ -588,6 +588,16 @@ class DayBookScreen extends ConsumerWidget {
         fg = const Color(0xFF9F1239);
         label = 'Owner Drawings';
         break;
+      case TransactionType.subcontractBill:
+        bg = const Color(0xFFE0E7FF);
+        fg = const Color(0xFF3730A3);
+        label = 'Subcontract RA Bill';
+        break;
+      case TransactionType.subcontractPayment:
+        bg = const Color(0xFFFEF3C7);
+        fg = const Color(0xFF92400E);
+        label = 'Subcontract Payment';
+        break;
     }
 
     return Container(

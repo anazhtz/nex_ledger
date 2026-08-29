@@ -416,6 +416,14 @@ class _TypeBadge extends StatelessWidget {
           const Color(0xFFE11D48),
           const Color(0xFFFFF1F2)
         ),
+      TransactionType.subcontractBill => (
+          const Color(0xFF4F46E5),
+          const Color(0xFFEEF2FF)
+        ),
+      TransactionType.subcontractPayment => (
+          const Color(0xFFD97706),
+          const Color(0xFFFEF3C7)
+        ),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

@@ -5,6 +5,8 @@ enum ProjectType { project, adminOverhead }
 
 enum ProjectStatus { active, onHold, closed }
 
+enum WorkOrderStatus { active, completed, onHold, cancelled }
+
 enum DepositType {
   paid,     // Security Deposit Paid to Govt / Client (Asset, Outflow)
   received, // Security Deposit Received from Client / Subcontractor (Liability, Inflow)
@@ -13,6 +15,7 @@ enum DepositType {
 enum LedgerType {
   supplier,
   labour,
+  subcontractor,
   bankCash,
   personal,
 }
@@ -24,6 +27,8 @@ enum TransactionType {
   purchasePayment, // cash outflow when settling a pending/partial purchase bill
   stockAllocation, // material/stock allocated to a project from advance stock (hits P&L, no cash)
   labourPayment,
+  subcontractBill,    // Subcontract measurement/RA bill certified (hits P&L, no cash out)
+  subcontractPayment, // Cash/Bank outflow to subcontractor (moves cash, P&L already booked)
   deposit,           // Deposit received from client (Inflow, Liability, P&L = 0)
   depositRefund,     // Deposit refunded to client (Outflow, Liability cleared, P&L = 0)
   depositAdjustment, // Deposit adjusted to income (No cash, P&L Income recognized)
@@ -51,10 +56,20 @@ enum DepositStatus {
 // Display name helpers
 // ---------------------------------------------------------------------------
 
+extension WorkOrderStatusX on WorkOrderStatus {
+  String get displayName => switch (this) {
+        WorkOrderStatus.active => 'Active',
+        WorkOrderStatus.completed => 'Completed',
+        WorkOrderStatus.onHold => 'On Hold',
+        WorkOrderStatus.cancelled => 'Cancelled',
+      };
+}
+
 extension LedgerTypeX on LedgerType {
   String get displayName => switch (this) {
         LedgerType.supplier => 'Suppliers / Vendors',
-        LedgerType.labour => 'Labour / Workers',
+        LedgerType.labour => 'Daily Labour / Workers',
+        LedgerType.subcontractor => 'Subcontractors / Piece-Rate',
         LedgerType.bankCash => 'Bank & Cash Accounts',
         LedgerType.personal => 'Personal / Owner Equity',
       };
@@ -90,6 +105,8 @@ extension TransactionTypeX on TransactionType {
         TransactionType.purchasePayment => 'Purchase Payment',
         TransactionType.stockAllocation => 'Stock Allocation',
         TransactionType.labourPayment => 'Labour Payment',
+        TransactionType.subcontractBill => 'Subcontract Work (RA Bill)',
+        TransactionType.subcontractPayment => 'Subcontract Payment / Advance',
         TransactionType.deposit => 'Deposit Received',
         TransactionType.depositRefund => 'Deposit Refund',
         TransactionType.depositAdjustment => 'Deposit Adjustment',
@@ -100,7 +117,7 @@ extension TransactionTypeX on TransactionType {
       };
 
   /// Whether this transaction type affects P&L by default.
-  /// purchasePayment is false — P&L was already hit when the bill was recorded.
+  /// purchasePayment and subcontractPayment are false — P&L was already hit when the bill was recorded.
   /// Deposit-related and Owner Equity types are always false.
   bool get defaultAffectsPnl => switch (this) {
         TransactionType.deposit => false,
@@ -111,22 +128,53 @@ extension TransactionTypeX on TransactionType {
         TransactionType.drawings => false,
         TransactionType.depositAdjustment => true,
         TransactionType.purchasePayment => false, // P&L already hit at bill entry
+        TransactionType.subcontractPayment => false, // P&L already hit at RA bill certification
         _ => true,
       };
 
   /// Whether this is a cash outflow (debit).
-  /// Note: stockAllocation and depositAdjustment do NOT move physical cash.
+  /// Note: stockAllocation, depositAdjustment, and subcontractBill do NOT move physical cash.
   bool get isDebit => switch (this) {
         TransactionType.expense => true,
         TransactionType.purchase => true,
         TransactionType.purchasePayment => true, // actual cash out when bill is settled
         TransactionType.labourPayment => true,
+        TransactionType.subcontractPayment => true, // cash out when paying subcontractor
         TransactionType.depositRefund => true,
         TransactionType.depositPaid => true, // cash out when paying security deposit to govt
         TransactionType.drawings => true, // cash out when owner withdraws money
         _ => false,
       };
 }
+
+class WorkOrderTradePreset {
+  final String name;
+  final String defaultUnit;
+  final String description;
+
+  const WorkOrderTradePreset({
+    required this.name,
+    required this.defaultUnit,
+    required this.description,
+  });
+}
+
+const List<WorkOrderTradePreset> kStandardWorkOrderTrades = [
+  WorkOrderTradePreset(name: 'Plastering (Internal & External)', defaultUnit: 'Sq.ft', description: 'Wall & ceiling cement plastering'),
+  WorkOrderTradePreset(name: 'Tile Laying & Flooring', defaultUnit: 'Sq.ft', description: 'Vitrified tiles, granite, marble laying & polishing'),
+  WorkOrderTradePreset(name: 'Painting & Putty', defaultUnit: 'Sq.ft', description: 'Putty, primer, interior & exterior emulsion paint'),
+  WorkOrderTradePreset(name: 'Brick & Block Masonry', defaultUnit: 'Sq.ft', description: 'Red brick, solid concrete block, AAC block work'),
+  WorkOrderTradePreset(name: 'Bar Bending & Reinforcement', defaultUnit: 'Tons', description: 'TMT cutting, bending, and steel tying for slabs/columns'),
+  WorkOrderTradePreset(name: 'Centering & Shuttering', defaultUnit: 'Sq.ft', description: 'Formwork, plywood shuttering, and prop staging'),
+  WorkOrderTradePreset(name: 'Plumbing & Sanitation', defaultUnit: 'Points', description: 'Concealed CPVC/PVC piping, sanitary fittings & drainage'),
+  WorkOrderTradePreset(name: 'Electrical & Wiring', defaultUnit: 'Points', description: 'Conduit laying, wire pulling, switchboard fixing'),
+  WorkOrderTradePreset(name: 'False Ceiling & POP', defaultUnit: 'Sq.ft', description: 'Gypsum board / grid false ceiling & cornices'),
+  WorkOrderTradePreset(name: 'Carpentry & Woodwork', defaultUnit: 'Rft', description: 'Door frames, window shutters, modular cabinetry'),
+  WorkOrderTradePreset(name: 'Fabrication & MS Grills', defaultUnit: 'Kg', description: 'MS safety gates, stair railings, structural steel'),
+  WorkOrderTradePreset(name: 'Waterproofing', defaultUnit: 'Sq.ft', description: 'Terrace, sunken slab, basement chemical membrane'),
+  WorkOrderTradePreset(name: 'Excavation & Earthwork', defaultUnit: 'CFT', description: 'Footing trenches, basement excavation & backfilling'),
+  WorkOrderTradePreset(name: 'General Subcontract', defaultUnit: 'Lump sum', description: 'Custom contract / specialized civil task'),
+];
 
 extension PaymentModeX on PaymentMode {
   String get displayName => switch (this) {

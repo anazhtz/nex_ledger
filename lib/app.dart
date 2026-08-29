@@ -28,6 +28,11 @@ import 'package:nex_ledger/features/bank_accounts/presentation/bank_accounts_scr
 import 'package:nex_ledger/features/settings/presentation/settings_screen.dart';
 import 'package:nex_ledger/features/maintenance/presentation/maintenance_screen.dart';
 import 'package:nex_ledger/features/maintenance/providers/maintenance_provider.dart';
+import 'package:nex_ledger/features/subcontract/presentation/subcontract_hub_screen.dart';
+import 'package:nex_ledger/features/subcontract/presentation/work_order_form_screen.dart';
+import 'package:nex_ledger/features/subcontract/presentation/measurement_bill_form_screen.dart';
+import 'package:nex_ledger/features/subcontract/presentation/subcontract_payment_form_screen.dart';
+import 'package:nex_ledger/features/subcontract/presentation/work_order_detail_screen.dart';
 import 'package:nex_ledger/shared/widgets/app_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -137,6 +142,42 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (c, s) => WorkerDetailScreen(
               workerId: int.parse(s.pathParameters['id']!),
             ),
+          ),
+          GoRoute(
+            path: '/subcontracts',
+            builder: (c, s) => const SubcontractHubScreen(),
+            routes: [
+              GoRoute(
+                path: 'work-orders/new',
+                builder: (c, s) => const WorkOrderFormScreen(),
+              ),
+              GoRoute(
+                path: 'work-orders/:id',
+                builder: (c, s) => WorkOrderDetailScreen(
+                  workOrderId: int.parse(s.pathParameters['id']!),
+                ),
+              ),
+              GoRoute(
+                path: 'work-orders/:id/edit',
+                builder: (c, s) => WorkOrderFormScreen(
+                  workOrderId: int.parse(s.pathParameters['id']!),
+                ),
+              ),
+              GoRoute(
+                path: 'measurement/new',
+                builder: (c, s) => MeasurementBillFormScreen(
+                  initialWorkOrderId: int.tryParse(
+                      s.uri.queryParameters['workOrderId'] ?? ''),
+                ),
+              ),
+              GoRoute(
+                path: 'payment/new',
+                builder: (c, s) => SubcontractPaymentFormScreen(
+                  initialSubcontractorId: int.tryParse(
+                      s.uri.queryParameters['subcontractorId'] ?? ''),
+                ),
+              ),
+            ],
           ),
           GoRoute(
             path: '/deposits',

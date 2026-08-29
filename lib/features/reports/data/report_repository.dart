@@ -65,13 +65,16 @@ class DayBookEntry {
   bool get isInflow =>
       transaction.type == TransactionType.income ||
       transaction.type == TransactionType.deposit ||
-      transaction.type == TransactionType.depositRecovery;
+      transaction.type == TransactionType.depositRecovery ||
+      transaction.type == TransactionType.ownerCapital;
 
   bool get isOutflow =>
       transaction.type == TransactionType.expense ||
       transaction.type == TransactionType.labourPayment ||
+      transaction.type == TransactionType.subcontractPayment ||
       transaction.type == TransactionType.depositRefund ||
       transaction.type == TransactionType.depositPaid ||
+      transaction.type == TransactionType.drawings ||
       transaction.type == TransactionType.purchasePayment ||
       (transaction.type == TransactionType.purchase && transaction.affectsCash);
 }
@@ -144,7 +147,8 @@ class ReportRepository {
             if (t.type == TransactionType.income ||
                 t.type == TransactionType.depositAdjustment) {
               income += t.amount;
-            } else if (t.type == TransactionType.expense) {
+            } else if (t.type == TransactionType.expense ||
+                t.type == TransactionType.subcontractBill) {
               expenses += t.amount;
             } else if (t.type == TransactionType.purchase ||
                 t.type == TransactionType.stockAllocation) {

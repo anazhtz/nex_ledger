@@ -61,6 +61,12 @@ class _AppShellState extends ConsumerState<AppShell> {
       path: '/purchases',
       section: 'OVERVIEW',
     ),
+    NavItem(
+      icon: Icons.handshake_rounded,
+      label: 'Subcontracts',
+      path: '/subcontracts',
+      section: 'OVERVIEW',
+    ),
 
     // Labour Management
     NavItem(
