@@ -50,6 +50,10 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
     'Other',
   ];
 
+  final _categorySearchCtrl = TextEditingController();
+  late List<MaterialCategoryPreset> _categories;
+  String _categorySearchQuery = '';
+
   int? _selectedProject;
   int? _selectedVendor;
   String? _selectedCategory;
@@ -64,9 +68,20 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
 
   bool get _isEditing => widget.purchaseId != null;
 
+  List<MaterialCategoryPreset> get _filteredCategories {
+    if (_categorySearchQuery.trim().isEmpty) return _categories;
+    final q = _categorySearchQuery.trim().toLowerCase();
+    return _categories.where((cat) {
+      final matchName = cat.name.toLowerCase().contains(q);
+      final matchItems = cat.commonItems.any((item) => item.toLowerCase().contains(q));
+      return matchName || matchItems;
+    }).toList();
+  }
+
   @override
   void initState() {
     super.initState();
+    _categories = List.from(kStandardMaterialCategories);
     _selectedProject = ref.read(selectedProjectIdProvider);
     if (_isEditing) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _loadPurchase());
@@ -102,12 +117,148 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
         _refCtrl.text = pd.transaction.referenceNo ?? '';
         _isAdvanceStock = pd.purchase.isAdvanceStock;
         _selectedCategory = pd.purchase.materialCategory;
+
+        if (pd.purchase.materialCategory != null &&
+            !_categories.any((c) => c.name == pd.purchase.materialCategory)) {
+          _categories.insert(
+            0,
+            MaterialCategoryPreset(
+              name: pd.purchase.materialCategory!,
+              defaultUnit: pd.purchase.unit ?? 'Nos',
+              icon: Icons.category_rounded,
+              color: const Color(0xFF4F46E5),
+              commonItems: [pd.purchase.itemDescription],
+            ),
+          );
+        }
       });
     }
   }
 
+  Future<void> _openAddCustomCategoryDialog({String? prefillName}) async {
+    final nameCtrl = TextEditingController(text: prefillName ?? '');
+    final itemsCtrl = TextEditingController();
+    String selectedUnit = 'Nos';
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+            title: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8.r),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEEF2FF),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Icon(Icons.category_rounded, color: const Color(0xFF4F46E5), size: 20.sp),
+                ),
+                SizedBox(width: 10.w),
+                const Text('Add Custom Material Category'),
+              ],
+            ),
+            content: SizedBox(
+              width: 440.w,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Define a custom material or service category with a default unit of measurement.',
+                    style: TextStyle(fontSize: 12.sp, color: const Color(0xFF64748B)),
+                  ),
+                  SizedBox(height: 16.h),
+                  TextField(
+                    controller: nameCtrl,
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Category Name *',
+                      hintText: 'e.g. UPVC Windows, Solar Panels, Scaffolding',
+                      prefixIcon: Icon(Icons.label_outline_rounded),
+                    ),
+                  ),
+                  SizedBox(height: 14.h),
+                  DropdownButtonFormField<String>(
+                    value: selectedUnit,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Default Unit of Measurement *',
+                      prefixIcon: Icon(Icons.straighten_rounded),
+                    ),
+                    items: _commonUnits.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
+                    onChanged: (u) {
+                      if (u != null) setDialogState(() => selectedUnit = u);
+                    },
+                  ),
+                  SizedBox(height: 14.h),
+                  TextField(
+                    controller: itemsCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Quick Item Presets (comma separated, optional)',
+                      hintText: 'e.g. 540W Solar Panel, 5kW Hybrid Inverter',
+                      prefixIcon: Icon(Icons.format_list_bulleted_rounded),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final name = nameCtrl.text.trim();
+                  if (name.isEmpty) return;
+
+                  final items = itemsCtrl.text
+                      .split(',')
+                      .map((s) => s.trim())
+                      .where((s) => s.isNotEmpty)
+                      .toList();
+
+                  final newCat = MaterialCategoryPreset(
+                    name: name,
+                    defaultUnit: selectedUnit,
+                    icon: Icons.category_rounded,
+                    color: const Color(0xFF4F46E5),
+                    commonItems: items.isNotEmpty ? items : [name],
+                  );
+
+                  setState(() {
+                    _categories.insert(0, newCat);
+                    _selectedCategory = name;
+                    _unitCtrl.text = selectedUnit;
+                    if (items.isNotEmpty && _descCtrl.text.isEmpty) {
+                      _descCtrl.text = items.first;
+                    } else if (_descCtrl.text.isEmpty) {
+                      _descCtrl.text = name;
+                    }
+                    _categorySearchCtrl.clear();
+                    _categorySearchQuery = '';
+                  });
+
+                  Navigator.pop(ctx);
+                },
+                style: FilledButton.styleFrom(backgroundColor: const Color(0xFF4F46E5)),
+                child: const Text('Add & Select Category'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    nameCtrl.dispose();
+    itemsCtrl.dispose();
+  }
+
   @override
   void dispose() {
+    _categorySearchCtrl.dispose();
     _descCtrl.dispose();
     _qtyCtrl.dispose();
     _rateCtrl.dispose();
@@ -505,7 +656,6 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                               ),
                                SizedBox(height: 8.h),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Text(
@@ -518,7 +668,20 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  SizedBox(width: 6.w),
+                                  SizedBox(width: 4.w),
+                                  TextButton.icon(
+                                    onPressed: () => _openAddCustomCategoryDialog(),
+                                    icon: Icon(Icons.add_circle_outline_rounded, size: 14.sp, color: const Color(0xFF4F46E5)),
+                                    label: Text(
+                                      '+ Add Category',
+                                      style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.bold, color: const Color(0xFF4F46E5)),
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                  ),
+                                  SizedBox(width: 4.w),
                                   TextButton.icon(
                                     onPressed: () => setState(() => _expandAllCategories = !_expandAllCategories),
                                     icon: Icon(
@@ -526,7 +689,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                       size: 14.sp,
                                     ),
                                     label: Text(
-                                      _expandAllCategories ? 'Collapse' : 'View All (${kStandardMaterialCategories.length})',
+                                      _expandAllCategories ? 'Collapse' : 'View All (${_categories.length})',
                                       style: TextStyle(fontSize: 11.sp),
                                     ),
                                     style: TextButton.styleFrom(
@@ -537,18 +700,90 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                 ],
                               ),
                               SizedBox(height: 6.h),
-                              if (_expandAllCategories)
+                              SizedBox(
+                                height: 38.h,
+                                child: TextField(
+                                  controller: _categorySearchCtrl,
+                                  style: TextStyle(fontSize: 12.sp),
+                                  decoration: InputDecoration(
+                                    hintText: 'Search categories & items (e.g. cement, 12mm, pipe, paint, bricks)...',
+                                    hintStyle: TextStyle(fontSize: 11.sp, color: const Color(0xFF94A3B8)),
+                                    prefixIcon: Icon(Icons.search_rounded, size: 16.sp, color: const Color(0xFF64748B)),
+                                    suffixIcon: _categorySearchQuery.isNotEmpty
+                                        ? IconButton(
+                                            icon: Icon(Icons.clear, size: 14.sp),
+                                            onPressed: () {
+                                              _categorySearchCtrl.clear();
+                                              setState(() => _categorySearchQuery = '');
+                                            },
+                                          )
+                                        : null,
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 0),
+                                    filled: true,
+                                    fillColor: const Color(0xFFF8FAFC),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8.r),
+                                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8.r),
+                                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8.r),
+                                      borderSide: const BorderSide(color: Color(0xFF4F46E5), width: 1.5),
+                                    ),
+                                  ),
+                                  onChanged: (val) {
+                                    setState(() => _categorySearchQuery = val);
+                                  },
+                                ),
+                              ),
+                              SizedBox(height: 8.h),
+                              if (_filteredCategories.isEmpty)
+                                Container(
+                                  padding: EdgeInsets.all(10.r),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(8.r),
+                                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.search_off_rounded, color: const Color(0xFF64748B), size: 18.sp),
+                                      SizedBox(width: 8.w),
+                                      Expanded(
+                                        child: Text(
+                                          'No category found for "$_categorySearchQuery".',
+                                          style: TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B)),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      SizedBox(width: 8.w),
+                                      FilledButton.icon(
+                                        onPressed: () => _openAddCustomCategoryDialog(prefillName: _categorySearchQuery.trim()),
+                                        icon: const Icon(Icons.add, size: 14),
+                                        label: const Text('Add Custom Category'),
+                                        style: FilledButton.styleFrom(
+                                          backgroundColor: const Color(0xFF4F46E5),
+                                          visualDensity: VisualDensity.compact,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              else if (_expandAllCategories)
                                 Wrap(
                                   spacing: 8.w,
                                   runSpacing: 8.h,
-                                  children: kStandardMaterialCategories.map((cat) => _buildCategoryChip(cat)).toList(),
+                                  children: _filteredCategories.map((cat) => _buildCategoryChip(cat)).toList(),
                                 )
                               else
                                 SingleChildScrollView(
                                   scrollDirection: Axis.horizontal,
                                   physics: const BouncingScrollPhysics(),
                                   child: Row(
-                                    children: kStandardMaterialCategories.map((cat) {
+                                    children: _filteredCategories.map((cat) {
                                       return Padding(
                                         padding: EdgeInsets.only(right: 8.w),
                                         child: _buildCategoryChip(cat),
@@ -561,7 +796,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                               // ─── Quick 1-Click Selectable Item Presets for Selected Category ───
                               if (_selectedCategory != null) ...[
                                 () {
-                                  final currentPreset = kStandardMaterialCategories
+                                  final currentPreset = _categories
                                       .where((c) => c.name == _selectedCategory)
                                       .firstOrNull;
                                   if (currentPreset == null || currentPreset.commonItems.isEmpty) {
