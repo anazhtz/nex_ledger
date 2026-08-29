@@ -8077,6 +8077,449 @@ class ClientReceiptsCompanion extends UpdateCompanion<ClientReceipt> {
   }
 }
 
+class $ProjectBudgetsTable extends ProjectBudgets
+    with TableInfo<$ProjectBudgetsTable, ProjectBudget> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ProjectBudgetsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _projectIdMeta =
+      const VerificationMeta('projectId');
+  @override
+  late final GeneratedColumn<int> projectId = GeneratedColumn<int>(
+      'project_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES projects (id) ON DELETE CASCADE'));
+  @override
+  late final GeneratedColumnWithTypeConverter<BudgetCostHead, String> costHead =
+      GeneratedColumn<String>('cost_head', aliasedName, false,
+              type: DriftSqlType.string, requiredDuringInsert: true)
+          .withConverter<BudgetCostHead>(
+              $ProjectBudgetsTable.$convertercostHead);
+  static const VerificationMeta _allocatedAmountMeta =
+      const VerificationMeta('allocatedAmount');
+  @override
+  late final GeneratedColumn<double> allocatedAmount = GeneratedColumn<double>(
+      'allocated_amount', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _alertThresholdPercentageMeta =
+      const VerificationMeta('alertThresholdPercentage');
+  @override
+  late final GeneratedColumn<double> alertThresholdPercentage =
+      GeneratedColumn<double>('alert_threshold_percentage', aliasedName, false,
+          type: DriftSqlType.double,
+          requiredDuringInsert: false,
+          defaultValue: const Constant(85.0));
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+      'notes', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        projectId,
+        costHead,
+        allocatedAmount,
+        alertThresholdPercentage,
+        notes,
+        createdAt,
+        updatedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'project_budgets';
+  @override
+  VerificationContext validateIntegrity(Insertable<ProjectBudget> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(_projectIdMeta,
+          projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta));
+    } else if (isInserting) {
+      context.missing(_projectIdMeta);
+    }
+    if (data.containsKey('allocated_amount')) {
+      context.handle(
+          _allocatedAmountMeta,
+          allocatedAmount.isAcceptableOrUnknown(
+              data['allocated_amount']!, _allocatedAmountMeta));
+    } else if (isInserting) {
+      context.missing(_allocatedAmountMeta);
+    }
+    if (data.containsKey('alert_threshold_percentage')) {
+      context.handle(
+          _alertThresholdPercentageMeta,
+          alertThresholdPercentage.isAcceptableOrUnknown(
+              data['alert_threshold_percentage']!,
+              _alertThresholdPercentageMeta));
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+          _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+        {projectId, costHead},
+      ];
+  @override
+  ProjectBudget map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ProjectBudget(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      projectId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}project_id'])!,
+      costHead: $ProjectBudgetsTable.$convertercostHead.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}cost_head'])!),
+      allocatedAmount: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}allocated_amount'])!,
+      alertThresholdPercentage: attachedDatabase.typeMapping.read(
+          DriftSqlType.double,
+          data['${effectivePrefix}alert_threshold_percentage'])!,
+      notes: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}notes']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+    );
+  }
+
+  @override
+  $ProjectBudgetsTable createAlias(String alias) {
+    return $ProjectBudgetsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<BudgetCostHead, String, String> $convertercostHead =
+      const EnumNameConverter<BudgetCostHead>(BudgetCostHead.values);
+}
+
+class ProjectBudget extends DataClass implements Insertable<ProjectBudget> {
+  final int id;
+  final int projectId;
+  final BudgetCostHead costHead;
+  final double allocatedAmount;
+  final double alertThresholdPercentage;
+  final String? notes;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const ProjectBudget(
+      {required this.id,
+      required this.projectId,
+      required this.costHead,
+      required this.allocatedAmount,
+      required this.alertThresholdPercentage,
+      this.notes,
+      required this.createdAt,
+      required this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['project_id'] = Variable<int>(projectId);
+    {
+      map['cost_head'] = Variable<String>(
+          $ProjectBudgetsTable.$convertercostHead.toSql(costHead));
+    }
+    map['allocated_amount'] = Variable<double>(allocatedAmount);
+    map['alert_threshold_percentage'] =
+        Variable<double>(alertThresholdPercentage);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ProjectBudgetsCompanion toCompanion(bool nullToAbsent) {
+    return ProjectBudgetsCompanion(
+      id: Value(id),
+      projectId: Value(projectId),
+      costHead: Value(costHead),
+      allocatedAmount: Value(allocatedAmount),
+      alertThresholdPercentage: Value(alertThresholdPercentage),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ProjectBudget.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ProjectBudget(
+      id: serializer.fromJson<int>(json['id']),
+      projectId: serializer.fromJson<int>(json['projectId']),
+      costHead: $ProjectBudgetsTable.$convertercostHead
+          .fromJson(serializer.fromJson<String>(json['costHead'])),
+      allocatedAmount: serializer.fromJson<double>(json['allocatedAmount']),
+      alertThresholdPercentage:
+          serializer.fromJson<double>(json['alertThresholdPercentage']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'projectId': serializer.toJson<int>(projectId),
+      'costHead': serializer.toJson<String>(
+          $ProjectBudgetsTable.$convertercostHead.toJson(costHead)),
+      'allocatedAmount': serializer.toJson<double>(allocatedAmount),
+      'alertThresholdPercentage':
+          serializer.toJson<double>(alertThresholdPercentage),
+      'notes': serializer.toJson<String?>(notes),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ProjectBudget copyWith(
+          {int? id,
+          int? projectId,
+          BudgetCostHead? costHead,
+          double? allocatedAmount,
+          double? alertThresholdPercentage,
+          Value<String?> notes = const Value.absent(),
+          DateTime? createdAt,
+          DateTime? updatedAt}) =>
+      ProjectBudget(
+        id: id ?? this.id,
+        projectId: projectId ?? this.projectId,
+        costHead: costHead ?? this.costHead,
+        allocatedAmount: allocatedAmount ?? this.allocatedAmount,
+        alertThresholdPercentage:
+            alertThresholdPercentage ?? this.alertThresholdPercentage,
+        notes: notes.present ? notes.value : this.notes,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  ProjectBudget copyWithCompanion(ProjectBudgetsCompanion data) {
+    return ProjectBudget(
+      id: data.id.present ? data.id.value : this.id,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      costHead: data.costHead.present ? data.costHead.value : this.costHead,
+      allocatedAmount: data.allocatedAmount.present
+          ? data.allocatedAmount.value
+          : this.allocatedAmount,
+      alertThresholdPercentage: data.alertThresholdPercentage.present
+          ? data.alertThresholdPercentage.value
+          : this.alertThresholdPercentage,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProjectBudget(')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('costHead: $costHead, ')
+          ..write('allocatedAmount: $allocatedAmount, ')
+          ..write('alertThresholdPercentage: $alertThresholdPercentage, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, projectId, costHead, allocatedAmount,
+      alertThresholdPercentage, notes, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ProjectBudget &&
+          other.id == this.id &&
+          other.projectId == this.projectId &&
+          other.costHead == this.costHead &&
+          other.allocatedAmount == this.allocatedAmount &&
+          other.alertThresholdPercentage == this.alertThresholdPercentage &&
+          other.notes == this.notes &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ProjectBudgetsCompanion extends UpdateCompanion<ProjectBudget> {
+  final Value<int> id;
+  final Value<int> projectId;
+  final Value<BudgetCostHead> costHead;
+  final Value<double> allocatedAmount;
+  final Value<double> alertThresholdPercentage;
+  final Value<String?> notes;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const ProjectBudgetsCompanion({
+    this.id = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.costHead = const Value.absent(),
+    this.allocatedAmount = const Value.absent(),
+    this.alertThresholdPercentage = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  ProjectBudgetsCompanion.insert({
+    this.id = const Value.absent(),
+    required int projectId,
+    required BudgetCostHead costHead,
+    required double allocatedAmount,
+    this.alertThresholdPercentage = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  })  : projectId = Value(projectId),
+        costHead = Value(costHead),
+        allocatedAmount = Value(allocatedAmount);
+  static Insertable<ProjectBudget> custom({
+    Expression<int>? id,
+    Expression<int>? projectId,
+    Expression<String>? costHead,
+    Expression<double>? allocatedAmount,
+    Expression<double>? alertThresholdPercentage,
+    Expression<String>? notes,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (projectId != null) 'project_id': projectId,
+      if (costHead != null) 'cost_head': costHead,
+      if (allocatedAmount != null) 'allocated_amount': allocatedAmount,
+      if (alertThresholdPercentage != null)
+        'alert_threshold_percentage': alertThresholdPercentage,
+      if (notes != null) 'notes': notes,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  ProjectBudgetsCompanion copyWith(
+      {Value<int>? id,
+      Value<int>? projectId,
+      Value<BudgetCostHead>? costHead,
+      Value<double>? allocatedAmount,
+      Value<double>? alertThresholdPercentage,
+      Value<String?>? notes,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt}) {
+    return ProjectBudgetsCompanion(
+      id: id ?? this.id,
+      projectId: projectId ?? this.projectId,
+      costHead: costHead ?? this.costHead,
+      allocatedAmount: allocatedAmount ?? this.allocatedAmount,
+      alertThresholdPercentage:
+          alertThresholdPercentage ?? this.alertThresholdPercentage,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<int>(projectId.value);
+    }
+    if (costHead.present) {
+      map['cost_head'] = Variable<String>(
+          $ProjectBudgetsTable.$convertercostHead.toSql(costHead.value));
+    }
+    if (allocatedAmount.present) {
+      map['allocated_amount'] = Variable<double>(allocatedAmount.value);
+    }
+    if (alertThresholdPercentage.present) {
+      map['alert_threshold_percentage'] =
+          Variable<double>(alertThresholdPercentage.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProjectBudgetsCompanion(')
+          ..write('id: $id, ')
+          ..write('projectId: $projectId, ')
+          ..write('costHead: $costHead, ')
+          ..write('allocatedAmount: $allocatedAmount, ')
+          ..write('alertThresholdPercentage: $alertThresholdPercentage, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -8098,6 +8541,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $SubcontractPaymentsTable(this);
   late final $ClientRaBillsTable clientRaBills = $ClientRaBillsTable(this);
   late final $ClientReceiptsTable clientReceipts = $ClientReceiptsTable(this);
+  late final $ProjectBudgetsTable projectBudgets = $ProjectBudgetsTable(this);
   late final ProjectDao projectDao = ProjectDao(this as AppDatabase);
   late final TransactionDao transactionDao =
       TransactionDao(this as AppDatabase);
@@ -8112,6 +8556,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       SubcontractDao(this as AppDatabase);
   late final ClientBillingDao clientBillingDao =
       ClientBillingDao(this as AppDatabase);
+  late final ProjectBudgetDao projectBudgetDao =
+      ProjectBudgetDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -8131,7 +8577,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         measurementBills,
         subcontractPayments,
         clientRaBills,
-        clientReceipts
+        clientReceipts,
+        projectBudgets
       ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
@@ -8204,6 +8651,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
                 limitUpdateKind: UpdateKind.delete),
             result: [
               TableUpdate('client_receipts', kind: UpdateKind.update),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('projects',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('project_budgets', kind: UpdateKind.delete),
             ],
           ),
         ],
@@ -8333,6 +8787,21 @@ final class $$ProjectsTableReferences
         .filter((f) => f.projectId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_clientReceiptsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$ProjectBudgetsTable, List<ProjectBudget>>
+      _projectBudgetsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.projectBudgets,
+              aliasName: $_aliasNameGenerator(
+                  db.projects.id, db.projectBudgets.projectId));
+
+  $$ProjectBudgetsTableProcessedTableManager get projectBudgetsRefs {
+    final manager = $$ProjectBudgetsTableTableManager($_db, $_db.projectBudgets)
+        .filter((f) => f.projectId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_projectBudgetsRefsTable($_db));
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: cache));
   }
@@ -8514,6 +8983,27 @@ class $$ProjectsTableFilterComposer
             $$ClientReceiptsTableFilterComposer(
               $db: $db,
               $table: $db.clientReceipts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> projectBudgetsRefs(
+      Expression<bool> Function($$ProjectBudgetsTableFilterComposer f) f) {
+    final $$ProjectBudgetsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.projectBudgets,
+        getReferencedColumn: (t) => t.projectId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectBudgetsTableFilterComposer(
+              $db: $db,
+              $table: $db.projectBudgets,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -8756,6 +9246,27 @@ class $$ProjectsTableAnnotationComposer
             ));
     return f(composer);
   }
+
+  Expression<T> projectBudgetsRefs<T extends Object>(
+      Expression<T> Function($$ProjectBudgetsTableAnnotationComposer a) f) {
+    final $$ProjectBudgetsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.projectBudgets,
+        getReferencedColumn: (t) => t.projectId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectBudgetsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.projectBudgets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
 class $$ProjectsTableTableManager extends RootTableManager<
@@ -8775,7 +9286,8 @@ class $$ProjectsTableTableManager extends RootTableManager<
         bool depositsRefs,
         bool workOrdersRefs,
         bool clientRaBillsRefs,
-        bool clientReceiptsRefs})> {
+        bool clientReceiptsRefs,
+        bool projectBudgetsRefs})> {
   $$ProjectsTableTableManager(_$AppDatabase db, $ProjectsTable table)
       : super(TableManagerState(
           db: db,
@@ -8860,7 +9372,8 @@ class $$ProjectsTableTableManager extends RootTableManager<
               depositsRefs = false,
               workOrdersRefs = false,
               clientRaBillsRefs = false,
-              clientReceiptsRefs = false}) {
+              clientReceiptsRefs = false,
+              projectBudgetsRefs = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
@@ -8869,7 +9382,8 @@ class $$ProjectsTableTableManager extends RootTableManager<
                 if (depositsRefs) db.deposits,
                 if (workOrdersRefs) db.workOrders,
                 if (clientRaBillsRefs) db.clientRaBills,
-                if (clientReceiptsRefs) db.clientReceipts
+                if (clientReceiptsRefs) db.clientReceipts,
+                if (projectBudgetsRefs) db.projectBudgets
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -8950,6 +9464,19 @@ class $$ProjectsTableTableManager extends RootTableManager<
                         referencedItemsForCurrentItem:
                             (item, referencedItems) => referencedItems
                                 .where((e) => e.projectId == item.id),
+                        typedResults: items),
+                  if (projectBudgetsRefs)
+                    await $_getPrefetchedData<Project, $ProjectsTable,
+                            ProjectBudget>(
+                        currentTable: table,
+                        referencedTable: $$ProjectsTableReferences
+                            ._projectBudgetsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$ProjectsTableReferences(db, table, p0)
+                                .projectBudgetsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.projectId == item.id),
                         typedResults: items)
                 ];
               },
@@ -8975,7 +9502,8 @@ typedef $$ProjectsTableProcessedTableManager = ProcessedTableManager<
         bool depositsRefs,
         bool workOrdersRefs,
         bool clientRaBillsRefs,
-        bool clientReceiptsRefs})>;
+        bool clientReceiptsRefs,
+        bool projectBudgetsRefs})>;
 typedef $$WorkersTableCreateCompanionBuilder = WorkersCompanion Function({
   Value<int> id,
   required String name,
@@ -15940,6 +16468,328 @@ typedef $$ClientReceiptsTableProcessedTableManager = ProcessedTableManager<
         bool projectId,
         bool clientRaBillId,
         bool bankAccountId})>;
+typedef $$ProjectBudgetsTableCreateCompanionBuilder = ProjectBudgetsCompanion
+    Function({
+  Value<int> id,
+  required int projectId,
+  required BudgetCostHead costHead,
+  required double allocatedAmount,
+  Value<double> alertThresholdPercentage,
+  Value<String?> notes,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+});
+typedef $$ProjectBudgetsTableUpdateCompanionBuilder = ProjectBudgetsCompanion
+    Function({
+  Value<int> id,
+  Value<int> projectId,
+  Value<BudgetCostHead> costHead,
+  Value<double> allocatedAmount,
+  Value<double> alertThresholdPercentage,
+  Value<String?> notes,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+});
+
+final class $$ProjectBudgetsTableReferences
+    extends BaseReferences<_$AppDatabase, $ProjectBudgetsTable, ProjectBudget> {
+  $$ProjectBudgetsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $ProjectsTable _projectIdTable(_$AppDatabase db) =>
+      db.projects.createAlias(
+          $_aliasNameGenerator(db.projectBudgets.projectId, db.projects.id));
+
+  $$ProjectsTableProcessedTableManager get projectId {
+    final $_column = $_itemColumn<int>('project_id')!;
+
+    final manager = $$ProjectsTableTableManager($_db, $_db.projects)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$ProjectBudgetsTableFilterComposer
+    extends Composer<_$AppDatabase, $ProjectBudgetsTable> {
+  $$ProjectBudgetsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<BudgetCostHead, BudgetCostHead, String>
+      get costHead => $composableBuilder(
+          column: $table.costHead,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<double> get allocatedAmount => $composableBuilder(
+      column: $table.allocatedAmount,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get alertThresholdPercentage => $composableBuilder(
+      column: $table.alertThresholdPercentage,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  $$ProjectsTableFilterComposer get projectId {
+    final $$ProjectsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.projectId,
+        referencedTable: $db.projects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectsTableFilterComposer(
+              $db: $db,
+              $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ProjectBudgetsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ProjectBudgetsTable> {
+  $$ProjectBudgetsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get costHead => $composableBuilder(
+      column: $table.costHead, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get allocatedAmount => $composableBuilder(
+      column: $table.allocatedAmount,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get alertThresholdPercentage => $composableBuilder(
+      column: $table.alertThresholdPercentage,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  $$ProjectsTableOrderingComposer get projectId {
+    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.projectId,
+        referencedTable: $db.projects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectsTableOrderingComposer(
+              $db: $db,
+              $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ProjectBudgetsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ProjectBudgetsTable> {
+  $$ProjectBudgetsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<BudgetCostHead, String> get costHead =>
+      $composableBuilder(column: $table.costHead, builder: (column) => column);
+
+  GeneratedColumn<double> get allocatedAmount => $composableBuilder(
+      column: $table.allocatedAmount, builder: (column) => column);
+
+  GeneratedColumn<double> get alertThresholdPercentage => $composableBuilder(
+      column: $table.alertThresholdPercentage, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$ProjectsTableAnnotationComposer get projectId {
+    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.projectId,
+        referencedTable: $db.projects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ProjectBudgetsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $ProjectBudgetsTable,
+    ProjectBudget,
+    $$ProjectBudgetsTableFilterComposer,
+    $$ProjectBudgetsTableOrderingComposer,
+    $$ProjectBudgetsTableAnnotationComposer,
+    $$ProjectBudgetsTableCreateCompanionBuilder,
+    $$ProjectBudgetsTableUpdateCompanionBuilder,
+    (ProjectBudget, $$ProjectBudgetsTableReferences),
+    ProjectBudget,
+    PrefetchHooks Function({bool projectId})> {
+  $$ProjectBudgetsTableTableManager(
+      _$AppDatabase db, $ProjectBudgetsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ProjectBudgetsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ProjectBudgetsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ProjectBudgetsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<int> projectId = const Value.absent(),
+            Value<BudgetCostHead> costHead = const Value.absent(),
+            Value<double> allocatedAmount = const Value.absent(),
+            Value<double> alertThresholdPercentage = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              ProjectBudgetsCompanion(
+            id: id,
+            projectId: projectId,
+            costHead: costHead,
+            allocatedAmount: allocatedAmount,
+            alertThresholdPercentage: alertThresholdPercentage,
+            notes: notes,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required int projectId,
+            required BudgetCostHead costHead,
+            required double allocatedAmount,
+            Value<double> alertThresholdPercentage = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              ProjectBudgetsCompanion.insert(
+            id: id,
+            projectId: projectId,
+            costHead: costHead,
+            allocatedAmount: allocatedAmount,
+            alertThresholdPercentage: alertThresholdPercentage,
+            notes: notes,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$ProjectBudgetsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({projectId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (projectId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.projectId,
+                    referencedTable:
+                        $$ProjectBudgetsTableReferences._projectIdTable(db),
+                    referencedColumn:
+                        $$ProjectBudgetsTableReferences._projectIdTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$ProjectBudgetsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $ProjectBudgetsTable,
+    ProjectBudget,
+    $$ProjectBudgetsTableFilterComposer,
+    $$ProjectBudgetsTableOrderingComposer,
+    $$ProjectBudgetsTableAnnotationComposer,
+    $$ProjectBudgetsTableCreateCompanionBuilder,
+    $$ProjectBudgetsTableUpdateCompanionBuilder,
+    (ProjectBudget, $$ProjectBudgetsTableReferences),
+    ProjectBudget,
+    PrefetchHooks Function({bool projectId})>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -15974,4 +16824,6 @@ class $AppDatabaseManager {
       $$ClientRaBillsTableTableManager(_db, _db.clientRaBills);
   $$ClientReceiptsTableTableManager get clientReceipts =>
       $$ClientReceiptsTableTableManager(_db, _db.clientReceipts);
+  $$ProjectBudgetsTableTableManager get projectBudgets =>
+      $$ProjectBudgetsTableTableManager(_db, _db.projectBudgets);
 }

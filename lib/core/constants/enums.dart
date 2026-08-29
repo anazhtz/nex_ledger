@@ -55,6 +55,20 @@ enum DepositStatus {
   refunded,          // Refunded to client
 }
 
+enum BudgetCostHead {
+  materials,          // Material Purchases (Cement, Steel, Bricks, Tiles, Sand, etc.)
+  labour,             // Direct Labour & Worker Wages
+  subcontract,        // Subcontractors / Piece-Rate Work Orders
+  equipmentOverhead,  // Machinery (JCB, Crane), Fuel, Transport, Site Overheads
+  overallTotal,       // Master Project Target Cost Budget
+}
+
+enum BudgetHealthStatus {
+  healthy,    // < 80% of budget spent
+  warning,    // 80% to 99.9% of budget spent (caution)
+  overBudget, // >= 100% of budget spent (cost overrun)
+}
+
 // ---------------------------------------------------------------------------
 // Display name helpers
 // ---------------------------------------------------------------------------
@@ -151,6 +165,32 @@ extension TransactionTypeX on TransactionType {
         TransactionType.depositPaid => true, // cash out when paying security deposit to govt
         TransactionType.drawings => true, // cash out when owner withdraws money
         _ => false,
+      };
+}
+
+extension BudgetCostHeadX on BudgetCostHead {
+  String get displayName => switch (this) {
+        BudgetCostHead.materials => 'Materials & Purchases',
+        BudgetCostHead.labour => 'Direct Labour & Wages',
+        BudgetCostHead.subcontract => 'Subcontractors & Piece-Rate',
+        BudgetCostHead.equipmentOverhead => 'Equipment, Fuel & Site Overheads',
+        BudgetCostHead.overallTotal => 'Overall Target Project Cost',
+      };
+
+  String get shortName => switch (this) {
+        BudgetCostHead.materials => 'Materials',
+        BudgetCostHead.labour => 'Labour',
+        BudgetCostHead.subcontract => 'Subcontract',
+        BudgetCostHead.equipmentOverhead => 'Overheads',
+        BudgetCostHead.overallTotal => 'Total Budget',
+      };
+}
+
+extension BudgetHealthStatusX on BudgetHealthStatus {
+  String get displayName => switch (this) {
+        BudgetHealthStatus.healthy => 'On Track',
+        BudgetHealthStatus.warning => 'Approaching Limit',
+        BudgetHealthStatus.overBudget => 'Over Budget (Overrun)',
       };
 }
 

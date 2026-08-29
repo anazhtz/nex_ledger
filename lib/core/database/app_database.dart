@@ -21,6 +21,7 @@ import 'tables/measurement_bills_table.dart';
 import 'tables/subcontract_payments_table.dart';
 import 'tables/client_ra_bills_table.dart';
 import 'tables/client_receipts_table.dart';
+import 'tables/project_budgets_table.dart';
 import 'daos/project_dao.dart';
 import 'daos/transaction_dao.dart';
 import 'daos/purchase_dao.dart';
@@ -30,6 +31,7 @@ import 'daos/expense_category_dao.dart';
 import 'daos/bank_account_dao.dart';
 import 'daos/subcontract_dao.dart';
 import 'daos/client_billing_dao.dart';
+import 'daos/project_budget_dao.dart';
 
 export 'tables/projects_table.dart';
 export 'tables/transactions_table.dart';
@@ -46,6 +48,7 @@ export 'tables/measurement_bills_table.dart';
 export 'tables/subcontract_payments_table.dart';
 export 'tables/client_ra_bills_table.dart';
 export 'tables/client_receipts_table.dart';
+export 'tables/project_budgets_table.dart';
 export 'daos/project_dao.dart';
 export 'daos/transaction_dao.dart';
 export 'daos/purchase_dao.dart';
@@ -55,6 +58,7 @@ export 'daos/expense_category_dao.dart';
 export 'daos/bank_account_dao.dart';
 export 'daos/subcontract_dao.dart';
 export 'daos/client_billing_dao.dart';
+export 'daos/project_budget_dao.dart';
 export 'database_provider.dart';
 
 part 'app_database.g.dart';
@@ -80,6 +84,7 @@ part 'app_database.g.dart';
     SubcontractPayments,
     ClientRaBills,
     ClientReceipts,
+    ProjectBudgets,
   ],
   daos: [
     ProjectDao,
@@ -91,13 +96,14 @@ part 'app_database.g.dart';
     BankAccountDao,
     SubcontractDao,
     ClientBillingDao,
+    ProjectBudgetDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -187,6 +193,9 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(projects, projects.clientGstOrPan);
             await m.createTable(clientRaBills);
             await m.createTable(clientReceipts);
+          }
+          if (from < 15) {
+            await m.createTable(projectBudgets);
           }
         },
       );

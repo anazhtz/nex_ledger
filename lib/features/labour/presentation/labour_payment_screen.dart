@@ -9,6 +9,7 @@ import 'package:nex_ledger/core/utils/date_formatter.dart';
 import 'package:nex_ledger/features/bank_accounts/data/bank_account_repository.dart';
 import 'package:nex_ledger/features/bank_accounts/providers/bank_account_providers.dart';
 import 'package:nex_ledger/features/cash_book/providers/cash_book_providers.dart';
+import 'package:nex_ledger/features/budgets/presentation/widgets/budget_warning_banner.dart';
 import 'package:nex_ledger/features/labour/data/labour_repository.dart';
 import 'package:nex_ledger/features/labour/providers/labour_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
@@ -422,15 +423,25 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                   },
                                 ),
 
-                                TextFormField(
-                                  controller: _narrationCtrl,
-                                  decoration:
-                                      const InputDecoration(labelText: 'Narration'),
-                                ),
-                                const SizedBox(height: 16),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: FilledButton.icon(
+                                 TextFormField(
+                                   controller: _narrationCtrl,
+                                   decoration:
+                                       const InputDecoration(labelText: 'Narration'),
+                                 ),
+                                 const SizedBox(height: 12),
+
+                                 // ─── Real-Time Project Labour Budget Warning ───
+                                 if (_selectedProject != null && _summary!.amountDue > 0)
+                                   BudgetWarningBanner(
+                                     projectId: _selectedProject,
+                                     costHead: BudgetCostHead.labour,
+                                     addedAmount: _summary!.amountDue,
+                                   ),
+
+                                 const SizedBox(height: 16),
+                                 SizedBox(
+                                   width: double.infinity,
+                                   child: FilledButton.icon(
                                     onPressed: _paying || _summary!.amountDue <= 0
                                         ? null
                                         : _recordPayment,

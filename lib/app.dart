@@ -36,6 +36,7 @@ import 'package:nex_ledger/features/subcontract/presentation/work_order_detail_s
 import 'package:nex_ledger/features/client_billing/presentation/client_billing_hub_screen.dart';
 import 'package:nex_ledger/features/client_billing/presentation/client_ra_bill_form_screen.dart';
 import 'package:nex_ledger/features/client_billing/presentation/client_receipt_form_screen.dart';
+import 'package:nex_ledger/features/budgets/presentation/project_budget_variance_hub_screen.dart';
 import 'package:nex_ledger/shared/widgets/app_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -203,6 +204,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                 ),
               ),
             ],
+          ),
+          GoRoute(
+            path: '/budgets',
+            builder: (c, s) => const ProjectBudgetVarianceHubScreen(),
           ),
           GoRoute(
             path: '/deposits',

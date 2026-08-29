@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
+import 'package:nex_ledger/features/budgets/presentation/widgets/budget_warning_banner.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 import 'package:nex_ledger/features/subcontract/providers/subcontract_providers.dart';
 
@@ -495,6 +496,16 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                               ],
                             ),
                           ),
+                        SizedBox(height: 8.h),
+
+                        // ─── Real-Time Project Subcontract Budget Warning ─────
+                        if (_selectedProject != null && _calculatedContractAmount > 0)
+                          BudgetWarningBanner(
+                            projectId: _selectedProject,
+                            costHead: BudgetCostHead.subcontract,
+                            addedAmount: _calculatedContractAmount,
+                          ),
+
                         SizedBox(height: 14.h),
 
                         // ─── Dates & Scope ───────────────────────────────────

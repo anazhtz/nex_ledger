@@ -9,6 +9,7 @@ import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/features/bank_accounts/providers/bank_account_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
+import 'package:nex_ledger/features/budgets/presentation/widgets/budget_warning_banner.dart';
 import 'package:nex_ledger/features/purchase/models/material_consumption.dart';
 import 'package:nex_ledger/features/purchase/providers/purchase_providers.dart';
 
@@ -672,7 +673,18 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 24.h),
+                              SizedBox(height: 8.h),
+
+                              // ─── Real-Time Project Budget Impact Warning ────────
+                              if (_selectedProject != null && !_isAdvanceStock)
+                                BudgetWarningBanner(
+                                  projectId: _selectedProject,
+                                  costHead: BudgetCostHead.materials,
+                                  addedAmount:
+                                      double.tryParse(_amountCtrl.text.replaceAll(',', '')) ?? 0.0,
+                                ),
+
+                              SizedBox(height: 16.h),
                               const Divider(color: Color(0xFFE2E8F0)),
                               SizedBox(height: 16.h),
                               Text(
