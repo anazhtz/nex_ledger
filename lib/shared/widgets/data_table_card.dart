@@ -133,24 +133,21 @@ class DataTableCard extends StatelessWidget {
                       bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 12.w,
+                    runSpacing: 8.h,
                     children: [
                       if (title != null)
-                        Flexible(
-                          child: Text(
-                            title!,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF0F172A),
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                        Text(
+                          title!,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF0F172A),
                           ),
                         ),
-                      if (action != null) ...[
-                        SizedBox(width: 8.w),
-                        action!,
-                      ],
+                      if (action != null) action!,
                     ],
                   ),
                 ),

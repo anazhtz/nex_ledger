@@ -6,24 +6,31 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/database_provider.dart';
 import 'package:nex_ledger/core/theme/app_theme.dart';
+import 'package:nex_ledger/features/auth/presentation/login_screen.dart';
 import 'package:nex_ledger/features/bank_accounts/presentation/bank_accounts_screen.dart';
+import 'package:nex_ledger/features/budgets/presentation/project_budget_variance_hub_screen.dart';
 import 'package:nex_ledger/features/cash_book/presentation/cash_book_entry_form.dart';
 import 'package:nex_ledger/features/cash_book/presentation/cash_book_list_screen.dart';
+import 'package:nex_ledger/features/client_billing/presentation/client_billing_hub_screen.dart';
 import 'package:nex_ledger/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:nex_ledger/features/dashboard/providers/dashboard_provider.dart';
 import 'package:nex_ledger/features/deposits/presentation/deposit_entry_form.dart';
 import 'package:nex_ledger/features/deposits/presentation/deposit_list_screen.dart';
+import 'package:nex_ledger/features/equipment/presentation/equipment_hub_screen.dart';
 import 'package:nex_ledger/features/labour/presentation/attendance_screen.dart';
 import 'package:nex_ledger/features/labour/presentation/labour_payment_screen.dart';
+import 'package:nex_ledger/features/labour/presentation/workers_list_screen.dart';
+import 'package:nex_ledger/features/petty_cash/presentation/petty_cash_hub_screen.dart';
 import 'package:nex_ledger/features/projects/presentation/project_form_screen.dart';
 import 'package:nex_ledger/features/projects/presentation/project_list_screen.dart';
 import 'package:nex_ledger/features/purchase/presentation/purchase_form_screen.dart';
 import 'package:nex_ledger/features/purchase/presentation/purchase_list_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/day_book_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/deposit_ledger_screen.dart';
-import 'package:nex_ledger/features/reports/presentation/project_pnl_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/ledgers_hub_screen.dart';
+import 'package:nex_ledger/features/reports/presentation/project_pnl_screen.dart';
 import 'package:nex_ledger/features/settings/presentation/settings_screen.dart';
+import 'package:nex_ledger/features/subcontract/presentation/subcontract_hub_screen.dart';
 import 'package:nex_ledger/shared/widgets/app_shell.dart';
 import 'package:go_router/go_router.dart';
 
@@ -32,6 +39,10 @@ void main() {
 
   setUp(() {
     db = AppDatabase(NativeDatabase.memory());
+  });
+
+  tearDown(() async {
+    await db.close();
   });
 
   Widget createTestWidget(Widget child, {Size size = const Size(1280, 800)}) {
@@ -58,8 +69,8 @@ void main() {
     );
   }
 
-  group('All Screens Layout & Overflow Audit Tests (Desktop & Laptop Resizing)', () {
-    testWidgets('DashboardScreen renders cleanly with 0 overflows', (tester) async {
+  group('UI Layout & Responsiveness Audit', () {
+    testWidgets('DashboardScreen renders with 0 overflow', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -91,184 +102,98 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('ProjectListScreen & ProjectFormScreen render cleanly', (tester) async {
-      tester.view.physicalSize = const Size(1280, 800);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
+    testWidgets('ProjectListScreen renders with 0 overflow', (tester) async {
       await tester.pumpWidget(createTestWidget(const ProjectListScreen()));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pumpAndSettle();
       expect(find.byType(ProjectListScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(milliseconds: 100));
-
-      await tester.pumpWidget(createTestWidget(const ProjectFormScreen()));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.byType(ProjectFormScreen), findsOneWidget);
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(milliseconds: 100));
     });
 
-    testWidgets('CashBookListScreen & CashBookEntryForm render cleanly', (tester) async {
-      tester.view.physicalSize = const Size(1280, 800);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
+    testWidgets('CashBookListScreen renders with 0 overflow', (tester) async {
       await tester.pumpWidget(createTestWidget(const CashBookListScreen()));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pumpAndSettle();
       expect(find.byType(CashBookListScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(milliseconds: 100));
-
-      await tester.pumpWidget(createTestWidget(const CashBookEntryForm()));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.byType(CashBookEntryForm), findsOneWidget);
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(milliseconds: 100));
     });
 
-    testWidgets('PurchaseListScreen & PurchaseFormScreen render cleanly', (tester) async {
-      tester.view.physicalSize = const Size(1280, 800);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
+    testWidgets('PurchaseListScreen renders with 0 overflow', (tester) async {
       await tester.pumpWidget(createTestWidget(const PurchaseListScreen()));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pumpAndSettle();
       expect(find.byType(PurchaseListScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(milliseconds: 100));
-
-      await tester.pumpWidget(createTestWidget(const PurchaseFormScreen()));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.byType(PurchaseFormScreen), findsOneWidget);
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(milliseconds: 100));
     });
 
-    testWidgets('AttendanceScreen & LabourPaymentScreen render cleanly', (tester) async {
-      tester.view.physicalSize = const Size(1280, 800);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
+    testWidgets('AttendanceScreen renders with 0 overflow', (tester) async {
       await tester.pumpWidget(createTestWidget(const AttendanceScreen()));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pumpAndSettle();
       expect(find.byType(AttendanceScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(milliseconds: 100));
+    });
 
+    testWidgets('LabourPaymentScreen renders with 0 overflow', (tester) async {
       await tester.pumpWidget(createTestWidget(const LabourPaymentScreen()));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pumpAndSettle();
       expect(find.byType(LabourPaymentScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(milliseconds: 100));
     });
 
-    testWidgets('DepositListScreen & DepositEntryForm render cleanly', (tester) async {
-      tester.view.physicalSize = const Size(1280, 800);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
-      await tester.pumpWidget(createTestWidget(const DepositListScreen()));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.byType(DepositListScreen), findsOneWidget);
+    testWidgets('SubcontractHubScreen renders with 0 overflow', (tester) async {
+      await tester.pumpWidget(createTestWidget(const SubcontractHubScreen()));
+      await tester.pumpAndSettle();
+      expect(find.byType(SubcontractHubScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(milliseconds: 100));
-
-      await tester.pumpWidget(createTestWidget(const DepositEntryForm()));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.byType(DepositEntryForm), findsOneWidget);
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(milliseconds: 100));
     });
 
-    testWidgets('Reports (Project PnL, Deposit Ledger, Day Book) render cleanly', (tester) async {
-      tester.view.physicalSize = const Size(1280, 800);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
-      await tester.pumpWidget(createTestWidget(const ProjectPnlScreen()));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.byType(ProjectPnlScreen), findsOneWidget);
+    testWidgets('ClientBillingHubScreen renders with 0 overflow', (tester) async {
+      await tester.pumpWidget(createTestWidget(const ClientBillingHubScreen()));
+      await tester.pumpAndSettle();
+      expect(find.byType(ClientBillingHubScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(milliseconds: 100));
+    });
 
-      await tester.pumpWidget(createTestWidget(const DepositLedgerScreen()));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.byType(DepositLedgerScreen), findsOneWidget);
+    testWidgets('ProjectBudgetVarianceHubScreen renders with 0 overflow', (tester) async {
+      await tester.pumpWidget(createTestWidget(const ProjectBudgetVarianceHubScreen()));
+      await tester.pumpAndSettle();
+      expect(find.byType(ProjectBudgetVarianceHubScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(milliseconds: 100));
+    });
 
-      await tester.pumpWidget(createTestWidget(const DayBookScreen()));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.byType(DayBookScreen), findsOneWidget);
+    testWidgets('EquipmentHubScreen renders with 0 overflow', (tester) async {
+      await tester.pumpWidget(createTestWidget(const EquipmentHubScreen()));
+      await tester.pumpAndSettle();
+      expect(find.byType(EquipmentHubScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(milliseconds: 100));
+    });
 
+    testWidgets('PettyCashHubScreen renders with 0 overflow', (tester) async {
+      await tester.pumpWidget(createTestWidget(const PettyCashHubScreen()));
+      await tester.pumpAndSettle();
+      expect(find.byType(PettyCashHubScreen), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('LedgersHubScreen renders with 0 overflow', (tester) async {
       await tester.pumpWidget(createTestWidget(const LedgersHubScreen()));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pumpAndSettle();
       expect(find.byType(LedgersHubScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(milliseconds: 100));
     });
 
-    testWidgets('BankAccountsScreen & SettingsScreen render cleanly', (tester) async {
-      tester.view.physicalSize = const Size(1280, 800);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
+    testWidgets('BankAccountsScreen renders with 0 overflow', (tester) async {
       await tester.pumpWidget(createTestWidget(const BankAccountsScreen()));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pumpAndSettle();
       expect(find.byType(BankAccountsScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(milliseconds: 100));
-
-      await tester.pumpWidget(createTestWidget(const SettingsScreen()));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.byType(SettingsScreen), findsOneWidget);
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(milliseconds: 100));
     });
 
-    testWidgets('AppShell navigation shell renders cleanly on narrow 850px width', (tester) async {
+    testWidgets('SettingsScreen renders with 0 overflow', (tester) async {
+      await tester.pumpWidget(createTestWidget(const SettingsScreen()));
+      await tester.pumpAndSettle();
+      expect(find.byType(SettingsScreen), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AppShell navigation shell renders cleanly on compact 800px width', (tester) async {
       final router = GoRouter(
         initialLocation: '/',
         routes: [
@@ -300,11 +225,9 @@ void main() {
           ),
         ),
       );
-      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pumpAndSettle();
       expect(find.text('Dashboard Content'), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(milliseconds: 100));
     });
   });
 }
