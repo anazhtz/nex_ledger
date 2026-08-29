@@ -6,9 +6,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/database_provider.dart';
+import 'package:nex_ledger/core/services/backup_restore_service.dart';
 import 'package:nex_ledger/core/services/update_service.dart';
 import 'package:nex_ledger/features/auth/providers/auth_provider.dart';
 import 'package:nex_ledger/features/expense_categories/providers/expense_category_providers.dart';
+import 'package:nex_ledger/features/settings/presentation/widgets/restore_database_dialog.dart';
 import 'package:nex_ledger/shared/widgets/update_prompt_dialog.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -29,18 +31,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     try {
       String? destDir;
 
-      if (isQuick) {
-        if (Platform.isMacOS) {
-          final home = Platform.environment['HOME'] ?? '';
-          final realHome = home.split('/Library/Containers').first;
-          final userDownloads = '$realHome/Downloads';
-          if (Directory(userDownloads).existsSync()) {
-            destDir = userDownloads;
-          }
-        }
-        destDir ??= (await getDownloadsDirectory())?.path;
-        destDir ??= (await getApplicationDocumentsDirectory()).path;
-      } else {
+      if (!isQuick) {
         destDir = await FilePicker.platform.getDirectoryPath(
           dialogTitle: 'Select Destination Folder for NexLedger Backup',
         );
@@ -51,20 +42,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         }
       }
 
-      final sourcePath = await AppDatabase.getDatabasePath();
-      final sourceFile = File(sourcePath);
-      if (!await sourceFile.exists()) {
-        throw Exception('Database file not found at: $sourcePath');
-      }
+      final result = await DatabaseBackupRestoreService.backupDatabase(
+        customTargetDir: destDir,
+        isQuickToDownloads: isQuick,
+      );
 
-      final now = DateTime.now();
-      final timestamp =
-          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}_'
-          '${now.hour.toString().padLeft(2, '0')}-${now.minute.toString().padLeft(2, '0')}';
-      final destPath = '$destDir/nex_ledger_backup_$timestamp.db';
-      await sourceFile.copy(destPath);
-
-      setState(() => _lastBackupPath = destPath);
+      setState(() => _lastBackupPath = result.destinationPath);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -74,7 +57,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const Icon(Icons.check_circle_rounded, color: Colors.white),
                 SizedBox(width: 10.w),
                 Expanded(
-                  child: Text('Database successfully backed up to:\n$destPath'),
+                  child: Text(
+                    'Database successfully backed up (${result.formattedSize}) to:\n${result.destinationPath}',
+                  ),
                 ),
               ],
             ),
@@ -97,78 +82,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  /// Restore/Import database from a selected .db file (e.g. from colleague)
+  /// Restore database with file validation, emergency snapshot, and live reload
   Future<void> _restoreDatabase() async {
-    final result = await FilePicker.platform.pickFiles(
-      dialogTitle: 'Select NexLedger Backup Database (.db or .sqlite) to Import',
-      type: FileType.custom,
-      allowedExtensions: ['db', 'sqlite'],
-    );
-
-    if (result == null || result.files.single.path == null) return;
-    final selectedFilePath = result.files.single.path!;
-
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Color(0xFFEAB308)),
-            SizedBox(width: 10),
-            Text('Restore / Import Database?'),
-          ],
-        ),
-        content: const Text(
-          'Restoring this backup will replace your current local database with your colleague\'s financial records. Are you sure you want to proceed?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFDC2626)),
-            child: const Text('Yes, Import & Replace'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm != true) return;
-
-    setState(() => _backing = true);
-    try {
-      final destPath = await AppDatabase.getDatabasePath();
-      final backupFile = File(selectedFilePath);
-
-      if (!await backupFile.exists()) {
-        throw Exception('Selected backup file does not exist.');
-      }
-
-      await backupFile.copy(destPath);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Database successfully restored! Restart app to load updated records.'),
-            backgroundColor: Color(0xFF10B981),
-            duration: Duration(seconds: 6),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Restore Error: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _backing = false);
-    }
+    await RestoreDatabaseDialog.show(context);
   }
 
   Future<void> _resetDatabase() async {
