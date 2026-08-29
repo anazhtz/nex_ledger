@@ -6,6 +6,7 @@ import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
+import 'package:nex_ledger/core/utils/pdf_receipt_service.dart';
 import 'package:nex_ledger/features/bank_accounts/data/bank_account_repository.dart';
 import 'package:nex_ledger/features/bank_accounts/providers/bank_account_providers.dart';
 import 'package:nex_ledger/features/cash_book/providers/cash_book_providers.dart';
@@ -13,6 +14,7 @@ import 'package:nex_ledger/features/budgets/presentation/widgets/budget_warning_
 import 'package:nex_ledger/features/labour/data/labour_repository.dart';
 import 'package:nex_ledger/features/labour/providers/labour_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
+import 'package:nex_ledger/shared/widgets/pdf_preview_dialog.dart';
 
 class LabourPaymentScreen extends ConsumerStatefulWidget {
   const LabourPaymentScreen({super.key});
@@ -132,13 +134,18 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
       }
     }
 
+    final currentSummary = _summary!;
+    final currentAmount = _summary!.amountDue;
+    final workerId = _selectedWorker!;
+    final projectId = _selectedProject!;
+
     setState(() => _paying = true);
     try {
       await ref.read(labourRepositoryProvider).recordPayment(
-            workerId: _selectedWorker!,
-            projectId: _selectedProject!,
+            workerId: workerId,
+            projectId: projectId,
             date: DateTime.now(),
-            amount: _summary!.amountDue,
+            amount: currentAmount,
             paymentMode: _paymentMode ?? PaymentMode.cash,
             bankAccountId: _selectedBankAccountId,
             narration: _narrationCtrl.text.isEmpty ? null : _narrationCtrl.text,
@@ -148,8 +155,19 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                'Labour payment of ${CurrencyFormatter.format(_summary!.amountDue)} recorded!'),
+                'Labour payment of ${CurrencyFormatter.format(currentAmount)} recorded!'),
             backgroundColor: const Color(0xFF059669),
+            duration: const Duration(seconds: 6),
+            action: SnackBarAction(
+              label: 'PRINT WAGE SLIP',
+              textColor: Colors.amber,
+              onPressed: () => _printWageReceipt(
+                workerId: workerId,
+                projectId: projectId,
+                amountPaid: currentAmount,
+                summary: currentSummary,
+              ),
+            ),
           ),
         );
         ref.invalidate(cashBalanceProvider);
@@ -164,6 +182,46 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
     } finally {
       if (mounted) setState(() => _paying = false);
     }
+  }
+
+  Future<void> _printWageReceipt({
+    required int workerId,
+    required int projectId,
+    required double amountPaid,
+    required WorkerPaymentSummary summary,
+  }) async {
+    final workers = ref.read(workerListProvider).asData?.value;
+    final projects = ref.read(projectListProvider).asData?.value;
+    final worker = workers?.firstWhere((w) => w.id == workerId);
+    final project = projects?.firstWhere((p) => p.id == projectId);
+
+    if (worker == null || project == null) return;
+
+    final accounts = ref.read(bankAccountsListProvider).asData?.value;
+    final bankAcc = accounts
+        ?.where((a) => a.id == _selectedBankAccountId)
+        .firstOrNull
+        ?.accountName;
+
+    PdfPreviewDialog.show(
+      context: context,
+      title: 'Wage Receipt — ${worker.name}',
+      pdfBuilder: (format) => PdfReceiptService.generateLabourWageReceipt(
+        worker: worker,
+        project: project,
+        amountPaid: amountPaid,
+        paymentDate: DateTime.now(),
+        paymentMode: _paymentMode ?? PaymentMode.cash,
+        bankAccountName: bankAcc,
+        narration: _narrationCtrl.text.isNotEmpty ? _narrationCtrl.text : null,
+        totalEffectiveDaysWorked: summary.totalDaysWorked,
+        totalGrossWagesEarned: summary.totalEarnedWages,
+        totalPaymentsIssued: summary.totalPaymentsPaid + amountPaid,
+        netBalanceDueRemaining: (summary.amountDue - amountPaid) > 0
+            ? (summary.amountDue - amountPaid)
+            : 0.0,
+      ),
+    );
   }
 
   Future<void> _pickDate(bool isFrom) async {
@@ -439,29 +497,45 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                    ),
 
                                  const SizedBox(height: 16),
-                                 SizedBox(
-                                   width: double.infinity,
-                                   child: FilledButton.icon(
-                                    onPressed: _paying || _summary!.amountDue <= 0
-                                        ? null
-                                        : _recordPayment,
-                                    icon: const Icon(Icons.payments_outlined),
-                                    label: _paying
-                                        ? const SizedBox(
-                                            width: 18,
-                                            height: 18,
-                                            child: CircularProgressIndicator(
-                                                strokeWidth: 2),
-                                          )
-                                        : Text(
-                                            'Record Payment of ${CurrencyFormatter.format(_summary!.amountDue)}'),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: FilledButton.icon(
+                                      onPressed: _paying || _summary!.amountDue <= 0
+                                          ? null
+                                          : _recordPayment,
+                                      icon: const Icon(Icons.payments_outlined),
+                                      label: _paying
+                                          ? const SizedBox(
+                                              width: 18,
+                                              height: 18,
+                                              child: CircularProgressIndicator(
+                                                  strokeWidth: 2),
+                                            )
+                                          : Text(
+                                              'Record Payment of ${CurrencyFormatter.format(_summary!.amountDue)}'),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
+                                  const SizedBox(height: 8),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: OutlinedButton.icon(
+                                      onPressed: _summary == null
+                                          ? null
+                                          : () => _printWageReceipt(
+                                                workerId: _selectedWorker!,
+                                                projectId: _selectedProject!,
+                                                amountPaid: _summary!.amountDue,
+                                                summary: _summary!,
+                                              ),
+                                      icon: const Icon(Icons.print_outlined, size: 18),
+                                      label: const Text('Preview / Print Wage Slip (PDF)'),
+                                    ),
+                                  ),
+                               ],
+                             ],
+                           ),
+                         ),
+                       ),
                     ),
                   ),
                 ),

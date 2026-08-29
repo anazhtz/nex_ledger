@@ -22,6 +22,10 @@ import 'tables/subcontract_payments_table.dart';
 import 'tables/client_ra_bills_table.dart';
 import 'tables/client_receipts_table.dart';
 import 'tables/project_budgets_table.dart';
+import 'tables/equipments_table.dart';
+import 'tables/equipment_logs_table.dart';
+import 'tables/petty_cash_wallets_table.dart';
+import 'tables/petty_cash_vouchers_table.dart';
 import 'daos/project_dao.dart';
 import 'daos/transaction_dao.dart';
 import 'daos/purchase_dao.dart';
@@ -32,6 +36,8 @@ import 'daos/bank_account_dao.dart';
 import 'daos/subcontract_dao.dart';
 import 'daos/client_billing_dao.dart';
 import 'daos/project_budget_dao.dart';
+import 'daos/equipment_dao.dart';
+import 'daos/petty_cash_dao.dart';
 
 export 'tables/projects_table.dart';
 export 'tables/transactions_table.dart';
@@ -49,6 +55,10 @@ export 'tables/subcontract_payments_table.dart';
 export 'tables/client_ra_bills_table.dart';
 export 'tables/client_receipts_table.dart';
 export 'tables/project_budgets_table.dart';
+export 'tables/equipments_table.dart';
+export 'tables/equipment_logs_table.dart';
+export 'tables/petty_cash_wallets_table.dart';
+export 'tables/petty_cash_vouchers_table.dart';
 export 'daos/project_dao.dart';
 export 'daos/transaction_dao.dart';
 export 'daos/purchase_dao.dart';
@@ -59,6 +69,8 @@ export 'daos/bank_account_dao.dart';
 export 'daos/subcontract_dao.dart';
 export 'daos/client_billing_dao.dart';
 export 'daos/project_budget_dao.dart';
+export 'daos/equipment_dao.dart';
+export 'daos/petty_cash_dao.dart';
 export 'database_provider.dart';
 
 part 'app_database.g.dart';
@@ -85,6 +97,10 @@ part 'app_database.g.dart';
     ClientRaBills,
     ClientReceipts,
     ProjectBudgets,
+    Equipments,
+    EquipmentLogs,
+    PettyCashWallets,
+    PettyCashVouchers,
   ],
   daos: [
     ProjectDao,
@@ -97,13 +113,15 @@ part 'app_database.g.dart';
     SubcontractDao,
     ClientBillingDao,
     ProjectBudgetDao,
+    EquipmentDao,
+    PettyCashDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 17;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -196,6 +214,14 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 15) {
             await m.createTable(projectBudgets);
+          }
+          if (from < 16) {
+            await m.createTable(equipments);
+            await m.createTable(equipmentLogs);
+          }
+          if (from < 17) {
+            await m.createTable(pettyCashWallets);
+            await m.createTable(pettyCashVouchers);
           }
         },
       );

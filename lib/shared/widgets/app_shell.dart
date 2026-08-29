@@ -79,6 +79,18 @@ class _AppShellState extends ConsumerState<AppShell> {
       path: '/budgets',
       section: 'OVERVIEW',
     ),
+    NavItem(
+      icon: Icons.precision_manufacturing_rounded,
+      label: 'Machinery & Equipment',
+      path: '/equipment',
+      section: 'OVERVIEW',
+    ),
+    NavItem(
+      icon: Icons.account_balance_wallet_outlined,
+      label: 'Petty Cash & Floats',
+      path: '/petty-cash',
+      section: 'OVERVIEW',
+    ),
 
     // Labour Management
     NavItem(

@@ -5,9 +5,11 @@ import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/database_provider.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
+import 'package:nex_ledger/core/utils/pdf_receipt_service.dart';
 import 'package:nex_ledger/features/labour/providers/labour_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 import 'package:nex_ledger/shared/widgets/data_table_card.dart';
+import 'package:nex_ledger/shared/widgets/pdf_preview_dialog.dart';
 
 class WorkerDetailScreen extends ConsumerWidget {
   final int workerId;
@@ -126,6 +128,8 @@ class WorkerDetailScreen extends ConsumerWidget {
                             return _PaymentHistoryTable(
                               payments: payments,
                               projectMap: projectMap,
+                              worker: summary.worker,
+                              summary: summary,
                             );
                           },
                         ),
@@ -359,8 +363,15 @@ class _AttendanceBadge extends StatelessWidget {
 class _PaymentHistoryTable extends ConsumerWidget {
   final List<Transaction> payments;
   final Map<int, String> projectMap;
-  const _PaymentHistoryTable(
-      {required this.payments, required this.projectMap});
+  final Worker worker;
+  final WorkerLedgerSummary summary;
+
+  const _PaymentHistoryTable({
+    required this.payments,
+    required this.projectMap,
+    required this.worker,
+    required this.summary,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -391,15 +402,62 @@ class _PaymentHistoryTable extends ConsumerWidget {
           )),
           DataCell(Text(t.paymentMode?.displayName ?? '—')),
           DataCell(
-            IconButton(
-              icon: const Icon(Icons.delete_outline_rounded, size: 16),
-              tooltip: 'Delete Payment',
-              color: Colors.red.shade700,
-              onPressed: () => _deletePayment(context, ref, t),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.print_outlined, size: 16),
+                  tooltip: 'Print Wage Receipt (PDF)',
+                  color: const Color(0xFF2563EB),
+                  onPressed: () => _printWageSlip(context, ref, t),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded, size: 16),
+                  tooltip: 'Delete Payment',
+                  color: Colors.red.shade700,
+                  onPressed: () => _deletePayment(context, ref, t),
+                ),
+              ],
             ),
           ),
         ]);
       }).toList(),
+    );
+  }
+
+  void _printWageSlip(BuildContext context, WidgetRef ref, Transaction t) {
+    final projects = ref.read(projectListProvider).asData?.value;
+    final project = projects?.firstWhere(
+      (p) => p.id == t.projectId,
+      orElse: () => Project(
+        id: t.projectId ?? 0,
+        code: 'SITE',
+        name: projectMap[t.projectId] ?? 'Project Site',
+        type: ProjectType.project,
+        status: ProjectStatus.active,
+        startDate: DateTime.now(),
+        clientContractValue: 0.0,
+        clientRetentionPercentage: 0.0,
+        createdAt: DateTime.now(),
+      ),
+    );
+
+    PdfPreviewDialog.show(
+      context: context,
+      title: 'Wage Receipt — ${worker.name}',
+      pdfBuilder: (format) => PdfReceiptService.generateLabourWageReceipt(
+        worker: worker,
+        project: project!,
+        amountPaid: t.amount,
+        paymentDate: t.date,
+        paymentMode: t.paymentMode ?? PaymentMode.cash,
+        narration: t.narration,
+        voucherNumber: t.referenceNo,
+        totalEffectiveDaysWorked: summary.totalDaysWorked,
+        totalGrossWagesEarned: summary.totalEarned,
+        totalPaymentsIssued: summary.totalPaid,
+        netBalanceDueRemaining: summary.balanceDue,
+      ),
     );
   }
 

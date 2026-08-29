@@ -8520,6 +8520,2975 @@ class ProjectBudgetsCompanion extends UpdateCompanion<ProjectBudget> {
   }
 }
 
+class $EquipmentsTable extends Equipments
+    with TableInfo<$EquipmentsTable, Equipment> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EquipmentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 120),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _assetOrRegNumberMeta =
+      const VerificationMeta('assetOrRegNumber');
+  @override
+  late final GeneratedColumn<String> assetOrRegNumber = GeneratedColumn<String>(
+      'asset_or_reg_number', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 60),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _categoryMeta =
+      const VerificationMeta('category');
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+      'category', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('JCB / Backhoe Loader'));
+  @override
+  late final GeneratedColumnWithTypeConverter<EquipmentOwnership, String>
+      ownership = GeneratedColumn<String>('ownership', aliasedName, false,
+              type: DriftSqlType.string,
+              requiredDuringInsert: false,
+              defaultValue: Constant(EquipmentOwnership.rented.name))
+          .withConverter<EquipmentOwnership>(
+              $EquipmentsTable.$converterownership);
+  static const VerificationMeta _vendorIdMeta =
+      const VerificationMeta('vendorId');
+  @override
+  late final GeneratedColumn<int> vendorId = GeneratedColumn<int>(
+      'vendor_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES vendors (id) ON DELETE SET NULL'));
+  static const VerificationMeta _currentProjectIdMeta =
+      const VerificationMeta('currentProjectId');
+  @override
+  late final GeneratedColumn<int> currentProjectId = GeneratedColumn<int>(
+      'current_project_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES projects (id) ON DELETE SET NULL'));
+  @override
+  late final GeneratedColumnWithTypeConverter<EquipmentRentalBasis, String>
+      rentalBasis = GeneratedColumn<String>('rental_basis', aliasedName, false,
+              type: DriftSqlType.string,
+              requiredDuringInsert: false,
+              defaultValue: Constant(EquipmentRentalBasis.hourly.name))
+          .withConverter<EquipmentRentalBasis>(
+              $EquipmentsTable.$converterrentalBasis);
+  static const VerificationMeta _standardRateMeta =
+      const VerificationMeta('standardRate');
+  @override
+  late final GeneratedColumn<double> standardRate = GeneratedColumn<double>(
+      'standard_rate', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  @override
+  late final GeneratedColumnWithTypeConverter<EquipmentFuelPolicy, String>
+      fuelPolicy = GeneratedColumn<String>('fuel_policy', aliasedName, false,
+              type: DriftSqlType.string,
+              requiredDuringInsert: false,
+              defaultValue:
+                  Constant(EquipmentFuelPolicy.contractorSupplied.name))
+          .withConverter<EquipmentFuelPolicy>(
+              $EquipmentsTable.$converterfuelPolicy);
+  static const VerificationMeta _operatorNameMeta =
+      const VerificationMeta('operatorName');
+  @override
+  late final GeneratedColumn<String> operatorName = GeneratedColumn<String>(
+      'operator_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _operatorContactMeta =
+      const VerificationMeta('operatorContact');
+  @override
+  late final GeneratedColumn<String> operatorContact = GeneratedColumn<String>(
+      'operator_contact', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  late final GeneratedColumnWithTypeConverter<EquipmentStatus, String> status =
+      GeneratedColumn<String>('status', aliasedName, false,
+              type: DriftSqlType.string,
+              requiredDuringInsert: false,
+              defaultValue: Constant(EquipmentStatus.active.name))
+          .withConverter<EquipmentStatus>($EquipmentsTable.$converterstatus);
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+      'notes', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        name,
+        assetOrRegNumber,
+        category,
+        ownership,
+        vendorId,
+        currentProjectId,
+        rentalBasis,
+        standardRate,
+        fuelPolicy,
+        operatorName,
+        operatorContact,
+        status,
+        notes,
+        createdAt,
+        updatedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'equipments';
+  @override
+  VerificationContext validateIntegrity(Insertable<Equipment> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('asset_or_reg_number')) {
+      context.handle(
+          _assetOrRegNumberMeta,
+          assetOrRegNumber.isAcceptableOrUnknown(
+              data['asset_or_reg_number']!, _assetOrRegNumberMeta));
+    } else if (isInserting) {
+      context.missing(_assetOrRegNumberMeta);
+    }
+    if (data.containsKey('category')) {
+      context.handle(_categoryMeta,
+          category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
+    }
+    if (data.containsKey('vendor_id')) {
+      context.handle(_vendorIdMeta,
+          vendorId.isAcceptableOrUnknown(data['vendor_id']!, _vendorIdMeta));
+    }
+    if (data.containsKey('current_project_id')) {
+      context.handle(
+          _currentProjectIdMeta,
+          currentProjectId.isAcceptableOrUnknown(
+              data['current_project_id']!, _currentProjectIdMeta));
+    }
+    if (data.containsKey('standard_rate')) {
+      context.handle(
+          _standardRateMeta,
+          standardRate.isAcceptableOrUnknown(
+              data['standard_rate']!, _standardRateMeta));
+    }
+    if (data.containsKey('operator_name')) {
+      context.handle(
+          _operatorNameMeta,
+          operatorName.isAcceptableOrUnknown(
+              data['operator_name']!, _operatorNameMeta));
+    }
+    if (data.containsKey('operator_contact')) {
+      context.handle(
+          _operatorContactMeta,
+          operatorContact.isAcceptableOrUnknown(
+              data['operator_contact']!, _operatorContactMeta));
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+          _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Equipment map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Equipment(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      assetOrRegNumber: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}asset_or_reg_number'])!,
+      category: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}category'])!,
+      ownership: $EquipmentsTable.$converterownership.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}ownership'])!),
+      vendorId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}vendor_id']),
+      currentProjectId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}current_project_id']),
+      rentalBasis: $EquipmentsTable.$converterrentalBasis.fromSql(
+          attachedDatabase.typeMapping.read(
+              DriftSqlType.string, data['${effectivePrefix}rental_basis'])!),
+      standardRate: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}standard_rate'])!,
+      fuelPolicy: $EquipmentsTable.$converterfuelPolicy.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}fuel_policy'])!),
+      operatorName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}operator_name']),
+      operatorContact: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}operator_contact']),
+      status: $EquipmentsTable.$converterstatus.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}status'])!),
+      notes: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}notes']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+    );
+  }
+
+  @override
+  $EquipmentsTable createAlias(String alias) {
+    return $EquipmentsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<EquipmentOwnership, String, String>
+      $converterownership =
+      const EnumNameConverter<EquipmentOwnership>(EquipmentOwnership.values);
+  static JsonTypeConverter2<EquipmentRentalBasis, String, String>
+      $converterrentalBasis = const EnumNameConverter<EquipmentRentalBasis>(
+          EquipmentRentalBasis.values);
+  static JsonTypeConverter2<EquipmentFuelPolicy, String, String>
+      $converterfuelPolicy =
+      const EnumNameConverter<EquipmentFuelPolicy>(EquipmentFuelPolicy.values);
+  static JsonTypeConverter2<EquipmentStatus, String, String> $converterstatus =
+      const EnumNameConverter<EquipmentStatus>(EquipmentStatus.values);
+}
+
+class Equipment extends DataClass implements Insertable<Equipment> {
+  final int id;
+  final String name;
+  final String assetOrRegNumber;
+  final String category;
+  final EquipmentOwnership ownership;
+  final int? vendorId;
+  final int? currentProjectId;
+  final EquipmentRentalBasis rentalBasis;
+  final double standardRate;
+  final EquipmentFuelPolicy fuelPolicy;
+  final String? operatorName;
+  final String? operatorContact;
+  final EquipmentStatus status;
+  final String? notes;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const Equipment(
+      {required this.id,
+      required this.name,
+      required this.assetOrRegNumber,
+      required this.category,
+      required this.ownership,
+      this.vendorId,
+      this.currentProjectId,
+      required this.rentalBasis,
+      required this.standardRate,
+      required this.fuelPolicy,
+      this.operatorName,
+      this.operatorContact,
+      required this.status,
+      this.notes,
+      required this.createdAt,
+      required this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['asset_or_reg_number'] = Variable<String>(assetOrRegNumber);
+    map['category'] = Variable<String>(category);
+    {
+      map['ownership'] = Variable<String>(
+          $EquipmentsTable.$converterownership.toSql(ownership));
+    }
+    if (!nullToAbsent || vendorId != null) {
+      map['vendor_id'] = Variable<int>(vendorId);
+    }
+    if (!nullToAbsent || currentProjectId != null) {
+      map['current_project_id'] = Variable<int>(currentProjectId);
+    }
+    {
+      map['rental_basis'] = Variable<String>(
+          $EquipmentsTable.$converterrentalBasis.toSql(rentalBasis));
+    }
+    map['standard_rate'] = Variable<double>(standardRate);
+    {
+      map['fuel_policy'] = Variable<String>(
+          $EquipmentsTable.$converterfuelPolicy.toSql(fuelPolicy));
+    }
+    if (!nullToAbsent || operatorName != null) {
+      map['operator_name'] = Variable<String>(operatorName);
+    }
+    if (!nullToAbsent || operatorContact != null) {
+      map['operator_contact'] = Variable<String>(operatorContact);
+    }
+    {
+      map['status'] =
+          Variable<String>($EquipmentsTable.$converterstatus.toSql(status));
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  EquipmentsCompanion toCompanion(bool nullToAbsent) {
+    return EquipmentsCompanion(
+      id: Value(id),
+      name: Value(name),
+      assetOrRegNumber: Value(assetOrRegNumber),
+      category: Value(category),
+      ownership: Value(ownership),
+      vendorId: vendorId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(vendorId),
+      currentProjectId: currentProjectId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(currentProjectId),
+      rentalBasis: Value(rentalBasis),
+      standardRate: Value(standardRate),
+      fuelPolicy: Value(fuelPolicy),
+      operatorName: operatorName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(operatorName),
+      operatorContact: operatorContact == null && nullToAbsent
+          ? const Value.absent()
+          : Value(operatorContact),
+      status: Value(status),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory Equipment.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Equipment(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      assetOrRegNumber: serializer.fromJson<String>(json['assetOrRegNumber']),
+      category: serializer.fromJson<String>(json['category']),
+      ownership: $EquipmentsTable.$converterownership
+          .fromJson(serializer.fromJson<String>(json['ownership'])),
+      vendorId: serializer.fromJson<int?>(json['vendorId']),
+      currentProjectId: serializer.fromJson<int?>(json['currentProjectId']),
+      rentalBasis: $EquipmentsTable.$converterrentalBasis
+          .fromJson(serializer.fromJson<String>(json['rentalBasis'])),
+      standardRate: serializer.fromJson<double>(json['standardRate']),
+      fuelPolicy: $EquipmentsTable.$converterfuelPolicy
+          .fromJson(serializer.fromJson<String>(json['fuelPolicy'])),
+      operatorName: serializer.fromJson<String?>(json['operatorName']),
+      operatorContact: serializer.fromJson<String?>(json['operatorContact']),
+      status: $EquipmentsTable.$converterstatus
+          .fromJson(serializer.fromJson<String>(json['status'])),
+      notes: serializer.fromJson<String?>(json['notes']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'assetOrRegNumber': serializer.toJson<String>(assetOrRegNumber),
+      'category': serializer.toJson<String>(category),
+      'ownership': serializer.toJson<String>(
+          $EquipmentsTable.$converterownership.toJson(ownership)),
+      'vendorId': serializer.toJson<int?>(vendorId),
+      'currentProjectId': serializer.toJson<int?>(currentProjectId),
+      'rentalBasis': serializer.toJson<String>(
+          $EquipmentsTable.$converterrentalBasis.toJson(rentalBasis)),
+      'standardRate': serializer.toJson<double>(standardRate),
+      'fuelPolicy': serializer.toJson<String>(
+          $EquipmentsTable.$converterfuelPolicy.toJson(fuelPolicy)),
+      'operatorName': serializer.toJson<String?>(operatorName),
+      'operatorContact': serializer.toJson<String?>(operatorContact),
+      'status': serializer
+          .toJson<String>($EquipmentsTable.$converterstatus.toJson(status)),
+      'notes': serializer.toJson<String?>(notes),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  Equipment copyWith(
+          {int? id,
+          String? name,
+          String? assetOrRegNumber,
+          String? category,
+          EquipmentOwnership? ownership,
+          Value<int?> vendorId = const Value.absent(),
+          Value<int?> currentProjectId = const Value.absent(),
+          EquipmentRentalBasis? rentalBasis,
+          double? standardRate,
+          EquipmentFuelPolicy? fuelPolicy,
+          Value<String?> operatorName = const Value.absent(),
+          Value<String?> operatorContact = const Value.absent(),
+          EquipmentStatus? status,
+          Value<String?> notes = const Value.absent(),
+          DateTime? createdAt,
+          DateTime? updatedAt}) =>
+      Equipment(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        assetOrRegNumber: assetOrRegNumber ?? this.assetOrRegNumber,
+        category: category ?? this.category,
+        ownership: ownership ?? this.ownership,
+        vendorId: vendorId.present ? vendorId.value : this.vendorId,
+        currentProjectId: currentProjectId.present
+            ? currentProjectId.value
+            : this.currentProjectId,
+        rentalBasis: rentalBasis ?? this.rentalBasis,
+        standardRate: standardRate ?? this.standardRate,
+        fuelPolicy: fuelPolicy ?? this.fuelPolicy,
+        operatorName:
+            operatorName.present ? operatorName.value : this.operatorName,
+        operatorContact: operatorContact.present
+            ? operatorContact.value
+            : this.operatorContact,
+        status: status ?? this.status,
+        notes: notes.present ? notes.value : this.notes,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  Equipment copyWithCompanion(EquipmentsCompanion data) {
+    return Equipment(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      assetOrRegNumber: data.assetOrRegNumber.present
+          ? data.assetOrRegNumber.value
+          : this.assetOrRegNumber,
+      category: data.category.present ? data.category.value : this.category,
+      ownership: data.ownership.present ? data.ownership.value : this.ownership,
+      vendorId: data.vendorId.present ? data.vendorId.value : this.vendorId,
+      currentProjectId: data.currentProjectId.present
+          ? data.currentProjectId.value
+          : this.currentProjectId,
+      rentalBasis:
+          data.rentalBasis.present ? data.rentalBasis.value : this.rentalBasis,
+      standardRate: data.standardRate.present
+          ? data.standardRate.value
+          : this.standardRate,
+      fuelPolicy:
+          data.fuelPolicy.present ? data.fuelPolicy.value : this.fuelPolicy,
+      operatorName: data.operatorName.present
+          ? data.operatorName.value
+          : this.operatorName,
+      operatorContact: data.operatorContact.present
+          ? data.operatorContact.value
+          : this.operatorContact,
+      status: data.status.present ? data.status.value : this.status,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Equipment(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('assetOrRegNumber: $assetOrRegNumber, ')
+          ..write('category: $category, ')
+          ..write('ownership: $ownership, ')
+          ..write('vendorId: $vendorId, ')
+          ..write('currentProjectId: $currentProjectId, ')
+          ..write('rentalBasis: $rentalBasis, ')
+          ..write('standardRate: $standardRate, ')
+          ..write('fuelPolicy: $fuelPolicy, ')
+          ..write('operatorName: $operatorName, ')
+          ..write('operatorContact: $operatorContact, ')
+          ..write('status: $status, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      name,
+      assetOrRegNumber,
+      category,
+      ownership,
+      vendorId,
+      currentProjectId,
+      rentalBasis,
+      standardRate,
+      fuelPolicy,
+      operatorName,
+      operatorContact,
+      status,
+      notes,
+      createdAt,
+      updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Equipment &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.assetOrRegNumber == this.assetOrRegNumber &&
+          other.category == this.category &&
+          other.ownership == this.ownership &&
+          other.vendorId == this.vendorId &&
+          other.currentProjectId == this.currentProjectId &&
+          other.rentalBasis == this.rentalBasis &&
+          other.standardRate == this.standardRate &&
+          other.fuelPolicy == this.fuelPolicy &&
+          other.operatorName == this.operatorName &&
+          other.operatorContact == this.operatorContact &&
+          other.status == this.status &&
+          other.notes == this.notes &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class EquipmentsCompanion extends UpdateCompanion<Equipment> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> assetOrRegNumber;
+  final Value<String> category;
+  final Value<EquipmentOwnership> ownership;
+  final Value<int?> vendorId;
+  final Value<int?> currentProjectId;
+  final Value<EquipmentRentalBasis> rentalBasis;
+  final Value<double> standardRate;
+  final Value<EquipmentFuelPolicy> fuelPolicy;
+  final Value<String?> operatorName;
+  final Value<String?> operatorContact;
+  final Value<EquipmentStatus> status;
+  final Value<String?> notes;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const EquipmentsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.assetOrRegNumber = const Value.absent(),
+    this.category = const Value.absent(),
+    this.ownership = const Value.absent(),
+    this.vendorId = const Value.absent(),
+    this.currentProjectId = const Value.absent(),
+    this.rentalBasis = const Value.absent(),
+    this.standardRate = const Value.absent(),
+    this.fuelPolicy = const Value.absent(),
+    this.operatorName = const Value.absent(),
+    this.operatorContact = const Value.absent(),
+    this.status = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  EquipmentsCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    required String assetOrRegNumber,
+    this.category = const Value.absent(),
+    this.ownership = const Value.absent(),
+    this.vendorId = const Value.absent(),
+    this.currentProjectId = const Value.absent(),
+    this.rentalBasis = const Value.absent(),
+    this.standardRate = const Value.absent(),
+    this.fuelPolicy = const Value.absent(),
+    this.operatorName = const Value.absent(),
+    this.operatorContact = const Value.absent(),
+    this.status = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  })  : name = Value(name),
+        assetOrRegNumber = Value(assetOrRegNumber);
+  static Insertable<Equipment> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? assetOrRegNumber,
+    Expression<String>? category,
+    Expression<String>? ownership,
+    Expression<int>? vendorId,
+    Expression<int>? currentProjectId,
+    Expression<String>? rentalBasis,
+    Expression<double>? standardRate,
+    Expression<String>? fuelPolicy,
+    Expression<String>? operatorName,
+    Expression<String>? operatorContact,
+    Expression<String>? status,
+    Expression<String>? notes,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (assetOrRegNumber != null) 'asset_or_reg_number': assetOrRegNumber,
+      if (category != null) 'category': category,
+      if (ownership != null) 'ownership': ownership,
+      if (vendorId != null) 'vendor_id': vendorId,
+      if (currentProjectId != null) 'current_project_id': currentProjectId,
+      if (rentalBasis != null) 'rental_basis': rentalBasis,
+      if (standardRate != null) 'standard_rate': standardRate,
+      if (fuelPolicy != null) 'fuel_policy': fuelPolicy,
+      if (operatorName != null) 'operator_name': operatorName,
+      if (operatorContact != null) 'operator_contact': operatorContact,
+      if (status != null) 'status': status,
+      if (notes != null) 'notes': notes,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  EquipmentsCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? name,
+      Value<String>? assetOrRegNumber,
+      Value<String>? category,
+      Value<EquipmentOwnership>? ownership,
+      Value<int?>? vendorId,
+      Value<int?>? currentProjectId,
+      Value<EquipmentRentalBasis>? rentalBasis,
+      Value<double>? standardRate,
+      Value<EquipmentFuelPolicy>? fuelPolicy,
+      Value<String?>? operatorName,
+      Value<String?>? operatorContact,
+      Value<EquipmentStatus>? status,
+      Value<String?>? notes,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt}) {
+    return EquipmentsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      assetOrRegNumber: assetOrRegNumber ?? this.assetOrRegNumber,
+      category: category ?? this.category,
+      ownership: ownership ?? this.ownership,
+      vendorId: vendorId ?? this.vendorId,
+      currentProjectId: currentProjectId ?? this.currentProjectId,
+      rentalBasis: rentalBasis ?? this.rentalBasis,
+      standardRate: standardRate ?? this.standardRate,
+      fuelPolicy: fuelPolicy ?? this.fuelPolicy,
+      operatorName: operatorName ?? this.operatorName,
+      operatorContact: operatorContact ?? this.operatorContact,
+      status: status ?? this.status,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (assetOrRegNumber.present) {
+      map['asset_or_reg_number'] = Variable<String>(assetOrRegNumber.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (ownership.present) {
+      map['ownership'] = Variable<String>(
+          $EquipmentsTable.$converterownership.toSql(ownership.value));
+    }
+    if (vendorId.present) {
+      map['vendor_id'] = Variable<int>(vendorId.value);
+    }
+    if (currentProjectId.present) {
+      map['current_project_id'] = Variable<int>(currentProjectId.value);
+    }
+    if (rentalBasis.present) {
+      map['rental_basis'] = Variable<String>(
+          $EquipmentsTable.$converterrentalBasis.toSql(rentalBasis.value));
+    }
+    if (standardRate.present) {
+      map['standard_rate'] = Variable<double>(standardRate.value);
+    }
+    if (fuelPolicy.present) {
+      map['fuel_policy'] = Variable<String>(
+          $EquipmentsTable.$converterfuelPolicy.toSql(fuelPolicy.value));
+    }
+    if (operatorName.present) {
+      map['operator_name'] = Variable<String>(operatorName.value);
+    }
+    if (operatorContact.present) {
+      map['operator_contact'] = Variable<String>(operatorContact.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(
+          $EquipmentsTable.$converterstatus.toSql(status.value));
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EquipmentsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('assetOrRegNumber: $assetOrRegNumber, ')
+          ..write('category: $category, ')
+          ..write('ownership: $ownership, ')
+          ..write('vendorId: $vendorId, ')
+          ..write('currentProjectId: $currentProjectId, ')
+          ..write('rentalBasis: $rentalBasis, ')
+          ..write('standardRate: $standardRate, ')
+          ..write('fuelPolicy: $fuelPolicy, ')
+          ..write('operatorName: $operatorName, ')
+          ..write('operatorContact: $operatorContact, ')
+          ..write('status: $status, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $EquipmentLogsTable extends EquipmentLogs
+    with TableInfo<$EquipmentLogsTable, EquipmentLog> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EquipmentLogsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _equipmentIdMeta =
+      const VerificationMeta('equipmentId');
+  @override
+  late final GeneratedColumn<int> equipmentId = GeneratedColumn<int>(
+      'equipment_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES equipments (id) ON DELETE CASCADE'));
+  static const VerificationMeta _projectIdMeta =
+      const VerificationMeta('projectId');
+  @override
+  late final GeneratedColumn<int> projectId = GeneratedColumn<int>(
+      'project_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES projects (id) ON DELETE CASCADE'));
+  static const VerificationMeta _logDateMeta =
+      const VerificationMeta('logDate');
+  @override
+  late final GeneratedColumn<DateTime> logDate = GeneratedColumn<DateTime>(
+      'log_date', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _startReadingMeta =
+      const VerificationMeta('startReading');
+  @override
+  late final GeneratedColumn<double> startReading = GeneratedColumn<double>(
+      'start_reading', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _endReadingMeta =
+      const VerificationMeta('endReading');
+  @override
+  late final GeneratedColumn<double> endReading = GeneratedColumn<double>(
+      'end_reading', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _totalUnitsLoggedMeta =
+      const VerificationMeta('totalUnitsLogged');
+  @override
+  late final GeneratedColumn<double> totalUnitsLogged = GeneratedColumn<double>(
+      'total_units_logged', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _breakdownUnitsMeta =
+      const VerificationMeta('breakdownUnits');
+  @override
+  late final GeneratedColumn<double> breakdownUnits = GeneratedColumn<double>(
+      'breakdown_units', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _billableUnitsMeta =
+      const VerificationMeta('billableUnits');
+  @override
+  late final GeneratedColumn<double> billableUnits = GeneratedColumn<double>(
+      'billable_units', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _unitRateMeta =
+      const VerificationMeta('unitRate');
+  @override
+  late final GeneratedColumn<double> unitRate = GeneratedColumn<double>(
+      'unit_rate', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _grossRentalCostMeta =
+      const VerificationMeta('grossRentalCost');
+  @override
+  late final GeneratedColumn<double> grossRentalCost = GeneratedColumn<double>(
+      'gross_rental_cost', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _fuelLitresIssuedMeta =
+      const VerificationMeta('fuelLitresIssued');
+  @override
+  late final GeneratedColumn<double> fuelLitresIssued = GeneratedColumn<double>(
+      'fuel_litres_issued', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _fuelRatePerLitreMeta =
+      const VerificationMeta('fuelRatePerLitre');
+  @override
+  late final GeneratedColumn<double> fuelRatePerLitre = GeneratedColumn<double>(
+      'fuel_rate_per_litre', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _fuelCostDeductionMeta =
+      const VerificationMeta('fuelCostDeduction');
+  @override
+  late final GeneratedColumn<double> fuelCostDeduction =
+      GeneratedColumn<double>('fuel_cost_deduction', aliasedName, false,
+          type: DriftSqlType.double,
+          requiredDuringInsert: false,
+          defaultValue: const Constant(0.0));
+  static const VerificationMeta _netPayableAmountMeta =
+      const VerificationMeta('netPayableAmount');
+  @override
+  late final GeneratedColumn<double> netPayableAmount = GeneratedColumn<double>(
+      'net_payable_amount', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _workDescriptionMeta =
+      const VerificationMeta('workDescription');
+  @override
+  late final GeneratedColumn<String> workDescription = GeneratedColumn<String>(
+      'work_description', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 255),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _operatorNameMeta =
+      const VerificationMeta('operatorName');
+  @override
+  late final GeneratedColumn<String> operatorName = GeneratedColumn<String>(
+      'operator_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _supervisorVerifiedMeta =
+      const VerificationMeta('supervisorVerified');
+  @override
+  late final GeneratedColumn<bool> supervisorVerified = GeneratedColumn<bool>(
+      'supervisor_verified', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("supervisor_verified" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+      'notes', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        equipmentId,
+        projectId,
+        logDate,
+        startReading,
+        endReading,
+        totalUnitsLogged,
+        breakdownUnits,
+        billableUnits,
+        unitRate,
+        grossRentalCost,
+        fuelLitresIssued,
+        fuelRatePerLitre,
+        fuelCostDeduction,
+        netPayableAmount,
+        workDescription,
+        operatorName,
+        supervisorVerified,
+        notes,
+        createdAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'equipment_logs';
+  @override
+  VerificationContext validateIntegrity(Insertable<EquipmentLog> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('equipment_id')) {
+      context.handle(
+          _equipmentIdMeta,
+          equipmentId.isAcceptableOrUnknown(
+              data['equipment_id']!, _equipmentIdMeta));
+    } else if (isInserting) {
+      context.missing(_equipmentIdMeta);
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(_projectIdMeta,
+          projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta));
+    } else if (isInserting) {
+      context.missing(_projectIdMeta);
+    }
+    if (data.containsKey('log_date')) {
+      context.handle(_logDateMeta,
+          logDate.isAcceptableOrUnknown(data['log_date']!, _logDateMeta));
+    } else if (isInserting) {
+      context.missing(_logDateMeta);
+    }
+    if (data.containsKey('start_reading')) {
+      context.handle(
+          _startReadingMeta,
+          startReading.isAcceptableOrUnknown(
+              data['start_reading']!, _startReadingMeta));
+    }
+    if (data.containsKey('end_reading')) {
+      context.handle(
+          _endReadingMeta,
+          endReading.isAcceptableOrUnknown(
+              data['end_reading']!, _endReadingMeta));
+    }
+    if (data.containsKey('total_units_logged')) {
+      context.handle(
+          _totalUnitsLoggedMeta,
+          totalUnitsLogged.isAcceptableOrUnknown(
+              data['total_units_logged']!, _totalUnitsLoggedMeta));
+    }
+    if (data.containsKey('breakdown_units')) {
+      context.handle(
+          _breakdownUnitsMeta,
+          breakdownUnits.isAcceptableOrUnknown(
+              data['breakdown_units']!, _breakdownUnitsMeta));
+    }
+    if (data.containsKey('billable_units')) {
+      context.handle(
+          _billableUnitsMeta,
+          billableUnits.isAcceptableOrUnknown(
+              data['billable_units']!, _billableUnitsMeta));
+    }
+    if (data.containsKey('unit_rate')) {
+      context.handle(_unitRateMeta,
+          unitRate.isAcceptableOrUnknown(data['unit_rate']!, _unitRateMeta));
+    }
+    if (data.containsKey('gross_rental_cost')) {
+      context.handle(
+          _grossRentalCostMeta,
+          grossRentalCost.isAcceptableOrUnknown(
+              data['gross_rental_cost']!, _grossRentalCostMeta));
+    }
+    if (data.containsKey('fuel_litres_issued')) {
+      context.handle(
+          _fuelLitresIssuedMeta,
+          fuelLitresIssued.isAcceptableOrUnknown(
+              data['fuel_litres_issued']!, _fuelLitresIssuedMeta));
+    }
+    if (data.containsKey('fuel_rate_per_litre')) {
+      context.handle(
+          _fuelRatePerLitreMeta,
+          fuelRatePerLitre.isAcceptableOrUnknown(
+              data['fuel_rate_per_litre']!, _fuelRatePerLitreMeta));
+    }
+    if (data.containsKey('fuel_cost_deduction')) {
+      context.handle(
+          _fuelCostDeductionMeta,
+          fuelCostDeduction.isAcceptableOrUnknown(
+              data['fuel_cost_deduction']!, _fuelCostDeductionMeta));
+    }
+    if (data.containsKey('net_payable_amount')) {
+      context.handle(
+          _netPayableAmountMeta,
+          netPayableAmount.isAcceptableOrUnknown(
+              data['net_payable_amount']!, _netPayableAmountMeta));
+    }
+    if (data.containsKey('work_description')) {
+      context.handle(
+          _workDescriptionMeta,
+          workDescription.isAcceptableOrUnknown(
+              data['work_description']!, _workDescriptionMeta));
+    } else if (isInserting) {
+      context.missing(_workDescriptionMeta);
+    }
+    if (data.containsKey('operator_name')) {
+      context.handle(
+          _operatorNameMeta,
+          operatorName.isAcceptableOrUnknown(
+              data['operator_name']!, _operatorNameMeta));
+    }
+    if (data.containsKey('supervisor_verified')) {
+      context.handle(
+          _supervisorVerifiedMeta,
+          supervisorVerified.isAcceptableOrUnknown(
+              data['supervisor_verified']!, _supervisorVerifiedMeta));
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+          _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  EquipmentLog map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return EquipmentLog(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      equipmentId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}equipment_id'])!,
+      projectId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}project_id'])!,
+      logDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}log_date'])!,
+      startReading: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}start_reading'])!,
+      endReading: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}end_reading'])!,
+      totalUnitsLogged: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}total_units_logged'])!,
+      breakdownUnits: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}breakdown_units'])!,
+      billableUnits: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}billable_units'])!,
+      unitRate: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}unit_rate'])!,
+      grossRentalCost: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}gross_rental_cost'])!,
+      fuelLitresIssued: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}fuel_litres_issued'])!,
+      fuelRatePerLitre: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}fuel_rate_per_litre'])!,
+      fuelCostDeduction: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}fuel_cost_deduction'])!,
+      netPayableAmount: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}net_payable_amount'])!,
+      workDescription: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}work_description'])!,
+      operatorName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}operator_name']),
+      supervisorVerified: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool, data['${effectivePrefix}supervisor_verified'])!,
+      notes: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}notes']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $EquipmentLogsTable createAlias(String alias) {
+    return $EquipmentLogsTable(attachedDatabase, alias);
+  }
+}
+
+class EquipmentLog extends DataClass implements Insertable<EquipmentLog> {
+  final int id;
+  final int equipmentId;
+  final int projectId;
+  final DateTime logDate;
+  final double startReading;
+  final double endReading;
+  final double totalUnitsLogged;
+  final double breakdownUnits;
+  final double billableUnits;
+  final double unitRate;
+  final double grossRentalCost;
+  final double fuelLitresIssued;
+  final double fuelRatePerLitre;
+  final double fuelCostDeduction;
+  final double netPayableAmount;
+  final String workDescription;
+  final String? operatorName;
+  final bool supervisorVerified;
+  final String? notes;
+  final DateTime createdAt;
+  const EquipmentLog(
+      {required this.id,
+      required this.equipmentId,
+      required this.projectId,
+      required this.logDate,
+      required this.startReading,
+      required this.endReading,
+      required this.totalUnitsLogged,
+      required this.breakdownUnits,
+      required this.billableUnits,
+      required this.unitRate,
+      required this.grossRentalCost,
+      required this.fuelLitresIssued,
+      required this.fuelRatePerLitre,
+      required this.fuelCostDeduction,
+      required this.netPayableAmount,
+      required this.workDescription,
+      this.operatorName,
+      required this.supervisorVerified,
+      this.notes,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['equipment_id'] = Variable<int>(equipmentId);
+    map['project_id'] = Variable<int>(projectId);
+    map['log_date'] = Variable<DateTime>(logDate);
+    map['start_reading'] = Variable<double>(startReading);
+    map['end_reading'] = Variable<double>(endReading);
+    map['total_units_logged'] = Variable<double>(totalUnitsLogged);
+    map['breakdown_units'] = Variable<double>(breakdownUnits);
+    map['billable_units'] = Variable<double>(billableUnits);
+    map['unit_rate'] = Variable<double>(unitRate);
+    map['gross_rental_cost'] = Variable<double>(grossRentalCost);
+    map['fuel_litres_issued'] = Variable<double>(fuelLitresIssued);
+    map['fuel_rate_per_litre'] = Variable<double>(fuelRatePerLitre);
+    map['fuel_cost_deduction'] = Variable<double>(fuelCostDeduction);
+    map['net_payable_amount'] = Variable<double>(netPayableAmount);
+    map['work_description'] = Variable<String>(workDescription);
+    if (!nullToAbsent || operatorName != null) {
+      map['operator_name'] = Variable<String>(operatorName);
+    }
+    map['supervisor_verified'] = Variable<bool>(supervisorVerified);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  EquipmentLogsCompanion toCompanion(bool nullToAbsent) {
+    return EquipmentLogsCompanion(
+      id: Value(id),
+      equipmentId: Value(equipmentId),
+      projectId: Value(projectId),
+      logDate: Value(logDate),
+      startReading: Value(startReading),
+      endReading: Value(endReading),
+      totalUnitsLogged: Value(totalUnitsLogged),
+      breakdownUnits: Value(breakdownUnits),
+      billableUnits: Value(billableUnits),
+      unitRate: Value(unitRate),
+      grossRentalCost: Value(grossRentalCost),
+      fuelLitresIssued: Value(fuelLitresIssued),
+      fuelRatePerLitre: Value(fuelRatePerLitre),
+      fuelCostDeduction: Value(fuelCostDeduction),
+      netPayableAmount: Value(netPayableAmount),
+      workDescription: Value(workDescription),
+      operatorName: operatorName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(operatorName),
+      supervisorVerified: Value(supervisorVerified),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory EquipmentLog.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return EquipmentLog(
+      id: serializer.fromJson<int>(json['id']),
+      equipmentId: serializer.fromJson<int>(json['equipmentId']),
+      projectId: serializer.fromJson<int>(json['projectId']),
+      logDate: serializer.fromJson<DateTime>(json['logDate']),
+      startReading: serializer.fromJson<double>(json['startReading']),
+      endReading: serializer.fromJson<double>(json['endReading']),
+      totalUnitsLogged: serializer.fromJson<double>(json['totalUnitsLogged']),
+      breakdownUnits: serializer.fromJson<double>(json['breakdownUnits']),
+      billableUnits: serializer.fromJson<double>(json['billableUnits']),
+      unitRate: serializer.fromJson<double>(json['unitRate']),
+      grossRentalCost: serializer.fromJson<double>(json['grossRentalCost']),
+      fuelLitresIssued: serializer.fromJson<double>(json['fuelLitresIssued']),
+      fuelRatePerLitre: serializer.fromJson<double>(json['fuelRatePerLitre']),
+      fuelCostDeduction: serializer.fromJson<double>(json['fuelCostDeduction']),
+      netPayableAmount: serializer.fromJson<double>(json['netPayableAmount']),
+      workDescription: serializer.fromJson<String>(json['workDescription']),
+      operatorName: serializer.fromJson<String?>(json['operatorName']),
+      supervisorVerified: serializer.fromJson<bool>(json['supervisorVerified']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'equipmentId': serializer.toJson<int>(equipmentId),
+      'projectId': serializer.toJson<int>(projectId),
+      'logDate': serializer.toJson<DateTime>(logDate),
+      'startReading': serializer.toJson<double>(startReading),
+      'endReading': serializer.toJson<double>(endReading),
+      'totalUnitsLogged': serializer.toJson<double>(totalUnitsLogged),
+      'breakdownUnits': serializer.toJson<double>(breakdownUnits),
+      'billableUnits': serializer.toJson<double>(billableUnits),
+      'unitRate': serializer.toJson<double>(unitRate),
+      'grossRentalCost': serializer.toJson<double>(grossRentalCost),
+      'fuelLitresIssued': serializer.toJson<double>(fuelLitresIssued),
+      'fuelRatePerLitre': serializer.toJson<double>(fuelRatePerLitre),
+      'fuelCostDeduction': serializer.toJson<double>(fuelCostDeduction),
+      'netPayableAmount': serializer.toJson<double>(netPayableAmount),
+      'workDescription': serializer.toJson<String>(workDescription),
+      'operatorName': serializer.toJson<String?>(operatorName),
+      'supervisorVerified': serializer.toJson<bool>(supervisorVerified),
+      'notes': serializer.toJson<String?>(notes),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  EquipmentLog copyWith(
+          {int? id,
+          int? equipmentId,
+          int? projectId,
+          DateTime? logDate,
+          double? startReading,
+          double? endReading,
+          double? totalUnitsLogged,
+          double? breakdownUnits,
+          double? billableUnits,
+          double? unitRate,
+          double? grossRentalCost,
+          double? fuelLitresIssued,
+          double? fuelRatePerLitre,
+          double? fuelCostDeduction,
+          double? netPayableAmount,
+          String? workDescription,
+          Value<String?> operatorName = const Value.absent(),
+          bool? supervisorVerified,
+          Value<String?> notes = const Value.absent(),
+          DateTime? createdAt}) =>
+      EquipmentLog(
+        id: id ?? this.id,
+        equipmentId: equipmentId ?? this.equipmentId,
+        projectId: projectId ?? this.projectId,
+        logDate: logDate ?? this.logDate,
+        startReading: startReading ?? this.startReading,
+        endReading: endReading ?? this.endReading,
+        totalUnitsLogged: totalUnitsLogged ?? this.totalUnitsLogged,
+        breakdownUnits: breakdownUnits ?? this.breakdownUnits,
+        billableUnits: billableUnits ?? this.billableUnits,
+        unitRate: unitRate ?? this.unitRate,
+        grossRentalCost: grossRentalCost ?? this.grossRentalCost,
+        fuelLitresIssued: fuelLitresIssued ?? this.fuelLitresIssued,
+        fuelRatePerLitre: fuelRatePerLitre ?? this.fuelRatePerLitre,
+        fuelCostDeduction: fuelCostDeduction ?? this.fuelCostDeduction,
+        netPayableAmount: netPayableAmount ?? this.netPayableAmount,
+        workDescription: workDescription ?? this.workDescription,
+        operatorName:
+            operatorName.present ? operatorName.value : this.operatorName,
+        supervisorVerified: supervisorVerified ?? this.supervisorVerified,
+        notes: notes.present ? notes.value : this.notes,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  EquipmentLog copyWithCompanion(EquipmentLogsCompanion data) {
+    return EquipmentLog(
+      id: data.id.present ? data.id.value : this.id,
+      equipmentId:
+          data.equipmentId.present ? data.equipmentId.value : this.equipmentId,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      logDate: data.logDate.present ? data.logDate.value : this.logDate,
+      startReading: data.startReading.present
+          ? data.startReading.value
+          : this.startReading,
+      endReading:
+          data.endReading.present ? data.endReading.value : this.endReading,
+      totalUnitsLogged: data.totalUnitsLogged.present
+          ? data.totalUnitsLogged.value
+          : this.totalUnitsLogged,
+      breakdownUnits: data.breakdownUnits.present
+          ? data.breakdownUnits.value
+          : this.breakdownUnits,
+      billableUnits: data.billableUnits.present
+          ? data.billableUnits.value
+          : this.billableUnits,
+      unitRate: data.unitRate.present ? data.unitRate.value : this.unitRate,
+      grossRentalCost: data.grossRentalCost.present
+          ? data.grossRentalCost.value
+          : this.grossRentalCost,
+      fuelLitresIssued: data.fuelLitresIssued.present
+          ? data.fuelLitresIssued.value
+          : this.fuelLitresIssued,
+      fuelRatePerLitre: data.fuelRatePerLitre.present
+          ? data.fuelRatePerLitre.value
+          : this.fuelRatePerLitre,
+      fuelCostDeduction: data.fuelCostDeduction.present
+          ? data.fuelCostDeduction.value
+          : this.fuelCostDeduction,
+      netPayableAmount: data.netPayableAmount.present
+          ? data.netPayableAmount.value
+          : this.netPayableAmount,
+      workDescription: data.workDescription.present
+          ? data.workDescription.value
+          : this.workDescription,
+      operatorName: data.operatorName.present
+          ? data.operatorName.value
+          : this.operatorName,
+      supervisorVerified: data.supervisorVerified.present
+          ? data.supervisorVerified.value
+          : this.supervisorVerified,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EquipmentLog(')
+          ..write('id: $id, ')
+          ..write('equipmentId: $equipmentId, ')
+          ..write('projectId: $projectId, ')
+          ..write('logDate: $logDate, ')
+          ..write('startReading: $startReading, ')
+          ..write('endReading: $endReading, ')
+          ..write('totalUnitsLogged: $totalUnitsLogged, ')
+          ..write('breakdownUnits: $breakdownUnits, ')
+          ..write('billableUnits: $billableUnits, ')
+          ..write('unitRate: $unitRate, ')
+          ..write('grossRentalCost: $grossRentalCost, ')
+          ..write('fuelLitresIssued: $fuelLitresIssued, ')
+          ..write('fuelRatePerLitre: $fuelRatePerLitre, ')
+          ..write('fuelCostDeduction: $fuelCostDeduction, ')
+          ..write('netPayableAmount: $netPayableAmount, ')
+          ..write('workDescription: $workDescription, ')
+          ..write('operatorName: $operatorName, ')
+          ..write('supervisorVerified: $supervisorVerified, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      equipmentId,
+      projectId,
+      logDate,
+      startReading,
+      endReading,
+      totalUnitsLogged,
+      breakdownUnits,
+      billableUnits,
+      unitRate,
+      grossRentalCost,
+      fuelLitresIssued,
+      fuelRatePerLitre,
+      fuelCostDeduction,
+      netPayableAmount,
+      workDescription,
+      operatorName,
+      supervisorVerified,
+      notes,
+      createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is EquipmentLog &&
+          other.id == this.id &&
+          other.equipmentId == this.equipmentId &&
+          other.projectId == this.projectId &&
+          other.logDate == this.logDate &&
+          other.startReading == this.startReading &&
+          other.endReading == this.endReading &&
+          other.totalUnitsLogged == this.totalUnitsLogged &&
+          other.breakdownUnits == this.breakdownUnits &&
+          other.billableUnits == this.billableUnits &&
+          other.unitRate == this.unitRate &&
+          other.grossRentalCost == this.grossRentalCost &&
+          other.fuelLitresIssued == this.fuelLitresIssued &&
+          other.fuelRatePerLitre == this.fuelRatePerLitre &&
+          other.fuelCostDeduction == this.fuelCostDeduction &&
+          other.netPayableAmount == this.netPayableAmount &&
+          other.workDescription == this.workDescription &&
+          other.operatorName == this.operatorName &&
+          other.supervisorVerified == this.supervisorVerified &&
+          other.notes == this.notes &&
+          other.createdAt == this.createdAt);
+}
+
+class EquipmentLogsCompanion extends UpdateCompanion<EquipmentLog> {
+  final Value<int> id;
+  final Value<int> equipmentId;
+  final Value<int> projectId;
+  final Value<DateTime> logDate;
+  final Value<double> startReading;
+  final Value<double> endReading;
+  final Value<double> totalUnitsLogged;
+  final Value<double> breakdownUnits;
+  final Value<double> billableUnits;
+  final Value<double> unitRate;
+  final Value<double> grossRentalCost;
+  final Value<double> fuelLitresIssued;
+  final Value<double> fuelRatePerLitre;
+  final Value<double> fuelCostDeduction;
+  final Value<double> netPayableAmount;
+  final Value<String> workDescription;
+  final Value<String?> operatorName;
+  final Value<bool> supervisorVerified;
+  final Value<String?> notes;
+  final Value<DateTime> createdAt;
+  const EquipmentLogsCompanion({
+    this.id = const Value.absent(),
+    this.equipmentId = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.logDate = const Value.absent(),
+    this.startReading = const Value.absent(),
+    this.endReading = const Value.absent(),
+    this.totalUnitsLogged = const Value.absent(),
+    this.breakdownUnits = const Value.absent(),
+    this.billableUnits = const Value.absent(),
+    this.unitRate = const Value.absent(),
+    this.grossRentalCost = const Value.absent(),
+    this.fuelLitresIssued = const Value.absent(),
+    this.fuelRatePerLitre = const Value.absent(),
+    this.fuelCostDeduction = const Value.absent(),
+    this.netPayableAmount = const Value.absent(),
+    this.workDescription = const Value.absent(),
+    this.operatorName = const Value.absent(),
+    this.supervisorVerified = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  EquipmentLogsCompanion.insert({
+    this.id = const Value.absent(),
+    required int equipmentId,
+    required int projectId,
+    required DateTime logDate,
+    this.startReading = const Value.absent(),
+    this.endReading = const Value.absent(),
+    this.totalUnitsLogged = const Value.absent(),
+    this.breakdownUnits = const Value.absent(),
+    this.billableUnits = const Value.absent(),
+    this.unitRate = const Value.absent(),
+    this.grossRentalCost = const Value.absent(),
+    this.fuelLitresIssued = const Value.absent(),
+    this.fuelRatePerLitre = const Value.absent(),
+    this.fuelCostDeduction = const Value.absent(),
+    this.netPayableAmount = const Value.absent(),
+    required String workDescription,
+    this.operatorName = const Value.absent(),
+    this.supervisorVerified = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  })  : equipmentId = Value(equipmentId),
+        projectId = Value(projectId),
+        logDate = Value(logDate),
+        workDescription = Value(workDescription);
+  static Insertable<EquipmentLog> custom({
+    Expression<int>? id,
+    Expression<int>? equipmentId,
+    Expression<int>? projectId,
+    Expression<DateTime>? logDate,
+    Expression<double>? startReading,
+    Expression<double>? endReading,
+    Expression<double>? totalUnitsLogged,
+    Expression<double>? breakdownUnits,
+    Expression<double>? billableUnits,
+    Expression<double>? unitRate,
+    Expression<double>? grossRentalCost,
+    Expression<double>? fuelLitresIssued,
+    Expression<double>? fuelRatePerLitre,
+    Expression<double>? fuelCostDeduction,
+    Expression<double>? netPayableAmount,
+    Expression<String>? workDescription,
+    Expression<String>? operatorName,
+    Expression<bool>? supervisorVerified,
+    Expression<String>? notes,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (equipmentId != null) 'equipment_id': equipmentId,
+      if (projectId != null) 'project_id': projectId,
+      if (logDate != null) 'log_date': logDate,
+      if (startReading != null) 'start_reading': startReading,
+      if (endReading != null) 'end_reading': endReading,
+      if (totalUnitsLogged != null) 'total_units_logged': totalUnitsLogged,
+      if (breakdownUnits != null) 'breakdown_units': breakdownUnits,
+      if (billableUnits != null) 'billable_units': billableUnits,
+      if (unitRate != null) 'unit_rate': unitRate,
+      if (grossRentalCost != null) 'gross_rental_cost': grossRentalCost,
+      if (fuelLitresIssued != null) 'fuel_litres_issued': fuelLitresIssued,
+      if (fuelRatePerLitre != null) 'fuel_rate_per_litre': fuelRatePerLitre,
+      if (fuelCostDeduction != null) 'fuel_cost_deduction': fuelCostDeduction,
+      if (netPayableAmount != null) 'net_payable_amount': netPayableAmount,
+      if (workDescription != null) 'work_description': workDescription,
+      if (operatorName != null) 'operator_name': operatorName,
+      if (supervisorVerified != null) 'supervisor_verified': supervisorVerified,
+      if (notes != null) 'notes': notes,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  EquipmentLogsCompanion copyWith(
+      {Value<int>? id,
+      Value<int>? equipmentId,
+      Value<int>? projectId,
+      Value<DateTime>? logDate,
+      Value<double>? startReading,
+      Value<double>? endReading,
+      Value<double>? totalUnitsLogged,
+      Value<double>? breakdownUnits,
+      Value<double>? billableUnits,
+      Value<double>? unitRate,
+      Value<double>? grossRentalCost,
+      Value<double>? fuelLitresIssued,
+      Value<double>? fuelRatePerLitre,
+      Value<double>? fuelCostDeduction,
+      Value<double>? netPayableAmount,
+      Value<String>? workDescription,
+      Value<String?>? operatorName,
+      Value<bool>? supervisorVerified,
+      Value<String?>? notes,
+      Value<DateTime>? createdAt}) {
+    return EquipmentLogsCompanion(
+      id: id ?? this.id,
+      equipmentId: equipmentId ?? this.equipmentId,
+      projectId: projectId ?? this.projectId,
+      logDate: logDate ?? this.logDate,
+      startReading: startReading ?? this.startReading,
+      endReading: endReading ?? this.endReading,
+      totalUnitsLogged: totalUnitsLogged ?? this.totalUnitsLogged,
+      breakdownUnits: breakdownUnits ?? this.breakdownUnits,
+      billableUnits: billableUnits ?? this.billableUnits,
+      unitRate: unitRate ?? this.unitRate,
+      grossRentalCost: grossRentalCost ?? this.grossRentalCost,
+      fuelLitresIssued: fuelLitresIssued ?? this.fuelLitresIssued,
+      fuelRatePerLitre: fuelRatePerLitre ?? this.fuelRatePerLitre,
+      fuelCostDeduction: fuelCostDeduction ?? this.fuelCostDeduction,
+      netPayableAmount: netPayableAmount ?? this.netPayableAmount,
+      workDescription: workDescription ?? this.workDescription,
+      operatorName: operatorName ?? this.operatorName,
+      supervisorVerified: supervisorVerified ?? this.supervisorVerified,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (equipmentId.present) {
+      map['equipment_id'] = Variable<int>(equipmentId.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<int>(projectId.value);
+    }
+    if (logDate.present) {
+      map['log_date'] = Variable<DateTime>(logDate.value);
+    }
+    if (startReading.present) {
+      map['start_reading'] = Variable<double>(startReading.value);
+    }
+    if (endReading.present) {
+      map['end_reading'] = Variable<double>(endReading.value);
+    }
+    if (totalUnitsLogged.present) {
+      map['total_units_logged'] = Variable<double>(totalUnitsLogged.value);
+    }
+    if (breakdownUnits.present) {
+      map['breakdown_units'] = Variable<double>(breakdownUnits.value);
+    }
+    if (billableUnits.present) {
+      map['billable_units'] = Variable<double>(billableUnits.value);
+    }
+    if (unitRate.present) {
+      map['unit_rate'] = Variable<double>(unitRate.value);
+    }
+    if (grossRentalCost.present) {
+      map['gross_rental_cost'] = Variable<double>(grossRentalCost.value);
+    }
+    if (fuelLitresIssued.present) {
+      map['fuel_litres_issued'] = Variable<double>(fuelLitresIssued.value);
+    }
+    if (fuelRatePerLitre.present) {
+      map['fuel_rate_per_litre'] = Variable<double>(fuelRatePerLitre.value);
+    }
+    if (fuelCostDeduction.present) {
+      map['fuel_cost_deduction'] = Variable<double>(fuelCostDeduction.value);
+    }
+    if (netPayableAmount.present) {
+      map['net_payable_amount'] = Variable<double>(netPayableAmount.value);
+    }
+    if (workDescription.present) {
+      map['work_description'] = Variable<String>(workDescription.value);
+    }
+    if (operatorName.present) {
+      map['operator_name'] = Variable<String>(operatorName.value);
+    }
+    if (supervisorVerified.present) {
+      map['supervisor_verified'] = Variable<bool>(supervisorVerified.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EquipmentLogsCompanion(')
+          ..write('id: $id, ')
+          ..write('equipmentId: $equipmentId, ')
+          ..write('projectId: $projectId, ')
+          ..write('logDate: $logDate, ')
+          ..write('startReading: $startReading, ')
+          ..write('endReading: $endReading, ')
+          ..write('totalUnitsLogged: $totalUnitsLogged, ')
+          ..write('breakdownUnits: $breakdownUnits, ')
+          ..write('billableUnits: $billableUnits, ')
+          ..write('unitRate: $unitRate, ')
+          ..write('grossRentalCost: $grossRentalCost, ')
+          ..write('fuelLitresIssued: $fuelLitresIssued, ')
+          ..write('fuelRatePerLitre: $fuelRatePerLitre, ')
+          ..write('fuelCostDeduction: $fuelCostDeduction, ')
+          ..write('netPayableAmount: $netPayableAmount, ')
+          ..write('workDescription: $workDescription, ')
+          ..write('operatorName: $operatorName, ')
+          ..write('supervisorVerified: $supervisorVerified, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PettyCashWalletsTable extends PettyCashWallets
+    with TableInfo<$PettyCashWalletsTable, PettyCashWallet> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PettyCashWalletsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _supervisorNameMeta =
+      const VerificationMeta('supervisorName');
+  @override
+  late final GeneratedColumn<String> supervisorName = GeneratedColumn<String>(
+      'supervisor_name', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 120),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _phoneMeta = const VerificationMeta('phone');
+  @override
+  late final GeneratedColumn<String> phone = GeneratedColumn<String>(
+      'phone', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 40),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _assignedProjectIdMeta =
+      const VerificationMeta('assignedProjectId');
+  @override
+  late final GeneratedColumn<int> assignedProjectId = GeneratedColumn<int>(
+      'assigned_project_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES projects (id) ON DELETE SET NULL'));
+  static const VerificationMeta _maxFloatLimitMeta =
+      const VerificationMeta('maxFloatLimit');
+  @override
+  late final GeneratedColumn<double> maxFloatLimit = GeneratedColumn<double>(
+      'max_float_limit', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(50000.0));
+  static const VerificationMeta _isActiveMeta =
+      const VerificationMeta('isActive');
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+      'is_active', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_active" IN (0, 1))'),
+      defaultValue: const Constant(true));
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+      'notes', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        supervisorName,
+        phone,
+        assignedProjectId,
+        maxFloatLimit,
+        isActive,
+        notes,
+        createdAt,
+        updatedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'petty_cash_wallets';
+  @override
+  VerificationContext validateIntegrity(Insertable<PettyCashWallet> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('supervisor_name')) {
+      context.handle(
+          _supervisorNameMeta,
+          supervisorName.isAcceptableOrUnknown(
+              data['supervisor_name']!, _supervisorNameMeta));
+    } else if (isInserting) {
+      context.missing(_supervisorNameMeta);
+    }
+    if (data.containsKey('phone')) {
+      context.handle(
+          _phoneMeta, phone.isAcceptableOrUnknown(data['phone']!, _phoneMeta));
+    } else if (isInserting) {
+      context.missing(_phoneMeta);
+    }
+    if (data.containsKey('assigned_project_id')) {
+      context.handle(
+          _assignedProjectIdMeta,
+          assignedProjectId.isAcceptableOrUnknown(
+              data['assigned_project_id']!, _assignedProjectIdMeta));
+    }
+    if (data.containsKey('max_float_limit')) {
+      context.handle(
+          _maxFloatLimitMeta,
+          maxFloatLimit.isAcceptableOrUnknown(
+              data['max_float_limit']!, _maxFloatLimitMeta));
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(_isActiveMeta,
+          isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta));
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+          _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PettyCashWallet map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PettyCashWallet(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      supervisorName: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}supervisor_name'])!,
+      phone: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}phone'])!,
+      assignedProjectId: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}assigned_project_id']),
+      maxFloatLimit: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}max_float_limit'])!,
+      isActive: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_active'])!,
+      notes: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}notes']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+    );
+  }
+
+  @override
+  $PettyCashWalletsTable createAlias(String alias) {
+    return $PettyCashWalletsTable(attachedDatabase, alias);
+  }
+}
+
+class PettyCashWallet extends DataClass implements Insertable<PettyCashWallet> {
+  final int id;
+  final String supervisorName;
+  final String phone;
+  final int? assignedProjectId;
+  final double maxFloatLimit;
+  final bool isActive;
+  final String? notes;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const PettyCashWallet(
+      {required this.id,
+      required this.supervisorName,
+      required this.phone,
+      this.assignedProjectId,
+      required this.maxFloatLimit,
+      required this.isActive,
+      this.notes,
+      required this.createdAt,
+      required this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['supervisor_name'] = Variable<String>(supervisorName);
+    map['phone'] = Variable<String>(phone);
+    if (!nullToAbsent || assignedProjectId != null) {
+      map['assigned_project_id'] = Variable<int>(assignedProjectId);
+    }
+    map['max_float_limit'] = Variable<double>(maxFloatLimit);
+    map['is_active'] = Variable<bool>(isActive);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  PettyCashWalletsCompanion toCompanion(bool nullToAbsent) {
+    return PettyCashWalletsCompanion(
+      id: Value(id),
+      supervisorName: Value(supervisorName),
+      phone: Value(phone),
+      assignedProjectId: assignedProjectId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(assignedProjectId),
+      maxFloatLimit: Value(maxFloatLimit),
+      isActive: Value(isActive),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory PettyCashWallet.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PettyCashWallet(
+      id: serializer.fromJson<int>(json['id']),
+      supervisorName: serializer.fromJson<String>(json['supervisorName']),
+      phone: serializer.fromJson<String>(json['phone']),
+      assignedProjectId: serializer.fromJson<int?>(json['assignedProjectId']),
+      maxFloatLimit: serializer.fromJson<double>(json['maxFloatLimit']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'supervisorName': serializer.toJson<String>(supervisorName),
+      'phone': serializer.toJson<String>(phone),
+      'assignedProjectId': serializer.toJson<int?>(assignedProjectId),
+      'maxFloatLimit': serializer.toJson<double>(maxFloatLimit),
+      'isActive': serializer.toJson<bool>(isActive),
+      'notes': serializer.toJson<String?>(notes),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  PettyCashWallet copyWith(
+          {int? id,
+          String? supervisorName,
+          String? phone,
+          Value<int?> assignedProjectId = const Value.absent(),
+          double? maxFloatLimit,
+          bool? isActive,
+          Value<String?> notes = const Value.absent(),
+          DateTime? createdAt,
+          DateTime? updatedAt}) =>
+      PettyCashWallet(
+        id: id ?? this.id,
+        supervisorName: supervisorName ?? this.supervisorName,
+        phone: phone ?? this.phone,
+        assignedProjectId: assignedProjectId.present
+            ? assignedProjectId.value
+            : this.assignedProjectId,
+        maxFloatLimit: maxFloatLimit ?? this.maxFloatLimit,
+        isActive: isActive ?? this.isActive,
+        notes: notes.present ? notes.value : this.notes,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  PettyCashWallet copyWithCompanion(PettyCashWalletsCompanion data) {
+    return PettyCashWallet(
+      id: data.id.present ? data.id.value : this.id,
+      supervisorName: data.supervisorName.present
+          ? data.supervisorName.value
+          : this.supervisorName,
+      phone: data.phone.present ? data.phone.value : this.phone,
+      assignedProjectId: data.assignedProjectId.present
+          ? data.assignedProjectId.value
+          : this.assignedProjectId,
+      maxFloatLimit: data.maxFloatLimit.present
+          ? data.maxFloatLimit.value
+          : this.maxFloatLimit,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PettyCashWallet(')
+          ..write('id: $id, ')
+          ..write('supervisorName: $supervisorName, ')
+          ..write('phone: $phone, ')
+          ..write('assignedProjectId: $assignedProjectId, ')
+          ..write('maxFloatLimit: $maxFloatLimit, ')
+          ..write('isActive: $isActive, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, supervisorName, phone, assignedProjectId,
+      maxFloatLimit, isActive, notes, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PettyCashWallet &&
+          other.id == this.id &&
+          other.supervisorName == this.supervisorName &&
+          other.phone == this.phone &&
+          other.assignedProjectId == this.assignedProjectId &&
+          other.maxFloatLimit == this.maxFloatLimit &&
+          other.isActive == this.isActive &&
+          other.notes == this.notes &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class PettyCashWalletsCompanion extends UpdateCompanion<PettyCashWallet> {
+  final Value<int> id;
+  final Value<String> supervisorName;
+  final Value<String> phone;
+  final Value<int?> assignedProjectId;
+  final Value<double> maxFloatLimit;
+  final Value<bool> isActive;
+  final Value<String?> notes;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const PettyCashWalletsCompanion({
+    this.id = const Value.absent(),
+    this.supervisorName = const Value.absent(),
+    this.phone = const Value.absent(),
+    this.assignedProjectId = const Value.absent(),
+    this.maxFloatLimit = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  PettyCashWalletsCompanion.insert({
+    this.id = const Value.absent(),
+    required String supervisorName,
+    required String phone,
+    this.assignedProjectId = const Value.absent(),
+    this.maxFloatLimit = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  })  : supervisorName = Value(supervisorName),
+        phone = Value(phone);
+  static Insertable<PettyCashWallet> custom({
+    Expression<int>? id,
+    Expression<String>? supervisorName,
+    Expression<String>? phone,
+    Expression<int>? assignedProjectId,
+    Expression<double>? maxFloatLimit,
+    Expression<bool>? isActive,
+    Expression<String>? notes,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (supervisorName != null) 'supervisor_name': supervisorName,
+      if (phone != null) 'phone': phone,
+      if (assignedProjectId != null) 'assigned_project_id': assignedProjectId,
+      if (maxFloatLimit != null) 'max_float_limit': maxFloatLimit,
+      if (isActive != null) 'is_active': isActive,
+      if (notes != null) 'notes': notes,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  PettyCashWalletsCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? supervisorName,
+      Value<String>? phone,
+      Value<int?>? assignedProjectId,
+      Value<double>? maxFloatLimit,
+      Value<bool>? isActive,
+      Value<String?>? notes,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt}) {
+    return PettyCashWalletsCompanion(
+      id: id ?? this.id,
+      supervisorName: supervisorName ?? this.supervisorName,
+      phone: phone ?? this.phone,
+      assignedProjectId: assignedProjectId ?? this.assignedProjectId,
+      maxFloatLimit: maxFloatLimit ?? this.maxFloatLimit,
+      isActive: isActive ?? this.isActive,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (supervisorName.present) {
+      map['supervisor_name'] = Variable<String>(supervisorName.value);
+    }
+    if (phone.present) {
+      map['phone'] = Variable<String>(phone.value);
+    }
+    if (assignedProjectId.present) {
+      map['assigned_project_id'] = Variable<int>(assignedProjectId.value);
+    }
+    if (maxFloatLimit.present) {
+      map['max_float_limit'] = Variable<double>(maxFloatLimit.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PettyCashWalletsCompanion(')
+          ..write('id: $id, ')
+          ..write('supervisorName: $supervisorName, ')
+          ..write('phone: $phone, ')
+          ..write('assignedProjectId: $assignedProjectId, ')
+          ..write('maxFloatLimit: $maxFloatLimit, ')
+          ..write('isActive: $isActive, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PettyCashVouchersTable extends PettyCashVouchers
+    with TableInfo<$PettyCashVouchersTable, PettyCashVoucher> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PettyCashVouchersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _walletIdMeta =
+      const VerificationMeta('walletId');
+  @override
+  late final GeneratedColumn<int> walletId = GeneratedColumn<int>(
+      'wallet_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES petty_cash_wallets (id) ON DELETE CASCADE'));
+  static const VerificationMeta _projectIdMeta =
+      const VerificationMeta('projectId');
+  @override
+  late final GeneratedColumn<int> projectId = GeneratedColumn<int>(
+      'project_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES projects (id) ON DELETE CASCADE'));
+  @override
+  late final GeneratedColumnWithTypeConverter<PettyCashTxnType, String> type =
+      GeneratedColumn<String>('type', aliasedName, false,
+              type: DriftSqlType.string, requiredDuringInsert: true)
+          .withConverter<PettyCashTxnType>(
+              $PettyCashVouchersTable.$convertertype);
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+      'date', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  @override
+  late final GeneratedColumn<double> amount = GeneratedColumn<double>(
+      'amount', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _categoryMeta =
+      const VerificationMeta('category');
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+      'category', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('Worker Tea, Food & Refreshments'));
+  @override
+  late final GeneratedColumnWithTypeConverter<BudgetCostHead, String> costHead =
+      GeneratedColumn<String>('cost_head', aliasedName, false,
+              type: DriftSqlType.string,
+              requiredDuringInsert: false,
+              defaultValue: Constant(BudgetCostHead.equipmentOverhead.name))
+          .withConverter<BudgetCostHead>(
+              $PettyCashVouchersTable.$convertercostHead);
+  static const VerificationMeta _voucherNumberMeta =
+      const VerificationMeta('voucherNumber');
+  @override
+  late final GeneratedColumn<String> voucherNumber = GeneratedColumn<String>(
+      'voucher_number', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  late final GeneratedColumnWithTypeConverter<PaymentMode?, String>
+      paymentMode = GeneratedColumn<String>('payment_mode', aliasedName, true,
+              type: DriftSqlType.string, requiredDuringInsert: false)
+          .withConverter<PaymentMode?>(
+              $PettyCashVouchersTable.$converterpaymentModen);
+  static const VerificationMeta _bankAccountIdMeta =
+      const VerificationMeta('bankAccountId');
+  @override
+  late final GeneratedColumn<int> bankAccountId = GeneratedColumn<int>(
+      'bank_account_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES bank_accounts (id) ON DELETE SET NULL'));
+  static const VerificationMeta _narrationMeta =
+      const VerificationMeta('narration');
+  @override
+  late final GeneratedColumn<String> narration = GeneratedColumn<String>(
+      'narration', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 255),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _verifiedByMeta =
+      const VerificationMeta('verifiedBy');
+  @override
+  late final GeneratedColumn<String> verifiedBy = GeneratedColumn<String>(
+      'verified_by', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _transactionIdMeta =
+      const VerificationMeta('transactionId');
+  @override
+  late final GeneratedColumn<int> transactionId = GeneratedColumn<int>(
+      'transaction_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES transactions (id) ON DELETE SET NULL'));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        walletId,
+        projectId,
+        type,
+        date,
+        amount,
+        category,
+        costHead,
+        voucherNumber,
+        paymentMode,
+        bankAccountId,
+        narration,
+        verifiedBy,
+        transactionId,
+        createdAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'petty_cash_vouchers';
+  @override
+  VerificationContext validateIntegrity(Insertable<PettyCashVoucher> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('wallet_id')) {
+      context.handle(_walletIdMeta,
+          walletId.isAcceptableOrUnknown(data['wallet_id']!, _walletIdMeta));
+    } else if (isInserting) {
+      context.missing(_walletIdMeta);
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(_projectIdMeta,
+          projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta));
+    } else if (isInserting) {
+      context.missing(_projectIdMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+          _dateMeta, date.isAcceptableOrUnknown(data['date']!, _dateMeta));
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('amount')) {
+      context.handle(_amountMeta,
+          amount.isAcceptableOrUnknown(data['amount']!, _amountMeta));
+    } else if (isInserting) {
+      context.missing(_amountMeta);
+    }
+    if (data.containsKey('category')) {
+      context.handle(_categoryMeta,
+          category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
+    }
+    if (data.containsKey('voucher_number')) {
+      context.handle(
+          _voucherNumberMeta,
+          voucherNumber.isAcceptableOrUnknown(
+              data['voucher_number']!, _voucherNumberMeta));
+    }
+    if (data.containsKey('bank_account_id')) {
+      context.handle(
+          _bankAccountIdMeta,
+          bankAccountId.isAcceptableOrUnknown(
+              data['bank_account_id']!, _bankAccountIdMeta));
+    }
+    if (data.containsKey('narration')) {
+      context.handle(_narrationMeta,
+          narration.isAcceptableOrUnknown(data['narration']!, _narrationMeta));
+    } else if (isInserting) {
+      context.missing(_narrationMeta);
+    }
+    if (data.containsKey('verified_by')) {
+      context.handle(
+          _verifiedByMeta,
+          verifiedBy.isAcceptableOrUnknown(
+              data['verified_by']!, _verifiedByMeta));
+    }
+    if (data.containsKey('transaction_id')) {
+      context.handle(
+          _transactionIdMeta,
+          transactionId.isAcceptableOrUnknown(
+              data['transaction_id']!, _transactionIdMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PettyCashVoucher map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PettyCashVoucher(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      walletId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}wallet_id'])!,
+      projectId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}project_id'])!,
+      type: $PettyCashVouchersTable.$convertertype.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}type'])!),
+      date: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}date'])!,
+      amount: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}amount'])!,
+      category: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}category'])!,
+      costHead: $PettyCashVouchersTable.$convertercostHead.fromSql(
+          attachedDatabase.typeMapping
+              .read(DriftSqlType.string, data['${effectivePrefix}cost_head'])!),
+      voucherNumber: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}voucher_number']),
+      paymentMode: $PettyCashVouchersTable.$converterpaymentModen.fromSql(
+          attachedDatabase.typeMapping.read(
+              DriftSqlType.string, data['${effectivePrefix}payment_mode'])),
+      bankAccountId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}bank_account_id']),
+      narration: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}narration'])!,
+      verifiedBy: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}verified_by']),
+      transactionId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}transaction_id']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $PettyCashVouchersTable createAlias(String alias) {
+    return $PettyCashVouchersTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<PettyCashTxnType, String, String> $convertertype =
+      const EnumNameConverter<PettyCashTxnType>(PettyCashTxnType.values);
+  static JsonTypeConverter2<BudgetCostHead, String, String> $convertercostHead =
+      const EnumNameConverter<BudgetCostHead>(BudgetCostHead.values);
+  static JsonTypeConverter2<PaymentMode, String, String> $converterpaymentMode =
+      const EnumNameConverter<PaymentMode>(PaymentMode.values);
+  static JsonTypeConverter2<PaymentMode?, String?, String?>
+      $converterpaymentModen =
+      JsonTypeConverter2.asNullable($converterpaymentMode);
+}
+
+class PettyCashVoucher extends DataClass
+    implements Insertable<PettyCashVoucher> {
+  final int id;
+  final int walletId;
+  final int projectId;
+  final PettyCashTxnType type;
+  final DateTime date;
+  final double amount;
+  final String category;
+  final BudgetCostHead costHead;
+  final String? voucherNumber;
+  final PaymentMode? paymentMode;
+  final int? bankAccountId;
+  final String narration;
+  final String? verifiedBy;
+  final int? transactionId;
+  final DateTime createdAt;
+  const PettyCashVoucher(
+      {required this.id,
+      required this.walletId,
+      required this.projectId,
+      required this.type,
+      required this.date,
+      required this.amount,
+      required this.category,
+      required this.costHead,
+      this.voucherNumber,
+      this.paymentMode,
+      this.bankAccountId,
+      required this.narration,
+      this.verifiedBy,
+      this.transactionId,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['wallet_id'] = Variable<int>(walletId);
+    map['project_id'] = Variable<int>(projectId);
+    {
+      map['type'] =
+          Variable<String>($PettyCashVouchersTable.$convertertype.toSql(type));
+    }
+    map['date'] = Variable<DateTime>(date);
+    map['amount'] = Variable<double>(amount);
+    map['category'] = Variable<String>(category);
+    {
+      map['cost_head'] = Variable<String>(
+          $PettyCashVouchersTable.$convertercostHead.toSql(costHead));
+    }
+    if (!nullToAbsent || voucherNumber != null) {
+      map['voucher_number'] = Variable<String>(voucherNumber);
+    }
+    if (!nullToAbsent || paymentMode != null) {
+      map['payment_mode'] = Variable<String>(
+          $PettyCashVouchersTable.$converterpaymentModen.toSql(paymentMode));
+    }
+    if (!nullToAbsent || bankAccountId != null) {
+      map['bank_account_id'] = Variable<int>(bankAccountId);
+    }
+    map['narration'] = Variable<String>(narration);
+    if (!nullToAbsent || verifiedBy != null) {
+      map['verified_by'] = Variable<String>(verifiedBy);
+    }
+    if (!nullToAbsent || transactionId != null) {
+      map['transaction_id'] = Variable<int>(transactionId);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  PettyCashVouchersCompanion toCompanion(bool nullToAbsent) {
+    return PettyCashVouchersCompanion(
+      id: Value(id),
+      walletId: Value(walletId),
+      projectId: Value(projectId),
+      type: Value(type),
+      date: Value(date),
+      amount: Value(amount),
+      category: Value(category),
+      costHead: Value(costHead),
+      voucherNumber: voucherNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(voucherNumber),
+      paymentMode: paymentMode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paymentMode),
+      bankAccountId: bankAccountId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(bankAccountId),
+      narration: Value(narration),
+      verifiedBy: verifiedBy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(verifiedBy),
+      transactionId: transactionId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(transactionId),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory PettyCashVoucher.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PettyCashVoucher(
+      id: serializer.fromJson<int>(json['id']),
+      walletId: serializer.fromJson<int>(json['walletId']),
+      projectId: serializer.fromJson<int>(json['projectId']),
+      type: $PettyCashVouchersTable.$convertertype
+          .fromJson(serializer.fromJson<String>(json['type'])),
+      date: serializer.fromJson<DateTime>(json['date']),
+      amount: serializer.fromJson<double>(json['amount']),
+      category: serializer.fromJson<String>(json['category']),
+      costHead: $PettyCashVouchersTable.$convertercostHead
+          .fromJson(serializer.fromJson<String>(json['costHead'])),
+      voucherNumber: serializer.fromJson<String?>(json['voucherNumber']),
+      paymentMode: $PettyCashVouchersTable.$converterpaymentModen
+          .fromJson(serializer.fromJson<String?>(json['paymentMode'])),
+      bankAccountId: serializer.fromJson<int?>(json['bankAccountId']),
+      narration: serializer.fromJson<String>(json['narration']),
+      verifiedBy: serializer.fromJson<String?>(json['verifiedBy']),
+      transactionId: serializer.fromJson<int?>(json['transactionId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'walletId': serializer.toJson<int>(walletId),
+      'projectId': serializer.toJson<int>(projectId),
+      'type': serializer
+          .toJson<String>($PettyCashVouchersTable.$convertertype.toJson(type)),
+      'date': serializer.toJson<DateTime>(date),
+      'amount': serializer.toJson<double>(amount),
+      'category': serializer.toJson<String>(category),
+      'costHead': serializer.toJson<String>(
+          $PettyCashVouchersTable.$convertercostHead.toJson(costHead)),
+      'voucherNumber': serializer.toJson<String?>(voucherNumber),
+      'paymentMode': serializer.toJson<String?>(
+          $PettyCashVouchersTable.$converterpaymentModen.toJson(paymentMode)),
+      'bankAccountId': serializer.toJson<int?>(bankAccountId),
+      'narration': serializer.toJson<String>(narration),
+      'verifiedBy': serializer.toJson<String?>(verifiedBy),
+      'transactionId': serializer.toJson<int?>(transactionId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  PettyCashVoucher copyWith(
+          {int? id,
+          int? walletId,
+          int? projectId,
+          PettyCashTxnType? type,
+          DateTime? date,
+          double? amount,
+          String? category,
+          BudgetCostHead? costHead,
+          Value<String?> voucherNumber = const Value.absent(),
+          Value<PaymentMode?> paymentMode = const Value.absent(),
+          Value<int?> bankAccountId = const Value.absent(),
+          String? narration,
+          Value<String?> verifiedBy = const Value.absent(),
+          Value<int?> transactionId = const Value.absent(),
+          DateTime? createdAt}) =>
+      PettyCashVoucher(
+        id: id ?? this.id,
+        walletId: walletId ?? this.walletId,
+        projectId: projectId ?? this.projectId,
+        type: type ?? this.type,
+        date: date ?? this.date,
+        amount: amount ?? this.amount,
+        category: category ?? this.category,
+        costHead: costHead ?? this.costHead,
+        voucherNumber:
+            voucherNumber.present ? voucherNumber.value : this.voucherNumber,
+        paymentMode: paymentMode.present ? paymentMode.value : this.paymentMode,
+        bankAccountId:
+            bankAccountId.present ? bankAccountId.value : this.bankAccountId,
+        narration: narration ?? this.narration,
+        verifiedBy: verifiedBy.present ? verifiedBy.value : this.verifiedBy,
+        transactionId:
+            transactionId.present ? transactionId.value : this.transactionId,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  PettyCashVoucher copyWithCompanion(PettyCashVouchersCompanion data) {
+    return PettyCashVoucher(
+      id: data.id.present ? data.id.value : this.id,
+      walletId: data.walletId.present ? data.walletId.value : this.walletId,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      type: data.type.present ? data.type.value : this.type,
+      date: data.date.present ? data.date.value : this.date,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      category: data.category.present ? data.category.value : this.category,
+      costHead: data.costHead.present ? data.costHead.value : this.costHead,
+      voucherNumber: data.voucherNumber.present
+          ? data.voucherNumber.value
+          : this.voucherNumber,
+      paymentMode:
+          data.paymentMode.present ? data.paymentMode.value : this.paymentMode,
+      bankAccountId: data.bankAccountId.present
+          ? data.bankAccountId.value
+          : this.bankAccountId,
+      narration: data.narration.present ? data.narration.value : this.narration,
+      verifiedBy:
+          data.verifiedBy.present ? data.verifiedBy.value : this.verifiedBy,
+      transactionId: data.transactionId.present
+          ? data.transactionId.value
+          : this.transactionId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PettyCashVoucher(')
+          ..write('id: $id, ')
+          ..write('walletId: $walletId, ')
+          ..write('projectId: $projectId, ')
+          ..write('type: $type, ')
+          ..write('date: $date, ')
+          ..write('amount: $amount, ')
+          ..write('category: $category, ')
+          ..write('costHead: $costHead, ')
+          ..write('voucherNumber: $voucherNumber, ')
+          ..write('paymentMode: $paymentMode, ')
+          ..write('bankAccountId: $bankAccountId, ')
+          ..write('narration: $narration, ')
+          ..write('verifiedBy: $verifiedBy, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      walletId,
+      projectId,
+      type,
+      date,
+      amount,
+      category,
+      costHead,
+      voucherNumber,
+      paymentMode,
+      bankAccountId,
+      narration,
+      verifiedBy,
+      transactionId,
+      createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PettyCashVoucher &&
+          other.id == this.id &&
+          other.walletId == this.walletId &&
+          other.projectId == this.projectId &&
+          other.type == this.type &&
+          other.date == this.date &&
+          other.amount == this.amount &&
+          other.category == this.category &&
+          other.costHead == this.costHead &&
+          other.voucherNumber == this.voucherNumber &&
+          other.paymentMode == this.paymentMode &&
+          other.bankAccountId == this.bankAccountId &&
+          other.narration == this.narration &&
+          other.verifiedBy == this.verifiedBy &&
+          other.transactionId == this.transactionId &&
+          other.createdAt == this.createdAt);
+}
+
+class PettyCashVouchersCompanion extends UpdateCompanion<PettyCashVoucher> {
+  final Value<int> id;
+  final Value<int> walletId;
+  final Value<int> projectId;
+  final Value<PettyCashTxnType> type;
+  final Value<DateTime> date;
+  final Value<double> amount;
+  final Value<String> category;
+  final Value<BudgetCostHead> costHead;
+  final Value<String?> voucherNumber;
+  final Value<PaymentMode?> paymentMode;
+  final Value<int?> bankAccountId;
+  final Value<String> narration;
+  final Value<String?> verifiedBy;
+  final Value<int?> transactionId;
+  final Value<DateTime> createdAt;
+  const PettyCashVouchersCompanion({
+    this.id = const Value.absent(),
+    this.walletId = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.type = const Value.absent(),
+    this.date = const Value.absent(),
+    this.amount = const Value.absent(),
+    this.category = const Value.absent(),
+    this.costHead = const Value.absent(),
+    this.voucherNumber = const Value.absent(),
+    this.paymentMode = const Value.absent(),
+    this.bankAccountId = const Value.absent(),
+    this.narration = const Value.absent(),
+    this.verifiedBy = const Value.absent(),
+    this.transactionId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  PettyCashVouchersCompanion.insert({
+    this.id = const Value.absent(),
+    required int walletId,
+    required int projectId,
+    required PettyCashTxnType type,
+    required DateTime date,
+    required double amount,
+    this.category = const Value.absent(),
+    this.costHead = const Value.absent(),
+    this.voucherNumber = const Value.absent(),
+    this.paymentMode = const Value.absent(),
+    this.bankAccountId = const Value.absent(),
+    required String narration,
+    this.verifiedBy = const Value.absent(),
+    this.transactionId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  })  : walletId = Value(walletId),
+        projectId = Value(projectId),
+        type = Value(type),
+        date = Value(date),
+        amount = Value(amount),
+        narration = Value(narration);
+  static Insertable<PettyCashVoucher> custom({
+    Expression<int>? id,
+    Expression<int>? walletId,
+    Expression<int>? projectId,
+    Expression<String>? type,
+    Expression<DateTime>? date,
+    Expression<double>? amount,
+    Expression<String>? category,
+    Expression<String>? costHead,
+    Expression<String>? voucherNumber,
+    Expression<String>? paymentMode,
+    Expression<int>? bankAccountId,
+    Expression<String>? narration,
+    Expression<String>? verifiedBy,
+    Expression<int>? transactionId,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (walletId != null) 'wallet_id': walletId,
+      if (projectId != null) 'project_id': projectId,
+      if (type != null) 'type': type,
+      if (date != null) 'date': date,
+      if (amount != null) 'amount': amount,
+      if (category != null) 'category': category,
+      if (costHead != null) 'cost_head': costHead,
+      if (voucherNumber != null) 'voucher_number': voucherNumber,
+      if (paymentMode != null) 'payment_mode': paymentMode,
+      if (bankAccountId != null) 'bank_account_id': bankAccountId,
+      if (narration != null) 'narration': narration,
+      if (verifiedBy != null) 'verified_by': verifiedBy,
+      if (transactionId != null) 'transaction_id': transactionId,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  PettyCashVouchersCompanion copyWith(
+      {Value<int>? id,
+      Value<int>? walletId,
+      Value<int>? projectId,
+      Value<PettyCashTxnType>? type,
+      Value<DateTime>? date,
+      Value<double>? amount,
+      Value<String>? category,
+      Value<BudgetCostHead>? costHead,
+      Value<String?>? voucherNumber,
+      Value<PaymentMode?>? paymentMode,
+      Value<int?>? bankAccountId,
+      Value<String>? narration,
+      Value<String?>? verifiedBy,
+      Value<int?>? transactionId,
+      Value<DateTime>? createdAt}) {
+    return PettyCashVouchersCompanion(
+      id: id ?? this.id,
+      walletId: walletId ?? this.walletId,
+      projectId: projectId ?? this.projectId,
+      type: type ?? this.type,
+      date: date ?? this.date,
+      amount: amount ?? this.amount,
+      category: category ?? this.category,
+      costHead: costHead ?? this.costHead,
+      voucherNumber: voucherNumber ?? this.voucherNumber,
+      paymentMode: paymentMode ?? this.paymentMode,
+      bankAccountId: bankAccountId ?? this.bankAccountId,
+      narration: narration ?? this.narration,
+      verifiedBy: verifiedBy ?? this.verifiedBy,
+      transactionId: transactionId ?? this.transactionId,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (walletId.present) {
+      map['wallet_id'] = Variable<int>(walletId.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<int>(projectId.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(
+          $PettyCashVouchersTable.$convertertype.toSql(type.value));
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (amount.present) {
+      map['amount'] = Variable<double>(amount.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (costHead.present) {
+      map['cost_head'] = Variable<String>(
+          $PettyCashVouchersTable.$convertercostHead.toSql(costHead.value));
+    }
+    if (voucherNumber.present) {
+      map['voucher_number'] = Variable<String>(voucherNumber.value);
+    }
+    if (paymentMode.present) {
+      map['payment_mode'] = Variable<String>($PettyCashVouchersTable
+          .$converterpaymentModen
+          .toSql(paymentMode.value));
+    }
+    if (bankAccountId.present) {
+      map['bank_account_id'] = Variable<int>(bankAccountId.value);
+    }
+    if (narration.present) {
+      map['narration'] = Variable<String>(narration.value);
+    }
+    if (verifiedBy.present) {
+      map['verified_by'] = Variable<String>(verifiedBy.value);
+    }
+    if (transactionId.present) {
+      map['transaction_id'] = Variable<int>(transactionId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PettyCashVouchersCompanion(')
+          ..write('id: $id, ')
+          ..write('walletId: $walletId, ')
+          ..write('projectId: $projectId, ')
+          ..write('type: $type, ')
+          ..write('date: $date, ')
+          ..write('amount: $amount, ')
+          ..write('category: $category, ')
+          ..write('costHead: $costHead, ')
+          ..write('voucherNumber: $voucherNumber, ')
+          ..write('paymentMode: $paymentMode, ')
+          ..write('bankAccountId: $bankAccountId, ')
+          ..write('narration: $narration, ')
+          ..write('verifiedBy: $verifiedBy, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -8542,6 +11511,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ClientRaBillsTable clientRaBills = $ClientRaBillsTable(this);
   late final $ClientReceiptsTable clientReceipts = $ClientReceiptsTable(this);
   late final $ProjectBudgetsTable projectBudgets = $ProjectBudgetsTable(this);
+  late final $EquipmentsTable equipments = $EquipmentsTable(this);
+  late final $EquipmentLogsTable equipmentLogs = $EquipmentLogsTable(this);
+  late final $PettyCashWalletsTable pettyCashWallets =
+      $PettyCashWalletsTable(this);
+  late final $PettyCashVouchersTable pettyCashVouchers =
+      $PettyCashVouchersTable(this);
   late final ProjectDao projectDao = ProjectDao(this as AppDatabase);
   late final TransactionDao transactionDao =
       TransactionDao(this as AppDatabase);
@@ -8558,6 +11533,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       ClientBillingDao(this as AppDatabase);
   late final ProjectBudgetDao projectBudgetDao =
       ProjectBudgetDao(this as AppDatabase);
+  late final EquipmentDao equipmentDao = EquipmentDao(this as AppDatabase);
+  late final PettyCashDao pettyCashDao = PettyCashDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -8578,7 +11555,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         subcontractPayments,
         clientRaBills,
         clientReceipts,
-        projectBudgets
+        projectBudgets,
+        equipments,
+        equipmentLogs,
+        pettyCashWallets,
+        pettyCashVouchers
       ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
@@ -8658,6 +11639,69 @@ abstract class _$AppDatabase extends GeneratedDatabase {
                 limitUpdateKind: UpdateKind.delete),
             result: [
               TableUpdate('project_budgets', kind: UpdateKind.delete),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('vendors',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('equipments', kind: UpdateKind.update),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('projects',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('equipments', kind: UpdateKind.update),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('equipments',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('equipment_logs', kind: UpdateKind.delete),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('projects',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('equipment_logs', kind: UpdateKind.delete),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('projects',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('petty_cash_wallets', kind: UpdateKind.update),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('petty_cash_wallets',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('petty_cash_vouchers', kind: UpdateKind.delete),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('projects',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('petty_cash_vouchers', kind: UpdateKind.delete),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('bank_accounts',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('petty_cash_vouchers', kind: UpdateKind.update),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('transactions',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('petty_cash_vouchers', kind: UpdateKind.update),
             ],
           ),
         ],
@@ -8802,6 +11846,70 @@ final class $$ProjectsTableReferences
         .filter((f) => f.projectId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_projectBudgetsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$EquipmentsTable, List<Equipment>>
+      _equipmentsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.equipments,
+              aliasName: $_aliasNameGenerator(
+                  db.projects.id, db.equipments.currentProjectId));
+
+  $$EquipmentsTableProcessedTableManager get equipmentsRefs {
+    final manager = $$EquipmentsTableTableManager($_db, $_db.equipments).filter(
+        (f) => f.currentProjectId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_equipmentsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$EquipmentLogsTable, List<EquipmentLog>>
+      _equipmentLogsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.equipmentLogs,
+              aliasName: $_aliasNameGenerator(
+                  db.projects.id, db.equipmentLogs.projectId));
+
+  $$EquipmentLogsTableProcessedTableManager get equipmentLogsRefs {
+    final manager = $$EquipmentLogsTableTableManager($_db, $_db.equipmentLogs)
+        .filter((f) => f.projectId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_equipmentLogsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$PettyCashWalletsTable, List<PettyCashWallet>>
+      _pettyCashWalletsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.pettyCashWallets,
+              aliasName: $_aliasNameGenerator(
+                  db.projects.id, db.pettyCashWallets.assignedProjectId));
+
+  $$PettyCashWalletsTableProcessedTableManager get pettyCashWalletsRefs {
+    final manager =
+        $$PettyCashWalletsTableTableManager($_db, $_db.pettyCashWallets).filter(
+            (f) => f.assignedProjectId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_pettyCashWalletsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$PettyCashVouchersTable, List<PettyCashVoucher>>
+      _pettyCashVouchersRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.pettyCashVouchers,
+              aliasName: $_aliasNameGenerator(
+                  db.projects.id, db.pettyCashVouchers.projectId));
+
+  $$PettyCashVouchersTableProcessedTableManager get pettyCashVouchersRefs {
+    final manager =
+        $$PettyCashVouchersTableTableManager($_db, $_db.pettyCashVouchers)
+            .filter((f) => f.projectId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_pettyCashVouchersRefsTable($_db));
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: cache));
   }
@@ -9004,6 +12112,90 @@ class $$ProjectsTableFilterComposer
             $$ProjectBudgetsTableFilterComposer(
               $db: $db,
               $table: $db.projectBudgets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> equipmentsRefs(
+      Expression<bool> Function($$EquipmentsTableFilterComposer f) f) {
+    final $$EquipmentsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.equipments,
+        getReferencedColumn: (t) => t.currentProjectId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$EquipmentsTableFilterComposer(
+              $db: $db,
+              $table: $db.equipments,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> equipmentLogsRefs(
+      Expression<bool> Function($$EquipmentLogsTableFilterComposer f) f) {
+    final $$EquipmentLogsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.equipmentLogs,
+        getReferencedColumn: (t) => t.projectId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$EquipmentLogsTableFilterComposer(
+              $db: $db,
+              $table: $db.equipmentLogs,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> pettyCashWalletsRefs(
+      Expression<bool> Function($$PettyCashWalletsTableFilterComposer f) f) {
+    final $$PettyCashWalletsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.pettyCashWallets,
+        getReferencedColumn: (t) => t.assignedProjectId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$PettyCashWalletsTableFilterComposer(
+              $db: $db,
+              $table: $db.pettyCashWallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> pettyCashVouchersRefs(
+      Expression<bool> Function($$PettyCashVouchersTableFilterComposer f) f) {
+    final $$PettyCashVouchersTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.pettyCashVouchers,
+        getReferencedColumn: (t) => t.projectId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$PettyCashVouchersTableFilterComposer(
+              $db: $db,
+              $table: $db.pettyCashVouchers,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -9267,6 +12459,91 @@ class $$ProjectsTableAnnotationComposer
             ));
     return f(composer);
   }
+
+  Expression<T> equipmentsRefs<T extends Object>(
+      Expression<T> Function($$EquipmentsTableAnnotationComposer a) f) {
+    final $$EquipmentsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.equipments,
+        getReferencedColumn: (t) => t.currentProjectId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$EquipmentsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.equipments,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> equipmentLogsRefs<T extends Object>(
+      Expression<T> Function($$EquipmentLogsTableAnnotationComposer a) f) {
+    final $$EquipmentLogsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.equipmentLogs,
+        getReferencedColumn: (t) => t.projectId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$EquipmentLogsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.equipmentLogs,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> pettyCashWalletsRefs<T extends Object>(
+      Expression<T> Function($$PettyCashWalletsTableAnnotationComposer a) f) {
+    final $$PettyCashWalletsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.pettyCashWallets,
+        getReferencedColumn: (t) => t.assignedProjectId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$PettyCashWalletsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.pettyCashWallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<T> pettyCashVouchersRefs<T extends Object>(
+      Expression<T> Function($$PettyCashVouchersTableAnnotationComposer a) f) {
+    final $$PettyCashVouchersTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.pettyCashVouchers,
+            getReferencedColumn: (t) => t.projectId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$PettyCashVouchersTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.pettyCashVouchers,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
 }
 
 class $$ProjectsTableTableManager extends RootTableManager<
@@ -9287,7 +12564,11 @@ class $$ProjectsTableTableManager extends RootTableManager<
         bool workOrdersRefs,
         bool clientRaBillsRefs,
         bool clientReceiptsRefs,
-        bool projectBudgetsRefs})> {
+        bool projectBudgetsRefs,
+        bool equipmentsRefs,
+        bool equipmentLogsRefs,
+        bool pettyCashWalletsRefs,
+        bool pettyCashVouchersRefs})> {
   $$ProjectsTableTableManager(_$AppDatabase db, $ProjectsTable table)
       : super(TableManagerState(
           db: db,
@@ -9373,7 +12654,11 @@ class $$ProjectsTableTableManager extends RootTableManager<
               workOrdersRefs = false,
               clientRaBillsRefs = false,
               clientReceiptsRefs = false,
-              projectBudgetsRefs = false}) {
+              projectBudgetsRefs = false,
+              equipmentsRefs = false,
+              equipmentLogsRefs = false,
+              pettyCashWalletsRefs = false,
+              pettyCashVouchersRefs = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
@@ -9383,7 +12668,11 @@ class $$ProjectsTableTableManager extends RootTableManager<
                 if (workOrdersRefs) db.workOrders,
                 if (clientRaBillsRefs) db.clientRaBills,
                 if (clientReceiptsRefs) db.clientReceipts,
-                if (projectBudgetsRefs) db.projectBudgets
+                if (projectBudgetsRefs) db.projectBudgets,
+                if (equipmentsRefs) db.equipments,
+                if (equipmentLogsRefs) db.equipmentLogs,
+                if (pettyCashWalletsRefs) db.pettyCashWallets,
+                if (pettyCashVouchersRefs) db.pettyCashVouchers
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -9477,6 +12766,58 @@ class $$ProjectsTableTableManager extends RootTableManager<
                         referencedItemsForCurrentItem:
                             (item, referencedItems) => referencedItems
                                 .where((e) => e.projectId == item.id),
+                        typedResults: items),
+                  if (equipmentsRefs)
+                    await $_getPrefetchedData<Project, $ProjectsTable,
+                            Equipment>(
+                        currentTable: table,
+                        referencedTable:
+                            $$ProjectsTableReferences._equipmentsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$ProjectsTableReferences(db, table, p0)
+                                .equipmentsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.currentProjectId == item.id),
+                        typedResults: items),
+                  if (equipmentLogsRefs)
+                    await $_getPrefetchedData<Project, $ProjectsTable,
+                            EquipmentLog>(
+                        currentTable: table,
+                        referencedTable: $$ProjectsTableReferences
+                            ._equipmentLogsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$ProjectsTableReferences(db, table, p0)
+                                .equipmentLogsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.projectId == item.id),
+                        typedResults: items),
+                  if (pettyCashWalletsRefs)
+                    await $_getPrefetchedData<Project, $ProjectsTable,
+                            PettyCashWallet>(
+                        currentTable: table,
+                        referencedTable: $$ProjectsTableReferences
+                            ._pettyCashWalletsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$ProjectsTableReferences(db, table, p0)
+                                .pettyCashWalletsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.assignedProjectId == item.id),
+                        typedResults: items),
+                  if (pettyCashVouchersRefs)
+                    await $_getPrefetchedData<Project, $ProjectsTable,
+                            PettyCashVoucher>(
+                        currentTable: table,
+                        referencedTable: $$ProjectsTableReferences
+                            ._pettyCashVouchersRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$ProjectsTableReferences(db, table, p0)
+                                .pettyCashVouchersRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.projectId == item.id),
                         typedResults: items)
                 ];
               },
@@ -9503,7 +12844,11 @@ typedef $$ProjectsTableProcessedTableManager = ProcessedTableManager<
         bool workOrdersRefs,
         bool clientRaBillsRefs,
         bool clientReceiptsRefs,
-        bool projectBudgetsRefs})>;
+        bool projectBudgetsRefs,
+        bool equipmentsRefs,
+        bool equipmentLogsRefs,
+        bool pettyCashWalletsRefs,
+        bool pettyCashVouchersRefs})>;
 typedef $$WorkersTableCreateCompanionBuilder = WorkersCompanion Function({
   Value<int> id,
   required String name,
@@ -10169,6 +13514,23 @@ final class $$BankAccountsTableReferences
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: cache));
   }
+
+  static MultiTypedResultKey<$PettyCashVouchersTable, List<PettyCashVoucher>>
+      _pettyCashVouchersRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.pettyCashVouchers,
+              aliasName: $_aliasNameGenerator(
+                  db.bankAccounts.id, db.pettyCashVouchers.bankAccountId));
+
+  $$PettyCashVouchersTableProcessedTableManager get pettyCashVouchersRefs {
+    final manager = $$PettyCashVouchersTableTableManager(
+            $_db, $_db.pettyCashVouchers)
+        .filter((f) => f.bankAccountId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_pettyCashVouchersRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
 }
 
 class $$BankAccountsTableFilterComposer
@@ -10266,6 +13628,27 @@ class $$BankAccountsTableFilterComposer
             $$ClientReceiptsTableFilterComposer(
               $db: $db,
               $table: $db.clientReceipts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> pettyCashVouchersRefs(
+      Expression<bool> Function($$PettyCashVouchersTableFilterComposer f) f) {
+    final $$PettyCashVouchersTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.pettyCashVouchers,
+        getReferencedColumn: (t) => t.bankAccountId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$PettyCashVouchersTableFilterComposer(
+              $db: $db,
+              $table: $db.pettyCashVouchers,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -10421,6 +13804,28 @@ class $$BankAccountsTableAnnotationComposer
             ));
     return f(composer);
   }
+
+  Expression<T> pettyCashVouchersRefs<T extends Object>(
+      Expression<T> Function($$PettyCashVouchersTableAnnotationComposer a) f) {
+    final $$PettyCashVouchersTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.pettyCashVouchers,
+            getReferencedColumn: (t) => t.bankAccountId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$PettyCashVouchersTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.pettyCashVouchers,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
 }
 
 class $$BankAccountsTableTableManager extends RootTableManager<
@@ -10437,7 +13842,8 @@ class $$BankAccountsTableTableManager extends RootTableManager<
     PrefetchHooks Function(
         {bool transactionsRefs,
         bool subcontractPaymentsRefs,
-        bool clientReceiptsRefs})> {
+        bool clientReceiptsRefs,
+        bool pettyCashVouchersRefs})> {
   $$BankAccountsTableTableManager(_$AppDatabase db, $BankAccountsTable table)
       : super(TableManagerState(
           db: db,
@@ -10505,13 +13911,15 @@ class $$BankAccountsTableTableManager extends RootTableManager<
           prefetchHooksCallback: (
               {transactionsRefs = false,
               subcontractPaymentsRefs = false,
-              clientReceiptsRefs = false}) {
+              clientReceiptsRefs = false,
+              pettyCashVouchersRefs = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
                 if (transactionsRefs) db.transactions,
                 if (subcontractPaymentsRefs) db.subcontractPayments,
-                if (clientReceiptsRefs) db.clientReceipts
+                if (clientReceiptsRefs) db.clientReceipts,
+                if (pettyCashVouchersRefs) db.pettyCashVouchers
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
@@ -10554,6 +13962,18 @@ class $$BankAccountsTableTableManager extends RootTableManager<
                         referencedItemsForCurrentItem:
                             (item, referencedItems) => referencedItems
                                 .where((e) => e.bankAccountId == item.id),
+                        typedResults: items),
+                  if (pettyCashVouchersRefs)
+                    await $_getPrefetchedData<BankAccount, $BankAccountsTable, PettyCashVoucher>(
+                        currentTable: table,
+                        referencedTable: $$BankAccountsTableReferences
+                            ._pettyCashVouchersRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$BankAccountsTableReferences(db, table, p0)
+                                .pettyCashVouchersRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.bankAccountId == item.id),
                         typedResults: items)
                 ];
               },
@@ -10576,7 +13996,8 @@ typedef $$BankAccountsTableProcessedTableManager = ProcessedTableManager<
     PrefetchHooks Function(
         {bool transactionsRefs,
         bool subcontractPaymentsRefs,
-        bool clientReceiptsRefs})>;
+        bool clientReceiptsRefs,
+        bool pettyCashVouchersRefs})>;
 typedef $$TransactionsTableCreateCompanionBuilder = TransactionsCompanion
     Function({
   Value<int> id,
@@ -10768,6 +14189,23 @@ final class $$TransactionsTableReferences
         .filter((f) => f.transactionId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_clientReceiptsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$PettyCashVouchersTable, List<PettyCashVoucher>>
+      _pettyCashVouchersRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.pettyCashVouchers,
+              aliasName: $_aliasNameGenerator(
+                  db.transactions.id, db.pettyCashVouchers.transactionId));
+
+  $$PettyCashVouchersTableProcessedTableManager get pettyCashVouchersRefs {
+    final manager = $$PettyCashVouchersTableTableManager(
+            $_db, $_db.pettyCashVouchers)
+        .filter((f) => f.transactionId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_pettyCashVouchersRefsTable($_db));
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: cache));
   }
@@ -11014,6 +14452,27 @@ class $$TransactionsTableFilterComposer
             $$ClientReceiptsTableFilterComposer(
               $db: $db,
               $table: $db.clientReceipts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> pettyCashVouchersRefs(
+      Expression<bool> Function($$PettyCashVouchersTableFilterComposer f) f) {
+    final $$PettyCashVouchersTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.pettyCashVouchers,
+        getReferencedColumn: (t) => t.transactionId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$PettyCashVouchersTableFilterComposer(
+              $db: $db,
+              $table: $db.pettyCashVouchers,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -11391,6 +14850,28 @@ class $$TransactionsTableAnnotationComposer
             ));
     return f(composer);
   }
+
+  Expression<T> pettyCashVouchersRefs<T extends Object>(
+      Expression<T> Function($$PettyCashVouchersTableAnnotationComposer a) f) {
+    final $$PettyCashVouchersTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.pettyCashVouchers,
+            getReferencedColumn: (t) => t.transactionId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$PettyCashVouchersTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.pettyCashVouchers,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
 }
 
 class $$TransactionsTableTableManager extends RootTableManager<
@@ -11414,7 +14895,8 @@ class $$TransactionsTableTableManager extends RootTableManager<
         bool measurementBillsRefs,
         bool subcontractPaymentsRefs,
         bool clientRaBillsRefs,
-        bool clientReceiptsRefs})> {
+        bool clientReceiptsRefs,
+        bool pettyCashVouchersRefs})> {
   $$TransactionsTableTableManager(_$AppDatabase db, $TransactionsTable table)
       : super(TableManagerState(
           db: db,
@@ -11505,7 +14987,8 @@ class $$TransactionsTableTableManager extends RootTableManager<
               measurementBillsRefs = false,
               subcontractPaymentsRefs = false,
               clientRaBillsRefs = false,
-              clientReceiptsRefs = false}) {
+              clientReceiptsRefs = false,
+              pettyCashVouchersRefs = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
@@ -11514,7 +14997,8 @@ class $$TransactionsTableTableManager extends RootTableManager<
                 if (measurementBillsRefs) db.measurementBills,
                 if (subcontractPaymentsRefs) db.subcontractPayments,
                 if (clientRaBillsRefs) db.clientRaBills,
-                if (clientReceiptsRefs) db.clientReceipts
+                if (clientReceiptsRefs) db.clientReceipts,
+                if (pettyCashVouchersRefs) db.pettyCashVouchers
               ],
               addJoins: <
                   T extends TableManagerState<
@@ -11653,6 +15137,18 @@ class $$TransactionsTableTableManager extends RootTableManager<
                         referencedItemsForCurrentItem:
                             (item, referencedItems) => referencedItems
                                 .where((e) => e.transactionId == item.id),
+                        typedResults: items),
+                  if (pettyCashVouchersRefs)
+                    await $_getPrefetchedData<Transaction, $TransactionsTable, PettyCashVoucher>(
+                        currentTable: table,
+                        referencedTable: $$TransactionsTableReferences
+                            ._pettyCashVouchersRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$TransactionsTableReferences(db, table, p0)
+                                .pettyCashVouchersRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.transactionId == item.id),
                         typedResults: items)
                 ];
               },
@@ -11682,7 +15178,8 @@ typedef $$TransactionsTableProcessedTableManager = ProcessedTableManager<
         bool measurementBillsRefs,
         bool subcontractPaymentsRefs,
         bool clientRaBillsRefs,
-        bool clientReceiptsRefs})>;
+        bool clientReceiptsRefs,
+        bool pettyCashVouchersRefs})>;
 typedef $$VendorsTableCreateCompanionBuilder = VendorsCompanion Function({
   Value<int> id,
   required String name,
@@ -11709,6 +15206,21 @@ final class $$VendorsTableReferences
         .filter((f) => f.vendorId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_purchasesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+
+  static MultiTypedResultKey<$EquipmentsTable, List<Equipment>>
+      _equipmentsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.equipments,
+              aliasName:
+                  $_aliasNameGenerator(db.vendors.id, db.equipments.vendorId));
+
+  $$EquipmentsTableProcessedTableManager get equipmentsRefs {
+    final manager = $$EquipmentsTableTableManager($_db, $_db.equipments)
+        .filter((f) => f.vendorId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_equipmentsRefsTable($_db));
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: cache));
   }
@@ -11745,6 +15257,27 @@ class $$VendorsTableFilterComposer
             $$PurchasesTableFilterComposer(
               $db: $db,
               $table: $db.purchases,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> equipmentsRefs(
+      Expression<bool> Function($$EquipmentsTableFilterComposer f) f) {
+    final $$EquipmentsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.equipments,
+        getReferencedColumn: (t) => t.vendorId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$EquipmentsTableFilterComposer(
+              $db: $db,
+              $table: $db.equipments,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -11811,6 +15344,27 @@ class $$VendorsTableAnnotationComposer
             ));
     return f(composer);
   }
+
+  Expression<T> equipmentsRefs<T extends Object>(
+      Expression<T> Function($$EquipmentsTableAnnotationComposer a) f) {
+    final $$EquipmentsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.equipments,
+        getReferencedColumn: (t) => t.vendorId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$EquipmentsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.equipments,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
 class $$VendorsTableTableManager extends RootTableManager<
@@ -11824,7 +15378,7 @@ class $$VendorsTableTableManager extends RootTableManager<
     $$VendorsTableUpdateCompanionBuilder,
     (Vendor, $$VendorsTableReferences),
     Vendor,
-    PrefetchHooks Function({bool purchasesRefs})> {
+    PrefetchHooks Function({bool purchasesRefs, bool equipmentsRefs})> {
   $$VendorsTableTableManager(_$AppDatabase db, $VendorsTable table)
       : super(TableManagerState(
           db: db,
@@ -11859,10 +15413,14 @@ class $$VendorsTableTableManager extends RootTableManager<
               .map((e) =>
                   (e.readTable(table), $$VendorsTableReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({purchasesRefs = false}) {
+          prefetchHooksCallback: (
+              {purchasesRefs = false, equipmentsRefs = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [if (purchasesRefs) db.purchases],
+              explicitlyWatchedTables: [
+                if (purchasesRefs) db.purchases,
+                if (equipmentsRefs) db.equipments
+              ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
@@ -11874,6 +15432,18 @@ class $$VendorsTableTableManager extends RootTableManager<
                         managerFromTypedResult: (p0) =>
                             $$VendorsTableReferences(db, table, p0)
                                 .purchasesRefs,
+                        referencedItemsForCurrentItem: (item,
+                                referencedItems) =>
+                            referencedItems.where((e) => e.vendorId == item.id),
+                        typedResults: items),
+                  if (equipmentsRefs)
+                    await $_getPrefetchedData<Vendor, $VendorsTable, Equipment>(
+                        currentTable: table,
+                        referencedTable:
+                            $$VendorsTableReferences._equipmentsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$VendorsTableReferences(db, table, p0)
+                                .equipmentsRefs,
                         referencedItemsForCurrentItem: (item,
                                 referencedItems) =>
                             referencedItems.where((e) => e.vendorId == item.id),
@@ -11896,7 +15466,7 @@ typedef $$VendorsTableProcessedTableManager = ProcessedTableManager<
     $$VendorsTableUpdateCompanionBuilder,
     (Vendor, $$VendorsTableReferences),
     Vendor,
-    PrefetchHooks Function({bool purchasesRefs})>;
+    PrefetchHooks Function({bool purchasesRefs, bool equipmentsRefs})>;
 typedef $$PurchasesTableCreateCompanionBuilder = PurchasesCompanion Function({
   Value<int> id,
   required int transactionId,
@@ -16790,6 +20360,2291 @@ typedef $$ProjectBudgetsTableProcessedTableManager = ProcessedTableManager<
     (ProjectBudget, $$ProjectBudgetsTableReferences),
     ProjectBudget,
     PrefetchHooks Function({bool projectId})>;
+typedef $$EquipmentsTableCreateCompanionBuilder = EquipmentsCompanion Function({
+  Value<int> id,
+  required String name,
+  required String assetOrRegNumber,
+  Value<String> category,
+  Value<EquipmentOwnership> ownership,
+  Value<int?> vendorId,
+  Value<int?> currentProjectId,
+  Value<EquipmentRentalBasis> rentalBasis,
+  Value<double> standardRate,
+  Value<EquipmentFuelPolicy> fuelPolicy,
+  Value<String?> operatorName,
+  Value<String?> operatorContact,
+  Value<EquipmentStatus> status,
+  Value<String?> notes,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+});
+typedef $$EquipmentsTableUpdateCompanionBuilder = EquipmentsCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<String> assetOrRegNumber,
+  Value<String> category,
+  Value<EquipmentOwnership> ownership,
+  Value<int?> vendorId,
+  Value<int?> currentProjectId,
+  Value<EquipmentRentalBasis> rentalBasis,
+  Value<double> standardRate,
+  Value<EquipmentFuelPolicy> fuelPolicy,
+  Value<String?> operatorName,
+  Value<String?> operatorContact,
+  Value<EquipmentStatus> status,
+  Value<String?> notes,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+});
+
+final class $$EquipmentsTableReferences
+    extends BaseReferences<_$AppDatabase, $EquipmentsTable, Equipment> {
+  $$EquipmentsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $VendorsTable _vendorIdTable(_$AppDatabase db) => db.vendors
+      .createAlias($_aliasNameGenerator(db.equipments.vendorId, db.vendors.id));
+
+  $$VendorsTableProcessedTableManager? get vendorId {
+    final $_column = $_itemColumn<int>('vendor_id');
+    if ($_column == null) return null;
+    final manager = $$VendorsTableTableManager($_db, $_db.vendors)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_vendorIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $ProjectsTable _currentProjectIdTable(_$AppDatabase db) =>
+      db.projects.createAlias(
+          $_aliasNameGenerator(db.equipments.currentProjectId, db.projects.id));
+
+  $$ProjectsTableProcessedTableManager? get currentProjectId {
+    final $_column = $_itemColumn<int>('current_project_id');
+    if ($_column == null) return null;
+    final manager = $$ProjectsTableTableManager($_db, $_db.projects)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_currentProjectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static MultiTypedResultKey<$EquipmentLogsTable, List<EquipmentLog>>
+      _equipmentLogsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.equipmentLogs,
+              aliasName: $_aliasNameGenerator(
+                  db.equipments.id, db.equipmentLogs.equipmentId));
+
+  $$EquipmentLogsTableProcessedTableManager get equipmentLogsRefs {
+    final manager = $$EquipmentLogsTableTableManager($_db, $_db.equipmentLogs)
+        .filter((f) => f.equipmentId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_equipmentLogsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
+class $$EquipmentsTableFilterComposer
+    extends Composer<_$AppDatabase, $EquipmentsTable> {
+  $$EquipmentsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get assetOrRegNumber => $composableBuilder(
+      column: $table.assetOrRegNumber,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get category => $composableBuilder(
+      column: $table.category, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<EquipmentOwnership, EquipmentOwnership, String>
+      get ownership => $composableBuilder(
+          column: $table.ownership,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnWithTypeConverterFilters<EquipmentRentalBasis, EquipmentRentalBasis,
+          String>
+      get rentalBasis => $composableBuilder(
+          column: $table.rentalBasis,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<double> get standardRate => $composableBuilder(
+      column: $table.standardRate, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<EquipmentFuelPolicy, EquipmentFuelPolicy,
+          String>
+      get fuelPolicy => $composableBuilder(
+          column: $table.fuelPolicy,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<String> get operatorName => $composableBuilder(
+      column: $table.operatorName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get operatorContact => $composableBuilder(
+      column: $table.operatorContact,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<EquipmentStatus, EquipmentStatus, String>
+      get status => $composableBuilder(
+          column: $table.status,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  $$VendorsTableFilterComposer get vendorId {
+    final $$VendorsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.vendorId,
+        referencedTable: $db.vendors,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$VendorsTableFilterComposer(
+              $db: $db,
+              $table: $db.vendors,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$ProjectsTableFilterComposer get currentProjectId {
+    final $$ProjectsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.currentProjectId,
+        referencedTable: $db.projects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectsTableFilterComposer(
+              $db: $db,
+              $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  Expression<bool> equipmentLogsRefs(
+      Expression<bool> Function($$EquipmentLogsTableFilterComposer f) f) {
+    final $$EquipmentLogsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.equipmentLogs,
+        getReferencedColumn: (t) => t.equipmentId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$EquipmentLogsTableFilterComposer(
+              $db: $db,
+              $table: $db.equipmentLogs,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$EquipmentsTableOrderingComposer
+    extends Composer<_$AppDatabase, $EquipmentsTable> {
+  $$EquipmentsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get assetOrRegNumber => $composableBuilder(
+      column: $table.assetOrRegNumber,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get category => $composableBuilder(
+      column: $table.category, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get ownership => $composableBuilder(
+      column: $table.ownership, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get rentalBasis => $composableBuilder(
+      column: $table.rentalBasis, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get standardRate => $composableBuilder(
+      column: $table.standardRate,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get fuelPolicy => $composableBuilder(
+      column: $table.fuelPolicy, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get operatorName => $composableBuilder(
+      column: $table.operatorName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get operatorContact => $composableBuilder(
+      column: $table.operatorContact,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  $$VendorsTableOrderingComposer get vendorId {
+    final $$VendorsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.vendorId,
+        referencedTable: $db.vendors,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$VendorsTableOrderingComposer(
+              $db: $db,
+              $table: $db.vendors,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$ProjectsTableOrderingComposer get currentProjectId {
+    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.currentProjectId,
+        referencedTable: $db.projects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectsTableOrderingComposer(
+              $db: $db,
+              $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$EquipmentsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EquipmentsTable> {
+  $$EquipmentsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get assetOrRegNumber => $composableBuilder(
+      column: $table.assetOrRegNumber, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<EquipmentOwnership, String> get ownership =>
+      $composableBuilder(column: $table.ownership, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<EquipmentRentalBasis, String>
+      get rentalBasis => $composableBuilder(
+          column: $table.rentalBasis, builder: (column) => column);
+
+  GeneratedColumn<double> get standardRate => $composableBuilder(
+      column: $table.standardRate, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<EquipmentFuelPolicy, String>
+      get fuelPolicy => $composableBuilder(
+          column: $table.fuelPolicy, builder: (column) => column);
+
+  GeneratedColumn<String> get operatorName => $composableBuilder(
+      column: $table.operatorName, builder: (column) => column);
+
+  GeneratedColumn<String> get operatorContact => $composableBuilder(
+      column: $table.operatorContact, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<EquipmentStatus, String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$VendorsTableAnnotationComposer get vendorId {
+    final $$VendorsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.vendorId,
+        referencedTable: $db.vendors,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$VendorsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.vendors,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$ProjectsTableAnnotationComposer get currentProjectId {
+    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.currentProjectId,
+        referencedTable: $db.projects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  Expression<T> equipmentLogsRefs<T extends Object>(
+      Expression<T> Function($$EquipmentLogsTableAnnotationComposer a) f) {
+    final $$EquipmentLogsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.equipmentLogs,
+        getReferencedColumn: (t) => t.equipmentId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$EquipmentLogsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.equipmentLogs,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$EquipmentsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $EquipmentsTable,
+    Equipment,
+    $$EquipmentsTableFilterComposer,
+    $$EquipmentsTableOrderingComposer,
+    $$EquipmentsTableAnnotationComposer,
+    $$EquipmentsTableCreateCompanionBuilder,
+    $$EquipmentsTableUpdateCompanionBuilder,
+    (Equipment, $$EquipmentsTableReferences),
+    Equipment,
+    PrefetchHooks Function(
+        {bool vendorId, bool currentProjectId, bool equipmentLogsRefs})> {
+  $$EquipmentsTableTableManager(_$AppDatabase db, $EquipmentsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EquipmentsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EquipmentsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EquipmentsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String> assetOrRegNumber = const Value.absent(),
+            Value<String> category = const Value.absent(),
+            Value<EquipmentOwnership> ownership = const Value.absent(),
+            Value<int?> vendorId = const Value.absent(),
+            Value<int?> currentProjectId = const Value.absent(),
+            Value<EquipmentRentalBasis> rentalBasis = const Value.absent(),
+            Value<double> standardRate = const Value.absent(),
+            Value<EquipmentFuelPolicy> fuelPolicy = const Value.absent(),
+            Value<String?> operatorName = const Value.absent(),
+            Value<String?> operatorContact = const Value.absent(),
+            Value<EquipmentStatus> status = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              EquipmentsCompanion(
+            id: id,
+            name: name,
+            assetOrRegNumber: assetOrRegNumber,
+            category: category,
+            ownership: ownership,
+            vendorId: vendorId,
+            currentProjectId: currentProjectId,
+            rentalBasis: rentalBasis,
+            standardRate: standardRate,
+            fuelPolicy: fuelPolicy,
+            operatorName: operatorName,
+            operatorContact: operatorContact,
+            status: status,
+            notes: notes,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+            required String assetOrRegNumber,
+            Value<String> category = const Value.absent(),
+            Value<EquipmentOwnership> ownership = const Value.absent(),
+            Value<int?> vendorId = const Value.absent(),
+            Value<int?> currentProjectId = const Value.absent(),
+            Value<EquipmentRentalBasis> rentalBasis = const Value.absent(),
+            Value<double> standardRate = const Value.absent(),
+            Value<EquipmentFuelPolicy> fuelPolicy = const Value.absent(),
+            Value<String?> operatorName = const Value.absent(),
+            Value<String?> operatorContact = const Value.absent(),
+            Value<EquipmentStatus> status = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              EquipmentsCompanion.insert(
+            id: id,
+            name: name,
+            assetOrRegNumber: assetOrRegNumber,
+            category: category,
+            ownership: ownership,
+            vendorId: vendorId,
+            currentProjectId: currentProjectId,
+            rentalBasis: rentalBasis,
+            standardRate: standardRate,
+            fuelPolicy: fuelPolicy,
+            operatorName: operatorName,
+            operatorContact: operatorContact,
+            status: status,
+            notes: notes,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$EquipmentsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: (
+              {vendorId = false,
+              currentProjectId = false,
+              equipmentLogsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (equipmentLogsRefs) db.equipmentLogs
+              ],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (vendorId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.vendorId,
+                    referencedTable:
+                        $$EquipmentsTableReferences._vendorIdTable(db),
+                    referencedColumn:
+                        $$EquipmentsTableReferences._vendorIdTable(db).id,
+                  ) as T;
+                }
+                if (currentProjectId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.currentProjectId,
+                    referencedTable:
+                        $$EquipmentsTableReferences._currentProjectIdTable(db),
+                    referencedColumn: $$EquipmentsTableReferences
+                        ._currentProjectIdTable(db)
+                        .id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (equipmentLogsRefs)
+                    await $_getPrefetchedData<Equipment, $EquipmentsTable,
+                            EquipmentLog>(
+                        currentTable: table,
+                        referencedTable: $$EquipmentsTableReferences
+                            ._equipmentLogsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$EquipmentsTableReferences(db, table, p0)
+                                .equipmentLogsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.equipmentId == item.id),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$EquipmentsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $EquipmentsTable,
+    Equipment,
+    $$EquipmentsTableFilterComposer,
+    $$EquipmentsTableOrderingComposer,
+    $$EquipmentsTableAnnotationComposer,
+    $$EquipmentsTableCreateCompanionBuilder,
+    $$EquipmentsTableUpdateCompanionBuilder,
+    (Equipment, $$EquipmentsTableReferences),
+    Equipment,
+    PrefetchHooks Function(
+        {bool vendorId, bool currentProjectId, bool equipmentLogsRefs})>;
+typedef $$EquipmentLogsTableCreateCompanionBuilder = EquipmentLogsCompanion
+    Function({
+  Value<int> id,
+  required int equipmentId,
+  required int projectId,
+  required DateTime logDate,
+  Value<double> startReading,
+  Value<double> endReading,
+  Value<double> totalUnitsLogged,
+  Value<double> breakdownUnits,
+  Value<double> billableUnits,
+  Value<double> unitRate,
+  Value<double> grossRentalCost,
+  Value<double> fuelLitresIssued,
+  Value<double> fuelRatePerLitre,
+  Value<double> fuelCostDeduction,
+  Value<double> netPayableAmount,
+  required String workDescription,
+  Value<String?> operatorName,
+  Value<bool> supervisorVerified,
+  Value<String?> notes,
+  Value<DateTime> createdAt,
+});
+typedef $$EquipmentLogsTableUpdateCompanionBuilder = EquipmentLogsCompanion
+    Function({
+  Value<int> id,
+  Value<int> equipmentId,
+  Value<int> projectId,
+  Value<DateTime> logDate,
+  Value<double> startReading,
+  Value<double> endReading,
+  Value<double> totalUnitsLogged,
+  Value<double> breakdownUnits,
+  Value<double> billableUnits,
+  Value<double> unitRate,
+  Value<double> grossRentalCost,
+  Value<double> fuelLitresIssued,
+  Value<double> fuelRatePerLitre,
+  Value<double> fuelCostDeduction,
+  Value<double> netPayableAmount,
+  Value<String> workDescription,
+  Value<String?> operatorName,
+  Value<bool> supervisorVerified,
+  Value<String?> notes,
+  Value<DateTime> createdAt,
+});
+
+final class $$EquipmentLogsTableReferences
+    extends BaseReferences<_$AppDatabase, $EquipmentLogsTable, EquipmentLog> {
+  $$EquipmentLogsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $EquipmentsTable _equipmentIdTable(_$AppDatabase db) =>
+      db.equipments.createAlias(
+          $_aliasNameGenerator(db.equipmentLogs.equipmentId, db.equipments.id));
+
+  $$EquipmentsTableProcessedTableManager get equipmentId {
+    final $_column = $_itemColumn<int>('equipment_id')!;
+
+    final manager = $$EquipmentsTableTableManager($_db, $_db.equipments)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_equipmentIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $ProjectsTable _projectIdTable(_$AppDatabase db) =>
+      db.projects.createAlias(
+          $_aliasNameGenerator(db.equipmentLogs.projectId, db.projects.id));
+
+  $$ProjectsTableProcessedTableManager get projectId {
+    final $_column = $_itemColumn<int>('project_id')!;
+
+    final manager = $$ProjectsTableTableManager($_db, $_db.projects)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$EquipmentLogsTableFilterComposer
+    extends Composer<_$AppDatabase, $EquipmentLogsTable> {
+  $$EquipmentLogsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get logDate => $composableBuilder(
+      column: $table.logDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get startReading => $composableBuilder(
+      column: $table.startReading, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get endReading => $composableBuilder(
+      column: $table.endReading, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get totalUnitsLogged => $composableBuilder(
+      column: $table.totalUnitsLogged,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get breakdownUnits => $composableBuilder(
+      column: $table.breakdownUnits,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get billableUnits => $composableBuilder(
+      column: $table.billableUnits, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get unitRate => $composableBuilder(
+      column: $table.unitRate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get grossRentalCost => $composableBuilder(
+      column: $table.grossRentalCost,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get fuelLitresIssued => $composableBuilder(
+      column: $table.fuelLitresIssued,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get fuelRatePerLitre => $composableBuilder(
+      column: $table.fuelRatePerLitre,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get fuelCostDeduction => $composableBuilder(
+      column: $table.fuelCostDeduction,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get netPayableAmount => $composableBuilder(
+      column: $table.netPayableAmount,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get workDescription => $composableBuilder(
+      column: $table.workDescription,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get operatorName => $composableBuilder(
+      column: $table.operatorName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get supervisorVerified => $composableBuilder(
+      column: $table.supervisorVerified,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  $$EquipmentsTableFilterComposer get equipmentId {
+    final $$EquipmentsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.equipmentId,
+        referencedTable: $db.equipments,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$EquipmentsTableFilterComposer(
+              $db: $db,
+              $table: $db.equipments,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$ProjectsTableFilterComposer get projectId {
+    final $$ProjectsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.projectId,
+        referencedTable: $db.projects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectsTableFilterComposer(
+              $db: $db,
+              $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$EquipmentLogsTableOrderingComposer
+    extends Composer<_$AppDatabase, $EquipmentLogsTable> {
+  $$EquipmentLogsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get logDate => $composableBuilder(
+      column: $table.logDate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get startReading => $composableBuilder(
+      column: $table.startReading,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get endReading => $composableBuilder(
+      column: $table.endReading, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get totalUnitsLogged => $composableBuilder(
+      column: $table.totalUnitsLogged,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get breakdownUnits => $composableBuilder(
+      column: $table.breakdownUnits,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get billableUnits => $composableBuilder(
+      column: $table.billableUnits,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get unitRate => $composableBuilder(
+      column: $table.unitRate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get grossRentalCost => $composableBuilder(
+      column: $table.grossRentalCost,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get fuelLitresIssued => $composableBuilder(
+      column: $table.fuelLitresIssued,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get fuelRatePerLitre => $composableBuilder(
+      column: $table.fuelRatePerLitre,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get fuelCostDeduction => $composableBuilder(
+      column: $table.fuelCostDeduction,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get netPayableAmount => $composableBuilder(
+      column: $table.netPayableAmount,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get workDescription => $composableBuilder(
+      column: $table.workDescription,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get operatorName => $composableBuilder(
+      column: $table.operatorName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get supervisorVerified => $composableBuilder(
+      column: $table.supervisorVerified,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  $$EquipmentsTableOrderingComposer get equipmentId {
+    final $$EquipmentsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.equipmentId,
+        referencedTable: $db.equipments,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$EquipmentsTableOrderingComposer(
+              $db: $db,
+              $table: $db.equipments,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$ProjectsTableOrderingComposer get projectId {
+    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.projectId,
+        referencedTable: $db.projects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectsTableOrderingComposer(
+              $db: $db,
+              $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$EquipmentLogsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EquipmentLogsTable> {
+  $$EquipmentLogsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get logDate =>
+      $composableBuilder(column: $table.logDate, builder: (column) => column);
+
+  GeneratedColumn<double> get startReading => $composableBuilder(
+      column: $table.startReading, builder: (column) => column);
+
+  GeneratedColumn<double> get endReading => $composableBuilder(
+      column: $table.endReading, builder: (column) => column);
+
+  GeneratedColumn<double> get totalUnitsLogged => $composableBuilder(
+      column: $table.totalUnitsLogged, builder: (column) => column);
+
+  GeneratedColumn<double> get breakdownUnits => $composableBuilder(
+      column: $table.breakdownUnits, builder: (column) => column);
+
+  GeneratedColumn<double> get billableUnits => $composableBuilder(
+      column: $table.billableUnits, builder: (column) => column);
+
+  GeneratedColumn<double> get unitRate =>
+      $composableBuilder(column: $table.unitRate, builder: (column) => column);
+
+  GeneratedColumn<double> get grossRentalCost => $composableBuilder(
+      column: $table.grossRentalCost, builder: (column) => column);
+
+  GeneratedColumn<double> get fuelLitresIssued => $composableBuilder(
+      column: $table.fuelLitresIssued, builder: (column) => column);
+
+  GeneratedColumn<double> get fuelRatePerLitre => $composableBuilder(
+      column: $table.fuelRatePerLitre, builder: (column) => column);
+
+  GeneratedColumn<double> get fuelCostDeduction => $composableBuilder(
+      column: $table.fuelCostDeduction, builder: (column) => column);
+
+  GeneratedColumn<double> get netPayableAmount => $composableBuilder(
+      column: $table.netPayableAmount, builder: (column) => column);
+
+  GeneratedColumn<String> get workDescription => $composableBuilder(
+      column: $table.workDescription, builder: (column) => column);
+
+  GeneratedColumn<String> get operatorName => $composableBuilder(
+      column: $table.operatorName, builder: (column) => column);
+
+  GeneratedColumn<bool> get supervisorVerified => $composableBuilder(
+      column: $table.supervisorVerified, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$EquipmentsTableAnnotationComposer get equipmentId {
+    final $$EquipmentsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.equipmentId,
+        referencedTable: $db.equipments,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$EquipmentsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.equipments,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$ProjectsTableAnnotationComposer get projectId {
+    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.projectId,
+        referencedTable: $db.projects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$EquipmentLogsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $EquipmentLogsTable,
+    EquipmentLog,
+    $$EquipmentLogsTableFilterComposer,
+    $$EquipmentLogsTableOrderingComposer,
+    $$EquipmentLogsTableAnnotationComposer,
+    $$EquipmentLogsTableCreateCompanionBuilder,
+    $$EquipmentLogsTableUpdateCompanionBuilder,
+    (EquipmentLog, $$EquipmentLogsTableReferences),
+    EquipmentLog,
+    PrefetchHooks Function({bool equipmentId, bool projectId})> {
+  $$EquipmentLogsTableTableManager(_$AppDatabase db, $EquipmentLogsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EquipmentLogsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EquipmentLogsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EquipmentLogsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<int> equipmentId = const Value.absent(),
+            Value<int> projectId = const Value.absent(),
+            Value<DateTime> logDate = const Value.absent(),
+            Value<double> startReading = const Value.absent(),
+            Value<double> endReading = const Value.absent(),
+            Value<double> totalUnitsLogged = const Value.absent(),
+            Value<double> breakdownUnits = const Value.absent(),
+            Value<double> billableUnits = const Value.absent(),
+            Value<double> unitRate = const Value.absent(),
+            Value<double> grossRentalCost = const Value.absent(),
+            Value<double> fuelLitresIssued = const Value.absent(),
+            Value<double> fuelRatePerLitre = const Value.absent(),
+            Value<double> fuelCostDeduction = const Value.absent(),
+            Value<double> netPayableAmount = const Value.absent(),
+            Value<String> workDescription = const Value.absent(),
+            Value<String?> operatorName = const Value.absent(),
+            Value<bool> supervisorVerified = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              EquipmentLogsCompanion(
+            id: id,
+            equipmentId: equipmentId,
+            projectId: projectId,
+            logDate: logDate,
+            startReading: startReading,
+            endReading: endReading,
+            totalUnitsLogged: totalUnitsLogged,
+            breakdownUnits: breakdownUnits,
+            billableUnits: billableUnits,
+            unitRate: unitRate,
+            grossRentalCost: grossRentalCost,
+            fuelLitresIssued: fuelLitresIssued,
+            fuelRatePerLitre: fuelRatePerLitre,
+            fuelCostDeduction: fuelCostDeduction,
+            netPayableAmount: netPayableAmount,
+            workDescription: workDescription,
+            operatorName: operatorName,
+            supervisorVerified: supervisorVerified,
+            notes: notes,
+            createdAt: createdAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required int equipmentId,
+            required int projectId,
+            required DateTime logDate,
+            Value<double> startReading = const Value.absent(),
+            Value<double> endReading = const Value.absent(),
+            Value<double> totalUnitsLogged = const Value.absent(),
+            Value<double> breakdownUnits = const Value.absent(),
+            Value<double> billableUnits = const Value.absent(),
+            Value<double> unitRate = const Value.absent(),
+            Value<double> grossRentalCost = const Value.absent(),
+            Value<double> fuelLitresIssued = const Value.absent(),
+            Value<double> fuelRatePerLitre = const Value.absent(),
+            Value<double> fuelCostDeduction = const Value.absent(),
+            Value<double> netPayableAmount = const Value.absent(),
+            required String workDescription,
+            Value<String?> operatorName = const Value.absent(),
+            Value<bool> supervisorVerified = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              EquipmentLogsCompanion.insert(
+            id: id,
+            equipmentId: equipmentId,
+            projectId: projectId,
+            logDate: logDate,
+            startReading: startReading,
+            endReading: endReading,
+            totalUnitsLogged: totalUnitsLogged,
+            breakdownUnits: breakdownUnits,
+            billableUnits: billableUnits,
+            unitRate: unitRate,
+            grossRentalCost: grossRentalCost,
+            fuelLitresIssued: fuelLitresIssued,
+            fuelRatePerLitre: fuelRatePerLitre,
+            fuelCostDeduction: fuelCostDeduction,
+            netPayableAmount: netPayableAmount,
+            workDescription: workDescription,
+            operatorName: operatorName,
+            supervisorVerified: supervisorVerified,
+            notes: notes,
+            createdAt: createdAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$EquipmentLogsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({equipmentId = false, projectId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (equipmentId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.equipmentId,
+                    referencedTable:
+                        $$EquipmentLogsTableReferences._equipmentIdTable(db),
+                    referencedColumn:
+                        $$EquipmentLogsTableReferences._equipmentIdTable(db).id,
+                  ) as T;
+                }
+                if (projectId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.projectId,
+                    referencedTable:
+                        $$EquipmentLogsTableReferences._projectIdTable(db),
+                    referencedColumn:
+                        $$EquipmentLogsTableReferences._projectIdTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$EquipmentLogsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $EquipmentLogsTable,
+    EquipmentLog,
+    $$EquipmentLogsTableFilterComposer,
+    $$EquipmentLogsTableOrderingComposer,
+    $$EquipmentLogsTableAnnotationComposer,
+    $$EquipmentLogsTableCreateCompanionBuilder,
+    $$EquipmentLogsTableUpdateCompanionBuilder,
+    (EquipmentLog, $$EquipmentLogsTableReferences),
+    EquipmentLog,
+    PrefetchHooks Function({bool equipmentId, bool projectId})>;
+typedef $$PettyCashWalletsTableCreateCompanionBuilder
+    = PettyCashWalletsCompanion Function({
+  Value<int> id,
+  required String supervisorName,
+  required String phone,
+  Value<int?> assignedProjectId,
+  Value<double> maxFloatLimit,
+  Value<bool> isActive,
+  Value<String?> notes,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+});
+typedef $$PettyCashWalletsTableUpdateCompanionBuilder
+    = PettyCashWalletsCompanion Function({
+  Value<int> id,
+  Value<String> supervisorName,
+  Value<String> phone,
+  Value<int?> assignedProjectId,
+  Value<double> maxFloatLimit,
+  Value<bool> isActive,
+  Value<String?> notes,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+});
+
+final class $$PettyCashWalletsTableReferences extends BaseReferences<
+    _$AppDatabase, $PettyCashWalletsTable, PettyCashWallet> {
+  $$PettyCashWalletsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $ProjectsTable _assignedProjectIdTable(_$AppDatabase db) =>
+      db.projects.createAlias($_aliasNameGenerator(
+          db.pettyCashWallets.assignedProjectId, db.projects.id));
+
+  $$ProjectsTableProcessedTableManager? get assignedProjectId {
+    final $_column = $_itemColumn<int>('assigned_project_id');
+    if ($_column == null) return null;
+    final manager = $$ProjectsTableTableManager($_db, $_db.projects)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_assignedProjectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static MultiTypedResultKey<$PettyCashVouchersTable, List<PettyCashVoucher>>
+      _pettyCashVouchersRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.pettyCashVouchers,
+              aliasName: $_aliasNameGenerator(
+                  db.pettyCashWallets.id, db.pettyCashVouchers.walletId));
+
+  $$PettyCashVouchersTableProcessedTableManager get pettyCashVouchersRefs {
+    final manager =
+        $$PettyCashVouchersTableTableManager($_db, $_db.pettyCashVouchers)
+            .filter((f) => f.walletId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_pettyCashVouchersRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
+class $$PettyCashWalletsTableFilterComposer
+    extends Composer<_$AppDatabase, $PettyCashWalletsTable> {
+  $$PettyCashWalletsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get supervisorName => $composableBuilder(
+      column: $table.supervisorName,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get phone => $composableBuilder(
+      column: $table.phone, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get maxFloatLimit => $composableBuilder(
+      column: $table.maxFloatLimit, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+      column: $table.isActive, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  $$ProjectsTableFilterComposer get assignedProjectId {
+    final $$ProjectsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.assignedProjectId,
+        referencedTable: $db.projects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectsTableFilterComposer(
+              $db: $db,
+              $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  Expression<bool> pettyCashVouchersRefs(
+      Expression<bool> Function($$PettyCashVouchersTableFilterComposer f) f) {
+    final $$PettyCashVouchersTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.pettyCashVouchers,
+        getReferencedColumn: (t) => t.walletId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$PettyCashVouchersTableFilterComposer(
+              $db: $db,
+              $table: $db.pettyCashVouchers,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+}
+
+class $$PettyCashWalletsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PettyCashWalletsTable> {
+  $$PettyCashWalletsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get supervisorName => $composableBuilder(
+      column: $table.supervisorName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get phone => $composableBuilder(
+      column: $table.phone, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get maxFloatLimit => $composableBuilder(
+      column: $table.maxFloatLimit,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+      column: $table.isActive, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+      column: $table.notes, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  $$ProjectsTableOrderingComposer get assignedProjectId {
+    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.assignedProjectId,
+        referencedTable: $db.projects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectsTableOrderingComposer(
+              $db: $db,
+              $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$PettyCashWalletsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PettyCashWalletsTable> {
+  $$PettyCashWalletsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get supervisorName => $composableBuilder(
+      column: $table.supervisorName, builder: (column) => column);
+
+  GeneratedColumn<String> get phone =>
+      $composableBuilder(column: $table.phone, builder: (column) => column);
+
+  GeneratedColumn<double> get maxFloatLimit => $composableBuilder(
+      column: $table.maxFloatLimit, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$ProjectsTableAnnotationComposer get assignedProjectId {
+    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.assignedProjectId,
+        referencedTable: $db.projects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  Expression<T> pettyCashVouchersRefs<T extends Object>(
+      Expression<T> Function($$PettyCashVouchersTableAnnotationComposer a) f) {
+    final $$PettyCashVouchersTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $db.pettyCashVouchers,
+            getReferencedColumn: (t) => t.walletId,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$PettyCashVouchersTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.pettyCashVouchers,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return f(composer);
+  }
+}
+
+class $$PettyCashWalletsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $PettyCashWalletsTable,
+    PettyCashWallet,
+    $$PettyCashWalletsTableFilterComposer,
+    $$PettyCashWalletsTableOrderingComposer,
+    $$PettyCashWalletsTableAnnotationComposer,
+    $$PettyCashWalletsTableCreateCompanionBuilder,
+    $$PettyCashWalletsTableUpdateCompanionBuilder,
+    (PettyCashWallet, $$PettyCashWalletsTableReferences),
+    PettyCashWallet,
+    PrefetchHooks Function(
+        {bool assignedProjectId, bool pettyCashVouchersRefs})> {
+  $$PettyCashWalletsTableTableManager(
+      _$AppDatabase db, $PettyCashWalletsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PettyCashWalletsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PettyCashWalletsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PettyCashWalletsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> supervisorName = const Value.absent(),
+            Value<String> phone = const Value.absent(),
+            Value<int?> assignedProjectId = const Value.absent(),
+            Value<double> maxFloatLimit = const Value.absent(),
+            Value<bool> isActive = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              PettyCashWalletsCompanion(
+            id: id,
+            supervisorName: supervisorName,
+            phone: phone,
+            assignedProjectId: assignedProjectId,
+            maxFloatLimit: maxFloatLimit,
+            isActive: isActive,
+            notes: notes,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String supervisorName,
+            required String phone,
+            Value<int?> assignedProjectId = const Value.absent(),
+            Value<double> maxFloatLimit = const Value.absent(),
+            Value<bool> isActive = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              PettyCashWalletsCompanion.insert(
+            id: id,
+            supervisorName: supervisorName,
+            phone: phone,
+            assignedProjectId: assignedProjectId,
+            maxFloatLimit: maxFloatLimit,
+            isActive: isActive,
+            notes: notes,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$PettyCashWalletsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: (
+              {assignedProjectId = false, pettyCashVouchersRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (pettyCashVouchersRefs) db.pettyCashVouchers
+              ],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (assignedProjectId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.assignedProjectId,
+                    referencedTable: $$PettyCashWalletsTableReferences
+                        ._assignedProjectIdTable(db),
+                    referencedColumn: $$PettyCashWalletsTableReferences
+                        ._assignedProjectIdTable(db)
+                        .id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (pettyCashVouchersRefs)
+                    await $_getPrefetchedData<PettyCashWallet,
+                            $PettyCashWalletsTable, PettyCashVoucher>(
+                        currentTable: table,
+                        referencedTable: $$PettyCashWalletsTableReferences
+                            ._pettyCashVouchersRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$PettyCashWalletsTableReferences(db, table, p0)
+                                .pettyCashVouchersRefs,
+                        referencedItemsForCurrentItem: (item,
+                                referencedItems) =>
+                            referencedItems.where((e) => e.walletId == item.id),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$PettyCashWalletsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $PettyCashWalletsTable,
+    PettyCashWallet,
+    $$PettyCashWalletsTableFilterComposer,
+    $$PettyCashWalletsTableOrderingComposer,
+    $$PettyCashWalletsTableAnnotationComposer,
+    $$PettyCashWalletsTableCreateCompanionBuilder,
+    $$PettyCashWalletsTableUpdateCompanionBuilder,
+    (PettyCashWallet, $$PettyCashWalletsTableReferences),
+    PettyCashWallet,
+    PrefetchHooks Function(
+        {bool assignedProjectId, bool pettyCashVouchersRefs})>;
+typedef $$PettyCashVouchersTableCreateCompanionBuilder
+    = PettyCashVouchersCompanion Function({
+  Value<int> id,
+  required int walletId,
+  required int projectId,
+  required PettyCashTxnType type,
+  required DateTime date,
+  required double amount,
+  Value<String> category,
+  Value<BudgetCostHead> costHead,
+  Value<String?> voucherNumber,
+  Value<PaymentMode?> paymentMode,
+  Value<int?> bankAccountId,
+  required String narration,
+  Value<String?> verifiedBy,
+  Value<int?> transactionId,
+  Value<DateTime> createdAt,
+});
+typedef $$PettyCashVouchersTableUpdateCompanionBuilder
+    = PettyCashVouchersCompanion Function({
+  Value<int> id,
+  Value<int> walletId,
+  Value<int> projectId,
+  Value<PettyCashTxnType> type,
+  Value<DateTime> date,
+  Value<double> amount,
+  Value<String> category,
+  Value<BudgetCostHead> costHead,
+  Value<String?> voucherNumber,
+  Value<PaymentMode?> paymentMode,
+  Value<int?> bankAccountId,
+  Value<String> narration,
+  Value<String?> verifiedBy,
+  Value<int?> transactionId,
+  Value<DateTime> createdAt,
+});
+
+final class $$PettyCashVouchersTableReferences extends BaseReferences<
+    _$AppDatabase, $PettyCashVouchersTable, PettyCashVoucher> {
+  $$PettyCashVouchersTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $PettyCashWalletsTable _walletIdTable(_$AppDatabase db) =>
+      db.pettyCashWallets.createAlias($_aliasNameGenerator(
+          db.pettyCashVouchers.walletId, db.pettyCashWallets.id));
+
+  $$PettyCashWalletsTableProcessedTableManager get walletId {
+    final $_column = $_itemColumn<int>('wallet_id')!;
+
+    final manager =
+        $$PettyCashWalletsTableTableManager($_db, $_db.pettyCashWallets)
+            .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_walletIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $ProjectsTable _projectIdTable(_$AppDatabase db) =>
+      db.projects.createAlias(
+          $_aliasNameGenerator(db.pettyCashVouchers.projectId, db.projects.id));
+
+  $$ProjectsTableProcessedTableManager get projectId {
+    final $_column = $_itemColumn<int>('project_id')!;
+
+    final manager = $$ProjectsTableTableManager($_db, $_db.projects)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_projectIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $BankAccountsTable _bankAccountIdTable(_$AppDatabase db) =>
+      db.bankAccounts.createAlias($_aliasNameGenerator(
+          db.pettyCashVouchers.bankAccountId, db.bankAccounts.id));
+
+  $$BankAccountsTableProcessedTableManager? get bankAccountId {
+    final $_column = $_itemColumn<int>('bank_account_id');
+    if ($_column == null) return null;
+    final manager = $$BankAccountsTableTableManager($_db, $_db.bankAccounts)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_bankAccountIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $TransactionsTable _transactionIdTable(_$AppDatabase db) =>
+      db.transactions.createAlias($_aliasNameGenerator(
+          db.pettyCashVouchers.transactionId, db.transactions.id));
+
+  $$TransactionsTableProcessedTableManager? get transactionId {
+    final $_column = $_itemColumn<int>('transaction_id');
+    if ($_column == null) return null;
+    final manager = $$TransactionsTableTableManager($_db, $_db.transactions)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_transactionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$PettyCashVouchersTableFilterComposer
+    extends Composer<_$AppDatabase, $PettyCashVouchersTable> {
+  $$PettyCashVouchersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<PettyCashTxnType, PettyCashTxnType, String>
+      get type => $composableBuilder(
+          column: $table.type,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+      column: $table.date, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get category => $composableBuilder(
+      column: $table.category, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<BudgetCostHead, BudgetCostHead, String>
+      get costHead => $composableBuilder(
+          column: $table.costHead,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<String> get voucherNumber => $composableBuilder(
+      column: $table.voucherNumber, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<PaymentMode?, PaymentMode, String>
+      get paymentMode => $composableBuilder(
+          column: $table.paymentMode,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<String> get narration => $composableBuilder(
+      column: $table.narration, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get verifiedBy => $composableBuilder(
+      column: $table.verifiedBy, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  $$PettyCashWalletsTableFilterComposer get walletId {
+    final $$PettyCashWalletsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletId,
+        referencedTable: $db.pettyCashWallets,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$PettyCashWalletsTableFilterComposer(
+              $db: $db,
+              $table: $db.pettyCashWallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$ProjectsTableFilterComposer get projectId {
+    final $$ProjectsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.projectId,
+        referencedTable: $db.projects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectsTableFilterComposer(
+              $db: $db,
+              $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$BankAccountsTableFilterComposer get bankAccountId {
+    final $$BankAccountsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.bankAccountId,
+        referencedTable: $db.bankAccounts,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BankAccountsTableFilterComposer(
+              $db: $db,
+              $table: $db.bankAccounts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$TransactionsTableFilterComposer get transactionId {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.transactionId,
+        referencedTable: $db.transactions,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableFilterComposer(
+              $db: $db,
+              $table: $db.transactions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$PettyCashVouchersTableOrderingComposer
+    extends Composer<_$AppDatabase, $PettyCashVouchersTable> {
+  $$PettyCashVouchersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+      column: $table.date, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get category => $composableBuilder(
+      column: $table.category, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get costHead => $composableBuilder(
+      column: $table.costHead, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get voucherNumber => $composableBuilder(
+      column: $table.voucherNumber,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get paymentMode => $composableBuilder(
+      column: $table.paymentMode, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get narration => $composableBuilder(
+      column: $table.narration, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get verifiedBy => $composableBuilder(
+      column: $table.verifiedBy, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  $$PettyCashWalletsTableOrderingComposer get walletId {
+    final $$PettyCashWalletsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletId,
+        referencedTable: $db.pettyCashWallets,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$PettyCashWalletsTableOrderingComposer(
+              $db: $db,
+              $table: $db.pettyCashWallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$ProjectsTableOrderingComposer get projectId {
+    final $$ProjectsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.projectId,
+        referencedTable: $db.projects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectsTableOrderingComposer(
+              $db: $db,
+              $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$BankAccountsTableOrderingComposer get bankAccountId {
+    final $$BankAccountsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.bankAccountId,
+        referencedTable: $db.bankAccounts,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BankAccountsTableOrderingComposer(
+              $db: $db,
+              $table: $db.bankAccounts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$TransactionsTableOrderingComposer get transactionId {
+    final $$TransactionsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.transactionId,
+        referencedTable: $db.transactions,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableOrderingComposer(
+              $db: $db,
+              $table: $db.transactions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$PettyCashVouchersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PettyCashVouchersTable> {
+  $$PettyCashVouchersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<PettyCashTxnType, String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<double> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<BudgetCostHead, String> get costHead =>
+      $composableBuilder(column: $table.costHead, builder: (column) => column);
+
+  GeneratedColumn<String> get voucherNumber => $composableBuilder(
+      column: $table.voucherNumber, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<PaymentMode?, String> get paymentMode =>
+      $composableBuilder(
+          column: $table.paymentMode, builder: (column) => column);
+
+  GeneratedColumn<String> get narration =>
+      $composableBuilder(column: $table.narration, builder: (column) => column);
+
+  GeneratedColumn<String> get verifiedBy => $composableBuilder(
+      column: $table.verifiedBy, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$PettyCashWalletsTableAnnotationComposer get walletId {
+    final $$PettyCashWalletsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.walletId,
+        referencedTable: $db.pettyCashWallets,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$PettyCashWalletsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.pettyCashWallets,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$ProjectsTableAnnotationComposer get projectId {
+    final $$ProjectsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.projectId,
+        referencedTable: $db.projects,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ProjectsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.projects,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$BankAccountsTableAnnotationComposer get bankAccountId {
+    final $$BankAccountsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.bankAccountId,
+        referencedTable: $db.bankAccounts,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$BankAccountsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.bankAccounts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$TransactionsTableAnnotationComposer get transactionId {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.transactionId,
+        referencedTable: $db.transactions,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.transactions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$PettyCashVouchersTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $PettyCashVouchersTable,
+    PettyCashVoucher,
+    $$PettyCashVouchersTableFilterComposer,
+    $$PettyCashVouchersTableOrderingComposer,
+    $$PettyCashVouchersTableAnnotationComposer,
+    $$PettyCashVouchersTableCreateCompanionBuilder,
+    $$PettyCashVouchersTableUpdateCompanionBuilder,
+    (PettyCashVoucher, $$PettyCashVouchersTableReferences),
+    PettyCashVoucher,
+    PrefetchHooks Function(
+        {bool walletId,
+        bool projectId,
+        bool bankAccountId,
+        bool transactionId})> {
+  $$PettyCashVouchersTableTableManager(
+      _$AppDatabase db, $PettyCashVouchersTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PettyCashVouchersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PettyCashVouchersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PettyCashVouchersTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<int> walletId = const Value.absent(),
+            Value<int> projectId = const Value.absent(),
+            Value<PettyCashTxnType> type = const Value.absent(),
+            Value<DateTime> date = const Value.absent(),
+            Value<double> amount = const Value.absent(),
+            Value<String> category = const Value.absent(),
+            Value<BudgetCostHead> costHead = const Value.absent(),
+            Value<String?> voucherNumber = const Value.absent(),
+            Value<PaymentMode?> paymentMode = const Value.absent(),
+            Value<int?> bankAccountId = const Value.absent(),
+            Value<String> narration = const Value.absent(),
+            Value<String?> verifiedBy = const Value.absent(),
+            Value<int?> transactionId = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              PettyCashVouchersCompanion(
+            id: id,
+            walletId: walletId,
+            projectId: projectId,
+            type: type,
+            date: date,
+            amount: amount,
+            category: category,
+            costHead: costHead,
+            voucherNumber: voucherNumber,
+            paymentMode: paymentMode,
+            bankAccountId: bankAccountId,
+            narration: narration,
+            verifiedBy: verifiedBy,
+            transactionId: transactionId,
+            createdAt: createdAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required int walletId,
+            required int projectId,
+            required PettyCashTxnType type,
+            required DateTime date,
+            required double amount,
+            Value<String> category = const Value.absent(),
+            Value<BudgetCostHead> costHead = const Value.absent(),
+            Value<String?> voucherNumber = const Value.absent(),
+            Value<PaymentMode?> paymentMode = const Value.absent(),
+            Value<int?> bankAccountId = const Value.absent(),
+            required String narration,
+            Value<String?> verifiedBy = const Value.absent(),
+            Value<int?> transactionId = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+          }) =>
+              PettyCashVouchersCompanion.insert(
+            id: id,
+            walletId: walletId,
+            projectId: projectId,
+            type: type,
+            date: date,
+            amount: amount,
+            category: category,
+            costHead: costHead,
+            voucherNumber: voucherNumber,
+            paymentMode: paymentMode,
+            bankAccountId: bankAccountId,
+            narration: narration,
+            verifiedBy: verifiedBy,
+            transactionId: transactionId,
+            createdAt: createdAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$PettyCashVouchersTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: (
+              {walletId = false,
+              projectId = false,
+              bankAccountId = false,
+              transactionId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (walletId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.walletId,
+                    referencedTable:
+                        $$PettyCashVouchersTableReferences._walletIdTable(db),
+                    referencedColumn: $$PettyCashVouchersTableReferences
+                        ._walletIdTable(db)
+                        .id,
+                  ) as T;
+                }
+                if (projectId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.projectId,
+                    referencedTable:
+                        $$PettyCashVouchersTableReferences._projectIdTable(db),
+                    referencedColumn: $$PettyCashVouchersTableReferences
+                        ._projectIdTable(db)
+                        .id,
+                  ) as T;
+                }
+                if (bankAccountId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.bankAccountId,
+                    referencedTable: $$PettyCashVouchersTableReferences
+                        ._bankAccountIdTable(db),
+                    referencedColumn: $$PettyCashVouchersTableReferences
+                        ._bankAccountIdTable(db)
+                        .id,
+                  ) as T;
+                }
+                if (transactionId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.transactionId,
+                    referencedTable: $$PettyCashVouchersTableReferences
+                        ._transactionIdTable(db),
+                    referencedColumn: $$PettyCashVouchersTableReferences
+                        ._transactionIdTable(db)
+                        .id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$PettyCashVouchersTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $PettyCashVouchersTable,
+    PettyCashVoucher,
+    $$PettyCashVouchersTableFilterComposer,
+    $$PettyCashVouchersTableOrderingComposer,
+    $$PettyCashVouchersTableAnnotationComposer,
+    $$PettyCashVouchersTableCreateCompanionBuilder,
+    $$PettyCashVouchersTableUpdateCompanionBuilder,
+    (PettyCashVoucher, $$PettyCashVouchersTableReferences),
+    PettyCashVoucher,
+    PrefetchHooks Function(
+        {bool walletId,
+        bool projectId,
+        bool bankAccountId,
+        bool transactionId})>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -16826,4 +22681,12 @@ class $AppDatabaseManager {
       $$ClientReceiptsTableTableManager(_db, _db.clientReceipts);
   $$ProjectBudgetsTableTableManager get projectBudgets =>
       $$ProjectBudgetsTableTableManager(_db, _db.projectBudgets);
+  $$EquipmentsTableTableManager get equipments =>
+      $$EquipmentsTableTableManager(_db, _db.equipments);
+  $$EquipmentLogsTableTableManager get equipmentLogs =>
+      $$EquipmentLogsTableTableManager(_db, _db.equipmentLogs);
+  $$PettyCashWalletsTableTableManager get pettyCashWallets =>
+      $$PettyCashWalletsTableTableManager(_db, _db.pettyCashWallets);
+  $$PettyCashVouchersTableTableManager get pettyCashVouchers =>
+      $$PettyCashVouchersTableTableManager(_db, _db.pettyCashVouchers);
 }

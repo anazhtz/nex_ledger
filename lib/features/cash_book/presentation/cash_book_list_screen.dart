@@ -7,9 +7,11 @@ import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/core/utils/excel_export_service.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
+import 'package:nex_ledger/core/utils/pdf_receipt_service.dart';
 import 'package:nex_ledger/features/cash_book/providers/cash_book_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 import 'package:nex_ledger/shared/widgets/data_table_card.dart';
+import 'package:nex_ledger/shared/widgets/pdf_preview_dialog.dart';
 
 class CashBookListScreen extends ConsumerWidget {
   const CashBookListScreen({super.key});
@@ -278,6 +280,31 @@ class CashBookListScreen extends ConsumerWidget {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            IconButton(
+                              icon: const Icon(Icons.print_outlined, size: 17),
+                              tooltip: 'Print Voucher (PDF)',
+                              color: const Color(0xFF2563EB),
+                              onPressed: () {
+                                PdfPreviewDialog.show(
+                                  context: context,
+                                  title: 'Payment Voucher — #${tw.transaction.id}',
+                                  pdfBuilder: (format) =>
+                                      PdfReceiptService.generatePaymentVoucher(
+                                    transactionId: tw.transaction.id,
+                                    date: tw.transaction.date,
+                                    type: tw.transaction.type,
+                                    amount: tw.transaction.amount,
+                                    paymentMode: tw.transaction.paymentMode ??
+                                        PaymentMode.cash,
+                                    projectName: tw.project.name,
+                                    projectCode: tw.project.code,
+                                    category: tw.transaction.type.displayName,
+                                    narration: tw.transaction.narration,
+                                    voucherRef: tw.transaction.referenceNo,
+                                  ),
+                                );
+                              },
+                            ),
                             if (isDirectCashBook)
                               IconButton(
                                 icon: const Icon(Icons.edit_outlined, size: 17),

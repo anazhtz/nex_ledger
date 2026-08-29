@@ -69,6 +69,37 @@ enum BudgetHealthStatus {
   overBudget, // >= 100% of budget spent (cost overrun)
 }
 
+enum EquipmentOwnership {
+  rented, // Rented from third-party vendor / machinery owner
+  owned,  // Contractor / Company-owned asset
+}
+
+enum EquipmentRentalBasis {
+  hourly,    // Billed per operating hour (e.g. ₹1,200/hr)
+  daily,     // Billed per shift / day (e.g. ₹9,000/day)
+  monthly,   // Billed per month (e.g. ₹1,50,000/mo)
+  tripBasis, // Billed per trip / load (e.g. ₹1,800/trip)
+}
+
+enum EquipmentFuelPolicy {
+  contractorSupplied, // Diesel provided by builder/contractor (deducted from owner's bill)
+  vendorSupplied,     // Diesel included/provided by equipment owner
+}
+
+enum EquipmentStatus {
+  active,      // Currently deployed on a project site
+  idle,        // Parked / standby on site
+  maintenance, // Under repair / breakdown
+  released,    // Demobilized & returned to vendor
+}
+
+enum PettyCashTxnType {
+  advanceDisbursed, // Cash advance given to supervisor (Float Increases, Office Cash Decreases, P&L = 0)
+  voucherExpense,   // Supervisor spends cash on site (Float Decreases, Project P&L Expense Recorded)
+  cashReturned,     // Supervisor returns unused cash to office (Float Decreases, Office Cash Increases, P&L = 0)
+  floatReplenished, // Office tops up the float (Float Increases, Office Cash Decreases, P&L = 0)
+}
+
 // ---------------------------------------------------------------------------
 // Display name helpers
 // ---------------------------------------------------------------------------
@@ -264,3 +295,105 @@ extension DepositStatusX on DepositStatus {
         DepositStatus.refunded => 'Refunded',
       };
 }
+
+extension EquipmentOwnershipX on EquipmentOwnership {
+  String get displayName => switch (this) {
+        EquipmentOwnership.rented => 'Rented / Leased',
+        EquipmentOwnership.owned => 'Company Owned',
+      };
+}
+
+extension EquipmentRentalBasisX on EquipmentRentalBasis {
+  String get displayName => switch (this) {
+        EquipmentRentalBasis.hourly => 'Hourly (Per Hour)',
+        EquipmentRentalBasis.daily => 'Daily (Per Shift/Day)',
+        EquipmentRentalBasis.monthly => 'Monthly (Per Month)',
+        EquipmentRentalBasis.tripBasis => 'Trip Basis (Per Load)',
+      };
+
+  String get unitLabel => switch (this) {
+        EquipmentRentalBasis.hourly => 'Hrs',
+        EquipmentRentalBasis.daily => 'Days',
+        EquipmentRentalBasis.monthly => 'Months',
+        EquipmentRentalBasis.tripBasis => 'Trips',
+      };
+}
+
+extension EquipmentFuelPolicyX on EquipmentFuelPolicy {
+  String get displayName => switch (this) {
+        EquipmentFuelPolicy.contractorSupplied => 'Contractor Diesel (Deducted from Bill)',
+        EquipmentFuelPolicy.vendorSupplied => 'Vendor Diesel (Included)',
+      };
+}
+
+extension EquipmentStatusX on EquipmentStatus {
+  String get displayName => switch (this) {
+        EquipmentStatus.active => 'Active on Site',
+        EquipmentStatus.idle => 'Idle / Standby',
+        EquipmentStatus.maintenance => 'Maintenance / Breakdown',
+        EquipmentStatus.released => 'Released / Demobilized',
+      };
+}
+
+class EquipmentCategoryPreset {
+  final String name;
+  final String defaultBasis;
+  final String iconName;
+  final String description;
+
+  const EquipmentCategoryPreset({
+    required this.name,
+    required this.defaultBasis,
+    required this.iconName,
+    required this.description,
+  });
+}
+
+const List<EquipmentCategoryPreset> kStandardEquipmentCategories = [
+  EquipmentCategoryPreset(name: 'JCB / Backhoe Loader', defaultBasis: 'Hourly', iconName: 'front_loader', description: 'Earth excavation, levelling, trenching & material shifting'),
+  EquipmentCategoryPreset(name: 'Hydraulic Excavator (Poclain)', defaultBasis: 'Hourly', iconName: 'precision_manufacturing', description: 'Deep foundation, rock breaker, heavy earthmoving'),
+  EquipmentCategoryPreset(name: 'Mobile / Hydra Crane (12T-25T)', defaultBasis: 'Hourly', iconName: 'forklift', description: 'Rebar lifting, precast placement, heavy machine loading'),
+  EquipmentCategoryPreset(name: 'Tower Crane', defaultBasis: 'Monthly', iconName: 'construction', description: 'High-rise tower concrete & material vertical transport'),
+  EquipmentCategoryPreset(name: 'Tipper / Dump Truck (10-12 Wheeler)', defaultBasis: 'Trip Basis', iconName: 'local_shipping', description: 'Debris muck disposal, sand & aggregate transport'),
+  EquipmentCategoryPreset(name: 'Compactor / Road Roller', defaultBasis: 'Daily', iconName: 'roller_shades', description: 'Subgrade, WMM, soil & asphalt compaction'),
+  EquipmentCategoryPreset(name: 'Concrete Boom Pump / Transit Mixer', defaultBasis: 'Trip Basis', iconName: 'local_car_wash', description: 'Ready-mix concrete pumping & transport'),
+  EquipmentCategoryPreset(name: 'Diesel Generator (DG Set 62.5-250 kVA)', defaultBasis: 'Monthly', iconName: 'electric_bolt', description: 'Continuous site backup power & welding support'),
+  EquipmentCategoryPreset(name: 'Tractor & Trolley', defaultBasis: 'Daily', iconName: 'agriculture', description: 'Local site material transport & water tank hauling'),
+  EquipmentCategoryPreset(name: 'Piling Rig / Drilling Machine', defaultBasis: 'Hourly', iconName: 'handyman', description: 'Bored cast-in-situ concrete piles & micro-piling'),
+  EquipmentCategoryPreset(name: 'Other Civil Machinery', defaultBasis: 'Daily', iconName: 'build', description: 'Bar bending machines, plate compactors, vibrators'),
+];
+
+extension PettyCashTxnTypeX on PettyCashTxnType {
+  String get displayName => switch (this) {
+        PettyCashTxnType.advanceDisbursed => 'Advance Disbursed to Supervisor',
+        PettyCashTxnType.voucherExpense => 'Site Expense Voucher',
+        PettyCashTxnType.cashReturned => 'Cash Returned to Office',
+        PettyCashTxnType.floatReplenished => 'Float Replenishment',
+      };
+}
+
+class PettyCashCategoryPreset {
+  final String name;
+  final BudgetCostHead defaultCostHead;
+  final String description;
+
+  const PettyCashCategoryPreset({
+    required this.name,
+    required this.defaultCostHead,
+    required this.description,
+  });
+}
+
+const List<PettyCashCategoryPreset> kStandardPettyCashCategories = [
+  PettyCashCategoryPreset(name: 'Worker Tea, Food & Refreshments', defaultCostHead: BudgetCostHead.labour, description: 'Overtime worker snacks, tea, lunch for concrete pours'),
+  PettyCashCategoryPreset(name: 'Water Tanker & Site Utilities', defaultCostHead: BudgetCostHead.equipmentOverhead, description: 'Water tanker for curing, electricity & DG fuel topup'),
+  PettyCashCategoryPreset(name: 'Urgent Hardware & Consumables', defaultCostHead: BudgetCostHead.materials, description: 'Nails, binding wire, drill bits, tape, safety ropes'),
+  PettyCashCategoryPreset(name: 'Auto, Tempo & Material Cartage', defaultCostHead: BudgetCostHead.equipmentOverhead, description: 'Local tempo/rickshaw freight for sample delivery & minor materials'),
+  PettyCashCategoryPreset(name: 'Minor Tool Repair & Grease', defaultCostHead: BudgetCostHead.equipmentOverhead, description: 'Vibrator needle repair, welding rods, machine lubricant'),
+  PettyCashCategoryPreset(name: 'Drawing Prints & Site Office', defaultCostHead: BudgetCostHead.equipmentOverhead, description: 'Architectural blueprint prints, site files, stationery'),
+  PettyCashCategoryPreset(name: 'First Aid & Medical Emergency', defaultCostHead: BudgetCostHead.labour, description: 'Site worker emergency medical care, band-aids, ORS'),
+  PettyCashCategoryPreset(name: 'Local Permits & Miscellaneous', defaultCostHead: BudgetCostHead.equipmentOverhead, description: 'Police/traffic permissions, watchman tip, site petty cash misc.'),
+  PettyCashCategoryPreset(name: 'Other Site Expense', defaultCostHead: BudgetCostHead.equipmentOverhead, description: 'General site emergency voucher'),
+];
+
+

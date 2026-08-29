@@ -37,6 +37,12 @@ import 'package:nex_ledger/features/client_billing/presentation/client_billing_h
 import 'package:nex_ledger/features/client_billing/presentation/client_ra_bill_form_screen.dart';
 import 'package:nex_ledger/features/client_billing/presentation/client_receipt_form_screen.dart';
 import 'package:nex_ledger/features/budgets/presentation/project_budget_variance_hub_screen.dart';
+import 'package:nex_ledger/features/equipment/presentation/equipment_hub_screen.dart';
+import 'package:nex_ledger/features/equipment/presentation/equipment_form_screen.dart';
+import 'package:nex_ledger/features/equipment/presentation/equipment_log_form_screen.dart';
+import 'package:nex_ledger/features/petty_cash/presentation/petty_cash_hub_screen.dart';
+import 'package:nex_ledger/features/petty_cash/presentation/petty_cash_voucher_form_screen.dart';
+import 'package:nex_ledger/features/petty_cash/presentation/petty_cash_wallet_form_screen.dart';
 import 'package:nex_ledger/shared/widgets/app_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -208,6 +214,62 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/budgets',
             builder: (c, s) => const ProjectBudgetVarianceHubScreen(),
+          ),
+          GoRoute(
+            path: '/equipment',
+            builder: (c, s) => const EquipmentHubScreen(),
+            routes: [
+              GoRoute(
+                path: 'new',
+                builder: (c, s) => const EquipmentFormScreen(),
+              ),
+              GoRoute(
+                path: ':id/edit',
+                builder: (c, s) => EquipmentFormScreen(
+                  equipmentId: int.parse(s.pathParameters['id']!),
+                ),
+              ),
+              GoRoute(
+                path: 'logs/new',
+                builder: (c, s) => EquipmentLogFormScreen(
+                  initialEquipmentId: int.tryParse(
+                      s.uri.queryParameters['equipmentId'] ?? ''),
+                  initialProjectId: int.tryParse(
+                      s.uri.queryParameters['projectId'] ?? ''),
+                ),
+              ),
+              GoRoute(
+                path: 'logs/:id/edit',
+                builder: (c, s) => EquipmentLogFormScreen(
+                  logId: int.parse(s.pathParameters['id']!),
+                ),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/petty-cash',
+            builder: (c, s) => const PettyCashHubScreen(),
+            routes: [
+              GoRoute(
+                path: 'wallets/new',
+                builder: (c, s) => const PettyCashWalletFormScreen(),
+              ),
+              GoRoute(
+                path: 'wallets/:id/edit',
+                builder: (c, s) => PettyCashWalletFormScreen(
+                  walletId: int.parse(s.pathParameters['id']!),
+                ),
+              ),
+              GoRoute(
+                path: 'vouchers/new',
+                builder: (c, s) => PettyCashVoucherFormScreen(
+                  initialWalletId: int.tryParse(
+                      s.uri.queryParameters['walletId'] ?? ''),
+                  initialProjectId: int.tryParse(
+                      s.uri.queryParameters['projectId'] ?? ''),
+                ),
+              ),
+            ],
           ),
           GoRoute(
             path: '/deposits',
