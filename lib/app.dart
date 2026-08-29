@@ -23,6 +23,7 @@ import 'package:nex_ledger/features/reports/presentation/project_pnl_screen.dart
 import 'package:nex_ledger/features/reports/presentation/deposit_ledger_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/consolidated_pnl_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/day_book_screen.dart';
+import 'package:nex_ledger/features/reports/presentation/ledgers_hub_screen.dart';
 import 'package:nex_ledger/features/bank_accounts/presentation/bank_accounts_screen.dart';
 import 'package:nex_ledger/features/settings/presentation/settings_screen.dart';
 import 'package:nex_ledger/features/maintenance/presentation/maintenance_screen.dart';
@@ -168,6 +169,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/reports/day-book',
             builder: (c, s) => const DayBookScreen(),
+          ),
+          GoRoute(
+            path: '/ledgers',
+            builder: (c, s) => const LedgersHubScreen(),
           ),
           GoRoute(
             path: '/bank-accounts',

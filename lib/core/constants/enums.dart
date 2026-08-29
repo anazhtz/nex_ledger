@@ -10,6 +10,13 @@ enum DepositType {
   received, // Security Deposit Received from Client / Subcontractor (Liability, Inflow)
 }
 
+enum LedgerType {
+  supplier,
+  labour,
+  bankCash,
+  personal,
+}
+
 enum TransactionType {
   income,
   expense,
@@ -22,6 +29,8 @@ enum TransactionType {
   depositAdjustment, // Deposit adjusted to income (No cash, P&L Income recognized)
   depositPaid,       // Security Deposit Paid to Govt/Client (Outflow, Asset, P&L = 0)
   depositRecovery,   // Security Deposit Recovered/Returned from Govt/Client (Inflow, Asset cleared, P&L = 0)
+  ownerCapital,      // Owner Capital Injected (Inflow, Equity, P&L = 0)
+  drawings,          // Owner Drawings / Personal Withdrawal (Outflow, Equity, P&L = 0)
 }
 
 enum PaymentMode { cash, bank, cheque, online }
@@ -41,6 +50,15 @@ enum DepositStatus {
 // ---------------------------------------------------------------------------
 // Display name helpers
 // ---------------------------------------------------------------------------
+
+extension LedgerTypeX on LedgerType {
+  String get displayName => switch (this) {
+        LedgerType.supplier => 'Suppliers / Vendors',
+        LedgerType.labour => 'Labour / Workers',
+        LedgerType.bankCash => 'Bank & Cash Accounts',
+        LedgerType.personal => 'Personal / Owner Equity',
+      };
+}
 
 extension ProjectTypeX on ProjectType {
   String get displayName => switch (this) {
@@ -77,16 +95,20 @@ extension TransactionTypeX on TransactionType {
         TransactionType.depositAdjustment => 'Deposit Adjustment',
         TransactionType.depositPaid => 'Security Deposit Paid',
         TransactionType.depositRecovery => 'Deposit Recovered / Returned',
+        TransactionType.ownerCapital => 'Owner Capital / Injection',
+        TransactionType.drawings => 'Owner Drawings / Personal',
       };
 
   /// Whether this transaction type affects P&L by default.
   /// purchasePayment is false — P&L was already hit when the bill was recorded.
-  /// Deposit-related types (except adjustment to income) are always false.
+  /// Deposit-related and Owner Equity types are always false.
   bool get defaultAffectsPnl => switch (this) {
         TransactionType.deposit => false,
         TransactionType.depositRefund => false,
         TransactionType.depositPaid => false,
         TransactionType.depositRecovery => false,
+        TransactionType.ownerCapital => false,
+        TransactionType.drawings => false,
         TransactionType.depositAdjustment => true,
         TransactionType.purchasePayment => false, // P&L already hit at bill entry
         _ => true,
@@ -101,6 +123,7 @@ extension TransactionTypeX on TransactionType {
         TransactionType.labourPayment => true,
         TransactionType.depositRefund => true,
         TransactionType.depositPaid => true, // cash out when paying security deposit to govt
+        TransactionType.drawings => true, // cash out when owner withdraws money
         _ => false,
       };
 }

@@ -578,6 +578,16 @@ class DayBookScreen extends ConsumerWidget {
         fg = const Color(0xFF6B21A8);
         label = 'Stock Allocated';
         break;
+      case TransactionType.ownerCapital:
+        bg = const Color(0xFFCCFBF1);
+        fg = const Color(0xFF115E59);
+        label = 'Owner Capital';
+        break;
+      case TransactionType.drawings:
+        bg = const Color(0xFFFFE4E6);
+        fg = const Color(0xFF9F1239);
+        label = 'Owner Drawings';
+        break;
     }
 
     return Container(

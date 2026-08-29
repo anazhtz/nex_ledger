@@ -105,7 +105,7 @@ class TransactionDao extends DatabaseAccessor<AppDatabase>
   /// Credits: income, deposit, depositRecovery. Debits: expense, purchase, purchasePayment, labourPayment, depositRefund, depositPaid.
   Stream<double> watchCashBalance() {
     final balanceExp = CustomExpression<double>(
-      "SUM(CASE WHEN type IN ('income', 'deposit', 'depositRecovery') THEN amount ELSE -amount END)"
+      "SUM(CASE WHEN type IN ('income', 'deposit', 'depositRecovery', 'ownerCapital') THEN amount ELSE -amount END)"
     );
 
     final query = selectOnly(transactions)

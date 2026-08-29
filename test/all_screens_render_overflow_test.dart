@@ -22,6 +22,7 @@ import 'package:nex_ledger/features/purchase/presentation/purchase_list_screen.d
 import 'package:nex_ledger/features/reports/presentation/day_book_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/deposit_ledger_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/project_pnl_screen.dart';
+import 'package:nex_ledger/features/reports/presentation/ledgers_hub_screen.dart';
 import 'package:nex_ledger/features/settings/presentation/settings_screen.dart';
 import 'package:nex_ledger/shared/widgets/app_shell.dart';
 import 'package:go_router/go_router.dart';
@@ -29,12 +30,8 @@ import 'package:go_router/go_router.dart';
 void main() {
   late AppDatabase db;
 
-  setUpAll(() {
+  setUp(() {
     db = AppDatabase(NativeDatabase.memory());
-  });
-
-  tearDownAll(() async {
-    await db.close();
   });
 
   Widget createTestWidget(Widget child, {Size size = const Size(1280, 800)}) {
@@ -235,6 +232,14 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
       expect(find.byType(DayBookScreen), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump(const Duration(milliseconds: 100));
+
+      await tester.pumpWidget(createTestWidget(const LedgersHubScreen()));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(find.byType(LedgersHubScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
       await tester.pump(const Duration(milliseconds: 100));

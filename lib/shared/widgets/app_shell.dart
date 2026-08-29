@@ -96,6 +96,12 @@ class _AppShellState extends ConsumerState<AppShell> {
       section: 'FINANCIALS',
     ),
     NavItem(
+      icon: Icons.menu_book_rounded,
+      label: 'All Ledgers',
+      path: '/ledgers',
+      section: 'FINANCIALS',
+    ),
+    NavItem(
       icon: Icons.assessment_rounded,
       label: 'Reports & P&L',
       path: '/reports/project-pnl',

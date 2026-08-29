@@ -408,6 +408,14 @@ class _TypeBadge extends StatelessWidget {
           Colors.deepOrange.shade700,
           Colors.deepOrange.shade50
         ),
+      TransactionType.ownerCapital => (
+          const Color(0xFF0D9488),
+          const Color(0xFFF0FDFA)
+        ),
+      TransactionType.drawings => (
+          const Color(0xFFE11D48),
+          const Color(0xFFFFF1F2)
+        ),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

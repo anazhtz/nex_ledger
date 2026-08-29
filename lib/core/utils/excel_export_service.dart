@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -9,9 +10,10 @@ import 'package:nex_ledger/core/database/daos/deposit_dao.dart';
 import 'package:nex_ledger/core/database/daos/labour_dao.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
 import 'package:nex_ledger/features/reports/data/report_repository.dart';
+import 'package:nex_ledger/features/reports/models/ledger_models.dart';
 
 /// Senior CA-Grade Financial Excel Export Engine for NexLedger.
-/// Generates audit-ready .xlsx workbooks for P&L, Cash Book, Deposits, and Labour.
+/// Generates audit-ready .xlsx workbooks for P&L, Cash Book, Deposits, Labour, and Ledgers.
 class ExcelExportService {
   ExcelExportService._();
 
@@ -368,6 +370,86 @@ class ExcelExportService {
     return _saveExcelFile(
       excel,
       'Labour_Wage_Ledger_${DateFormatter.format(DateTime.now()).replaceAll(' ', '_')}.xlsx',
+    );
+  }
+
+  /// 5. Export General / Party Ledger Statement (Suppliers, Labour, Bank & Cash, Personal)
+  static Future<String?> exportLedgerStatement({
+    required String ledgerTitle,
+    required LedgerSummary summary,
+    required List<LedgerEntry> entries,
+    DateTimeRange? dateRange,
+  }) async {
+    final excel = Excel.createExcel();
+    final sheet = excel['Account Statement'];
+    excel.delete('Sheet1');
+
+    sheet.appendRow([TextCellValue('NEXLEDGER FINANCIAL ERP — ACCOUNT STATEMENT')]);
+    sheet.appendRow([TextCellValue('Ledger: $ledgerTitle — ${summary.entityName}')]);
+    if (summary.entitySubtitle != null) {
+      sheet.appendRow([TextCellValue(summary.entitySubtitle!)]);
+    }
+    if (dateRange != null) {
+      sheet.appendRow([
+        TextCellValue(
+            'Statement Period: ${DateFormatter.format(dateRange.start)} to ${DateFormatter.format(dateRange.end)}'),
+      ]);
+    } else {
+      sheet.appendRow([TextCellValue('Statement Period: All-Time')]);
+    }
+    sheet.appendRow([TextCellValue('Generated On: ${DateFormatter.format(DateTime.now())}')]);
+    sheet.appendRow([TextCellValue('')]);
+
+    // Summary KPIs Box
+    sheet.appendRow([
+      TextCellValue('SUMMARY'),
+      TextCellValue('${summary.creditLabel}: ₹${summary.totalCredit.toStringAsFixed(2)}'),
+      TextCellValue('${summary.debitLabel}: ₹${summary.totalDebit.toStringAsFixed(2)}'),
+      TextCellValue('${summary.balanceLabel}: ₹${summary.closingBalance.toStringAsFixed(2)}'),
+    ]);
+    sheet.appendRow([TextCellValue('')]);
+
+    // Statement Table Header
+    sheet.appendRow([
+      TextCellValue('Date'),
+      TextCellValue('Ref / Bill No'),
+      TextCellValue('Description / Narration'),
+      TextCellValue('Project'),
+      TextCellValue('Debit (₹ Outflow)'),
+      TextCellValue('Credit (₹ Inflow)'),
+      TextCellValue('Running Balance (₹)'),
+      TextCellValue('Balance Type'),
+    ]);
+
+    for (final e in entries.reversed) {
+      sheet.appendRow([
+        TextCellValue(DateFormatter.format(e.date)),
+        TextCellValue(e.referenceNo ?? '—'),
+        TextCellValue('${e.title}${e.subtitle != null ? ' (${e.subtitle})' : ''}'),
+        TextCellValue(e.projectCode ?? '—'),
+        DoubleCellValue(e.debit),
+        DoubleCellValue(e.credit),
+        DoubleCellValue(e.runningBalance),
+        TextCellValue(e.balanceType),
+      ]);
+    }
+
+    sheet.appendRow([TextCellValue('')]);
+    sheet.appendRow([
+      TextCellValue('TOTALS'),
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue(''),
+      DoubleCellValue(summary.totalDebit),
+      DoubleCellValue(summary.totalCredit),
+      DoubleCellValue(summary.closingBalance),
+      TextCellValue(''),
+    ]);
+
+    final safeName = summary.entityName.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_');
+    return _saveExcelFile(
+      excel,
+      'Ledger_${safeName}_${DateFormatter.format(DateTime.now()).replaceAll(' ', '_')}.xlsx',
     );
   }
 }
