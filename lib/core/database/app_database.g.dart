@@ -2668,6 +2668,12 @@ class $PurchasesTable extends Purchases
       type: DriftSqlType.double,
       requiredDuringInsert: false,
       defaultValue: const Constant(0.0));
+  static const VerificationMeta _materialCategoryMeta =
+      const VerificationMeta('materialCategory');
+  @override
+  late final GeneratedColumn<String> materialCategory = GeneratedColumn<String>(
+      'material_category', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -2680,7 +2686,8 @@ class $PurchasesTable extends Purchases
         paidAmount,
         paymentStatus,
         isAdvanceStock,
-        allocatedAmount
+        allocatedAmount,
+        materialCategory
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2747,6 +2754,12 @@ class $PurchasesTable extends Purchases
           allocatedAmount.isAcceptableOrUnknown(
               data['allocated_amount']!, _allocatedAmountMeta));
     }
+    if (data.containsKey('material_category')) {
+      context.handle(
+          _materialCategoryMeta,
+          materialCategory.isAcceptableOrUnknown(
+              data['material_category']!, _materialCategoryMeta));
+    }
     return context;
   }
 
@@ -2779,6 +2792,8 @@ class $PurchasesTable extends Purchases
           .read(DriftSqlType.bool, data['${effectivePrefix}is_advance_stock'])!,
       allocatedAmount: attachedDatabase.typeMapping.read(
           DriftSqlType.double, data['${effectivePrefix}allocated_amount'])!,
+      materialCategory: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}material_category']),
     );
   }
 
@@ -2804,6 +2819,7 @@ class Purchase extends DataClass implements Insertable<Purchase> {
   final PaymentStatus paymentStatus;
   final bool isAdvanceStock;
   final double allocatedAmount;
+  final String? materialCategory;
   const Purchase(
       {required this.id,
       required this.transactionId,
@@ -2815,7 +2831,8 @@ class Purchase extends DataClass implements Insertable<Purchase> {
       required this.paidAmount,
       required this.paymentStatus,
       required this.isAdvanceStock,
-      required this.allocatedAmount});
+      required this.allocatedAmount,
+      this.materialCategory});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -2835,6 +2852,9 @@ class Purchase extends DataClass implements Insertable<Purchase> {
     }
     map['is_advance_stock'] = Variable<bool>(isAdvanceStock);
     map['allocated_amount'] = Variable<double>(allocatedAmount);
+    if (!nullToAbsent || materialCategory != null) {
+      map['material_category'] = Variable<String>(materialCategory);
+    }
     return map;
   }
 
@@ -2851,6 +2871,9 @@ class Purchase extends DataClass implements Insertable<Purchase> {
       paymentStatus: Value(paymentStatus),
       isAdvanceStock: Value(isAdvanceStock),
       allocatedAmount: Value(allocatedAmount),
+      materialCategory: materialCategory == null && nullToAbsent
+          ? const Value.absent()
+          : Value(materialCategory),
     );
   }
 
@@ -2870,6 +2893,7 @@ class Purchase extends DataClass implements Insertable<Purchase> {
           .fromJson(serializer.fromJson<String>(json['paymentStatus'])),
       isAdvanceStock: serializer.fromJson<bool>(json['isAdvanceStock']),
       allocatedAmount: serializer.fromJson<double>(json['allocatedAmount']),
+      materialCategory: serializer.fromJson<String?>(json['materialCategory']),
     );
   }
   @override
@@ -2888,6 +2912,7 @@ class Purchase extends DataClass implements Insertable<Purchase> {
           $PurchasesTable.$converterpaymentStatus.toJson(paymentStatus)),
       'isAdvanceStock': serializer.toJson<bool>(isAdvanceStock),
       'allocatedAmount': serializer.toJson<double>(allocatedAmount),
+      'materialCategory': serializer.toJson<String?>(materialCategory),
     };
   }
 
@@ -2902,7 +2927,8 @@ class Purchase extends DataClass implements Insertable<Purchase> {
           double? paidAmount,
           PaymentStatus? paymentStatus,
           bool? isAdvanceStock,
-          double? allocatedAmount}) =>
+          double? allocatedAmount,
+          Value<String?> materialCategory = const Value.absent()}) =>
       Purchase(
         id: id ?? this.id,
         transactionId: transactionId ?? this.transactionId,
@@ -2915,6 +2941,9 @@ class Purchase extends DataClass implements Insertable<Purchase> {
         paymentStatus: paymentStatus ?? this.paymentStatus,
         isAdvanceStock: isAdvanceStock ?? this.isAdvanceStock,
         allocatedAmount: allocatedAmount ?? this.allocatedAmount,
+        materialCategory: materialCategory.present
+            ? materialCategory.value
+            : this.materialCategory,
       );
   Purchase copyWithCompanion(PurchasesCompanion data) {
     return Purchase(
@@ -2940,6 +2969,9 @@ class Purchase extends DataClass implements Insertable<Purchase> {
       allocatedAmount: data.allocatedAmount.present
           ? data.allocatedAmount.value
           : this.allocatedAmount,
+      materialCategory: data.materialCategory.present
+          ? data.materialCategory.value
+          : this.materialCategory,
     );
   }
 
@@ -2956,7 +2988,8 @@ class Purchase extends DataClass implements Insertable<Purchase> {
           ..write('paidAmount: $paidAmount, ')
           ..write('paymentStatus: $paymentStatus, ')
           ..write('isAdvanceStock: $isAdvanceStock, ')
-          ..write('allocatedAmount: $allocatedAmount')
+          ..write('allocatedAmount: $allocatedAmount, ')
+          ..write('materialCategory: $materialCategory')
           ..write(')'))
         .toString();
   }
@@ -2973,7 +3006,8 @@ class Purchase extends DataClass implements Insertable<Purchase> {
       paidAmount,
       paymentStatus,
       isAdvanceStock,
-      allocatedAmount);
+      allocatedAmount,
+      materialCategory);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2988,7 +3022,8 @@ class Purchase extends DataClass implements Insertable<Purchase> {
           other.paidAmount == this.paidAmount &&
           other.paymentStatus == this.paymentStatus &&
           other.isAdvanceStock == this.isAdvanceStock &&
-          other.allocatedAmount == this.allocatedAmount);
+          other.allocatedAmount == this.allocatedAmount &&
+          other.materialCategory == this.materialCategory);
 }
 
 class PurchasesCompanion extends UpdateCompanion<Purchase> {
@@ -3003,6 +3038,7 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
   final Value<PaymentStatus> paymentStatus;
   final Value<bool> isAdvanceStock;
   final Value<double> allocatedAmount;
+  final Value<String?> materialCategory;
   const PurchasesCompanion({
     this.id = const Value.absent(),
     this.transactionId = const Value.absent(),
@@ -3015,6 +3051,7 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
     this.paymentStatus = const Value.absent(),
     this.isAdvanceStock = const Value.absent(),
     this.allocatedAmount = const Value.absent(),
+    this.materialCategory = const Value.absent(),
   });
   PurchasesCompanion.insert({
     this.id = const Value.absent(),
@@ -3028,6 +3065,7 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
     required PaymentStatus paymentStatus,
     this.isAdvanceStock = const Value.absent(),
     this.allocatedAmount = const Value.absent(),
+    this.materialCategory = const Value.absent(),
   })  : transactionId = Value(transactionId),
         vendorId = Value(vendorId),
         itemDescription = Value(itemDescription),
@@ -3044,6 +3082,7 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
     Expression<String>? paymentStatus,
     Expression<bool>? isAdvanceStock,
     Expression<double>? allocatedAmount,
+    Expression<String>? materialCategory,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -3057,6 +3096,7 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
       if (paymentStatus != null) 'payment_status': paymentStatus,
       if (isAdvanceStock != null) 'is_advance_stock': isAdvanceStock,
       if (allocatedAmount != null) 'allocated_amount': allocatedAmount,
+      if (materialCategory != null) 'material_category': materialCategory,
     });
   }
 
@@ -3071,7 +3111,8 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
       Value<double>? paidAmount,
       Value<PaymentStatus>? paymentStatus,
       Value<bool>? isAdvanceStock,
-      Value<double>? allocatedAmount}) {
+      Value<double>? allocatedAmount,
+      Value<String?>? materialCategory}) {
     return PurchasesCompanion(
       id: id ?? this.id,
       transactionId: transactionId ?? this.transactionId,
@@ -3084,6 +3125,7 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
       paymentStatus: paymentStatus ?? this.paymentStatus,
       isAdvanceStock: isAdvanceStock ?? this.isAdvanceStock,
       allocatedAmount: allocatedAmount ?? this.allocatedAmount,
+      materialCategory: materialCategory ?? this.materialCategory,
     );
   }
 
@@ -3124,6 +3166,9 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
     if (allocatedAmount.present) {
       map['allocated_amount'] = Variable<double>(allocatedAmount.value);
     }
+    if (materialCategory.present) {
+      map['material_category'] = Variable<String>(materialCategory.value);
+    }
     return map;
   }
 
@@ -3140,7 +3185,8 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
           ..write('paidAmount: $paidAmount, ')
           ..write('paymentStatus: $paymentStatus, ')
           ..write('isAdvanceStock: $isAdvanceStock, ')
-          ..write('allocatedAmount: $allocatedAmount')
+          ..write('allocatedAmount: $allocatedAmount, ')
+          ..write('materialCategory: $materialCategory')
           ..write(')'))
         .toString();
   }
@@ -6343,6 +6389,7 @@ typedef $$PurchasesTableCreateCompanionBuilder = PurchasesCompanion Function({
   required PaymentStatus paymentStatus,
   Value<bool> isAdvanceStock,
   Value<double> allocatedAmount,
+  Value<String?> materialCategory,
 });
 typedef $$PurchasesTableUpdateCompanionBuilder = PurchasesCompanion Function({
   Value<int> id,
@@ -6356,6 +6403,7 @@ typedef $$PurchasesTableUpdateCompanionBuilder = PurchasesCompanion Function({
   Value<PaymentStatus> paymentStatus,
   Value<bool> isAdvanceStock,
   Value<double> allocatedAmount,
+  Value<String?> materialCategory,
 });
 
 final class $$PurchasesTableReferences
@@ -6431,6 +6479,10 @@ class $$PurchasesTableFilterComposer
 
   ColumnFilters<double> get allocatedAmount => $composableBuilder(
       column: $table.allocatedAmount,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get materialCategory => $composableBuilder(
+      column: $table.materialCategory,
       builder: (column) => ColumnFilters(column));
 
   $$TransactionsTableFilterComposer get transactionId {
@@ -6514,6 +6566,10 @@ class $$PurchasesTableOrderingComposer
       column: $table.allocatedAmount,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get materialCategory => $composableBuilder(
+      column: $table.materialCategory,
+      builder: (column) => ColumnOrderings(column));
+
   $$TransactionsTableOrderingComposer get transactionId {
     final $$TransactionsTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -6592,6 +6648,9 @@ class $$PurchasesTableAnnotationComposer
   GeneratedColumn<double> get allocatedAmount => $composableBuilder(
       column: $table.allocatedAmount, builder: (column) => column);
 
+  GeneratedColumn<String> get materialCategory => $composableBuilder(
+      column: $table.materialCategory, builder: (column) => column);
+
   $$TransactionsTableAnnotationComposer get transactionId {
     final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -6667,6 +6726,7 @@ class $$PurchasesTableTableManager extends RootTableManager<
             Value<PaymentStatus> paymentStatus = const Value.absent(),
             Value<bool> isAdvanceStock = const Value.absent(),
             Value<double> allocatedAmount = const Value.absent(),
+            Value<String?> materialCategory = const Value.absent(),
           }) =>
               PurchasesCompanion(
             id: id,
@@ -6680,6 +6740,7 @@ class $$PurchasesTableTableManager extends RootTableManager<
             paymentStatus: paymentStatus,
             isAdvanceStock: isAdvanceStock,
             allocatedAmount: allocatedAmount,
+            materialCategory: materialCategory,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -6693,6 +6754,7 @@ class $$PurchasesTableTableManager extends RootTableManager<
             required PaymentStatus paymentStatus,
             Value<bool> isAdvanceStock = const Value.absent(),
             Value<double> allocatedAmount = const Value.absent(),
+            Value<String?> materialCategory = const Value.absent(),
           }) =>
               PurchasesCompanion.insert(
             id: id,
@@ -6706,6 +6768,7 @@ class $$PurchasesTableTableManager extends RootTableManager<
             paymentStatus: paymentStatus,
             isAdvanceStock: isAdvanceStock,
             allocatedAmount: allocatedAmount,
+            materialCategory: materialCategory,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (

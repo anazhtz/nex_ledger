@@ -3,15 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
+import 'package:nex_ledger/core/constants/material_constants.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/database_provider.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
 import 'package:nex_ledger/features/purchase/data/purchase_repository.dart';
+import 'package:nex_ledger/features/purchase/models/material_consumption.dart';
 import 'package:nex_ledger/features/purchase/providers/purchase_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 import 'package:nex_ledger/features/reports/providers/report_providers.dart';
 import 'package:nex_ledger/shared/widgets/data_table_card.dart';
+
+final purchaseViewTabProvider = StateProvider<int>((ref) => 0); // 0 = Invoices, 1 = Material Breakdown
 
 class PurchaseListScreen extends ConsumerWidget {
   const PurchaseListScreen({super.key});
@@ -23,6 +27,7 @@ class PurchaseListScreen extends ConsumerWidget {
     final filterProject = ref.watch(purchaseProjectFilterProvider);
     final apAsync = ref.watch(accountsPayableProvider(filterProject));
     final stockAssetAsync = ref.watch(totalUnallocatedStockAssetProvider);
+    final selectedTab = ref.watch(purchaseViewTabProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -40,12 +45,12 @@ class PurchaseListScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Purchases',
+                        'Purchases & Materials',
                         style: theme.textTheme.headlineMedium
                             ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                       Text(
-                        'Vendor-linked purchase entries & advance stock assets',
+                        'Vendor-linked purchase bills, material consumption & advance stock assets',
                         style: theme.textTheme.bodyMedium?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant),
                         overflow: TextOverflow.ellipsis,
@@ -94,22 +99,26 @@ class PurchaseListScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
 
-            // ── Filter ──────────────────────────────────────────────────────
+            // ── Filter & View Mode Tabs ─────────────────────────────────────
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: projectsAsync.when(
                   loading: () => const SizedBox.shrink(),
                   error: (_, __) => const SizedBox.shrink(),
-                  data: (projects) => Row(
+                  data: (projects) => Wrap(
+                    spacing: 16.w,
+                    runSpacing: 10.h,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       SizedBox(
-                        width: 260,
+                        width: 280.w,
                         child: DropdownButtonFormField<int?>(
                           value: filterProject,
                           isExpanded: true,
                           decoration: const InputDecoration(
                             labelText: 'Filter by Project',
+                            prefixIcon: Icon(Icons.folder_outlined, size: 20),
                             isDense: true,
                           ),
                           items: [
@@ -120,7 +129,7 @@ class PurchaseListScreen extends ConsumerWidget {
                             ...projects.map(
                               (p) => DropdownMenuItem(
                                 value: p.id,
-                                child: Text(p.name,
+                                child: Text('${p.code} — ${p.name}',
                                     overflow: TextOverflow.ellipsis),
                               ),
                             ),
@@ -130,6 +139,25 @@ class PurchaseListScreen extends ConsumerWidget {
                               .state = v,
                         ),
                       ),
+                      SegmentedButton<int>(
+                        segments: const [
+                          ButtonSegment(
+                            value: 0,
+                            label: Text('Purchase Invoices'),
+                            icon: Icon(Icons.receipt_long_rounded, size: 16),
+                          ),
+                          ButtonSegment(
+                            value: 1,
+                            label: Text('Material Breakdown'),
+                            icon: Icon(Icons.view_in_ar_rounded, size: 16),
+                          ),
+                        ],
+                        selected: {selectedTab},
+                        onSelectionChanged: (set) {
+                          ref.read(purchaseViewTabProvider.notifier).state =
+                              set.first;
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -137,189 +165,331 @@ class PurchaseListScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
 
-            // ── Purchase Table ───────────────────────────────────────────────
-            Expanded(
-              child: purchasesAsync.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Center(child: Text('Error: $e')),
-                data: (purchases) => DataTableCard(
-                  emptyMessage: 'No purchases found.',
-                  columns: const [
-                    DataColumn(label: Text('Date')),
-                    DataColumn(label: Text('Project')),
-                    DataColumn(label: Text('Vendor')),
-                    DataColumn(label: Text('Description')),
-                    DataColumn(label: Text('Classification')),
-                    DataColumn(label: Text('Amount'), numeric: true),
-                    DataColumn(label: Text('Payment')),
-                    DataColumn(label: Text('Mode')),
-                    DataColumn(label: Text('Actions')),
-                  ],
-                  rows: purchases.map((pd) {
-                    final isPending =
-                        pd.purchase.paymentStatus == PaymentStatus.pending ||
-                            pd.purchase.paymentStatus == PaymentStatus.partial;
-                    final isStock = pd.purchase.isAdvanceStock;
-                    final unallocated =
-                        pd.transaction.amount - pd.purchase.allocatedAmount;
-                    final canAllocate = isStock && unallocated > 0.01;
+            if (selectedTab == 0)
+              Expanded(
+                child: purchasesAsync.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Center(child: Text('Error: $e')),
+                  data: (purchases) => DataTableCard(
+                    emptyMessage: 'No purchases found.',
+                    columns: const [
+                      DataColumn(label: Text('Date')),
+                      DataColumn(label: Text('Project')),
+                      DataColumn(label: Text('Vendor')),
+                      DataColumn(label: Text('Description')),
+                      DataColumn(label: Text('Classification')),
+                      DataColumn(label: Text('Amount'), numeric: true),
+                      DataColumn(label: Text('Payment')),
+                      DataColumn(label: Text('Mode')),
+                      DataColumn(label: Text('Actions')),
+                    ],
+                    rows: purchases.map((pd) {
+                      final isPending =
+                          pd.purchase.paymentStatus == PaymentStatus.pending ||
+                              pd.purchase.paymentStatus == PaymentStatus.partial;
+                      final isStock = pd.purchase.isAdvanceStock;
+                      final unallocated =
+                          pd.transaction.amount - pd.purchase.allocatedAmount;
+                      final canAllocate = isStock && unallocated > 0.01;
 
-                    return DataRow(cells: [
-                      DataCell(Text(
-                          DateFormatter.format(pd.transaction.date))),
-                      DataCell(Text(pd.project.name,
-                          overflow: TextOverflow.ellipsis)),
-                      DataCell(GestureDetector(
-                        onTap: () => context.push(
-                            '/vendors/${pd.vendor.id}'),
-                        child: Text(
-                          pd.vendor.name,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.w600,
-                            decoration: TextDecoration.underline,
+                      return DataRow(cells: [
+                        DataCell(Text(
+                            DateFormatter.format(pd.transaction.date))),
+                        DataCell(Text(pd.project.name,
+                            overflow: TextOverflow.ellipsis)),
+                        DataCell(GestureDetector(
+                          onTap: () => context.push(
+                              '/vendors/${pd.vendor.id}'),
+                          child: Text(
+                            pd.vendor.name,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                      )),
-                      DataCell(
-                        ConstrainedBox(
-                          constraints: BoxConstraints(maxWidth: 190.w),
-                          child: Column(
+                        )),
+                        DataCell(
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(
-                                pd.purchase.itemDescription,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontWeight: FontWeight.w600),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (pd.purchase.materialCategory != null)
+                                    Container(
+                                      margin: const EdgeInsets.only(right: 6),
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEEF2FF),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        pd.purchase.materialCategory!,
+                                        style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.bold, color: const Color(0xFF4F46E5)),
+                                      ),
+                                    ),
+                                  Text(
+                                    pd.purchase.itemDescription,
+                                    style: const TextStyle(fontWeight: FontWeight.w600),
+                                  ),
+                                ],
                               ),
-                              if (pd.purchase.quantity > 0 && pd.purchase.unitRate > 0)
+                              if (pd.purchase.quantity > 1 || pd.purchase.unitRate > 0)
                                 Text(
-                                  '${pd.purchase.quantity % 1 == 0 ? pd.purchase.quantity.toInt() : pd.purchase.quantity} ${pd.purchase.unit ?? 'units'} × ₹${pd.purchase.unitRate % 1 == 0 ? pd.purchase.unitRate.toInt() : pd.purchase.unitRate.toStringAsFixed(2)}',
+                                  'Qty: ${pd.purchase.quantity % 1 == 0 ? pd.purchase.quantity.toInt() : pd.purchase.quantity} ${pd.purchase.unit ?? 'Nos'} @ ${CurrencyFormatter.format(pd.purchase.unitRate)}',
                                   style: TextStyle(
                                     fontSize: 11.sp,
-                                    color: const Color(0xFF64748B),
+                                    color: theme.colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                             ],
                           ),
                         ),
-                      ),
-                      DataCell(
-                        isStock
-                            ? _StockClassificationBadge(
-                                total: pd.transaction.amount,
-                                allocated: pd.purchase.allocatedAmount,
-                              )
-                            : Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F5F9),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Text(
-                                  'Direct Cost',
-                                  style: TextStyle(
-                                      fontSize: 11,
-                                      color: Color(0xFF475569),
-                                      fontWeight: FontWeight.w500),
-                                ),
-                              ),
-                      ),
-                      DataCell(
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerRight,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                CurrencyFormatter.format(pd.transaction.amount),
-                                style: const TextStyle(fontWeight: FontWeight.w600),
-                              ),
-                              if (pd.purchase.paymentStatus == PaymentStatus.partial)
-                                Text(
-                                  'Due: ${CurrencyFormatter.format((pd.transaction.amount - pd.purchase.paidAmount).clamp(0.0, double.infinity))}',
-                                  style: TextStyle(
-                                    fontSize: 10.sp,
-                                    color: Colors.red.shade700,
-                                    fontWeight: FontWeight.bold,
+                        DataCell(
+                          pd.purchase.isAdvanceStock
+                              ? _StockClassificationBadge(
+                                  total: pd.transaction.amount,
+                                  allocated: pd.purchase.allocatedAmount,
+                                )
+                              : Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF1F5F9),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Text(
+                                    'Direct Cost',
+                                    style: TextStyle(
+                                        fontSize: 11,
+                                        color: Color(0xFF475569),
+                                        fontWeight: FontWeight.w500),
                                   ),
                                 ),
-                            ],
+                        ),
+                        DataCell(Text(
+                          CurrencyFormatter.format(pd.transaction.amount),
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w700),
+                        )),
+                        DataCell(_PaymentStatusChip(
+                            status: pd.purchase.paymentStatus)),
+                        DataCell(Text(
+                          pd.transaction.paymentMode?.displayName ?? '—',
+                        )),
+                        DataCell(
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit_outlined, size: 17),
+                                  tooltip: 'Edit Bill',
+                                  onPressed: () => context
+                                      .go('/purchases/${pd.purchase.id}/edit'),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline_rounded,
+                                      size: 17),
+                                  tooltip: 'Delete Bill',
+                                  color: theme.colorScheme.error,
+                                  onPressed: () =>
+                                      _deletePurchase(context, ref, pd),
+                                ),
+                                if (isPending)
+                                  TextButton.icon(
+                                    onPressed: () => _showMarkPaidDialog(
+                                      context,
+                                      ref,
+                                      pd,
+                                    ),
+                                    icon: const Icon(Icons.check_circle_outline,
+                                        size: 15),
+                                    label: const Text('Mark Paid'),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor:
+                                          theme.colorScheme.primary,
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                  ),
+                                if (canAllocate) ...[
+                                  FilledButton.tonalIcon(
+                                    onPressed: () => _showAllocateStockDialog(
+                                      context,
+                                      ref,
+                                      pd,
+                                    ),
+                                    icon: const Icon(Icons.outbox_rounded,
+                                        size: 15),
+                                    label: const Text('Allocate'),
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: const Color(0xFFFEF3C7),
+                                      foregroundColor: const Color(0xFFB45309),
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      DataCell(_PaymentStatusChip(
-                          status: pd.purchase.paymentStatus)),
-                      DataCell(Text(
-                          pd.transaction.paymentMode?.displayName ?? '—')),
-                      DataCell(
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit_outlined, size: 17),
-                              tooltip: 'Edit Bill',
-                              onPressed: () => context
-                                  .go('/purchases/${pd.purchase.id}/edit'),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete_outline_rounded,
-                                  size: 17),
-                              tooltip: 'Delete Bill',
-                              color: theme.colorScheme.error,
-                              onPressed: () =>
-                                  _deletePurchase(context, ref, pd),
-                            ),
-                            if (isPending)
-                              TextButton.icon(
-                                onPressed: () => _showMarkPaidDialog(
-                                  context,
-                                  ref,
-                                  pd,
-                                ),
-                                icon: const Icon(Icons.check_circle_outline,
-                                    size: 15),
-                                label: const Text('Mark Paid'),
-                                style: TextButton.styleFrom(
-                                  foregroundColor:
-                                      theme.colorScheme.primary,
-                                  visualDensity: VisualDensity.compact,
-                                ),
-                              ),
-                            if (canAllocate) ...[
-                              FilledButton.tonalIcon(
-                                onPressed: () => _showAllocateStockDialog(
-                                  context,
-                                  ref,
-                                  pd,
-                                ),
-                                icon: const Icon(Icons.outbox_rounded,
-                                    size: 15),
-                                label: const Text('Allocate'),
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: const Color(0xFFFEF3C7),
-                                  foregroundColor: const Color(0xFFB45309),
-                                  visualDensity: VisualDensity.compact,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ]);
-                  }).toList(),
+                      ]);
+                    }).toList(),
+                  ),
                 ),
+              )
+            else
+              Expanded(
+                child: _buildMaterialBreakdownView(context, ref, filterProject, theme),
               ),
-            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildMaterialBreakdownView(
+    BuildContext context,
+    WidgetRef ref,
+    int? filterProject,
+    ThemeData theme,
+  ) {
+    if (filterProject == null) {
+      return Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+          side: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(32.r),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.filter_alt_outlined, size: 48.sp, color: const Color(0xFF94A3B8)),
+                SizedBox(height: 12.h),
+                Text(
+                  'Select a Project to View Material Consumption',
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                Text(
+                  'Use the project dropdown filter above to see total quantities of Cement, Steel, Metal, Sand, etc. consumed by that specific project.',
+                  style: TextStyle(fontSize: 12.sp, color: const Color(0xFF64748B)),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    final consumptionAsync = ref.watch(projectMaterialConsumptionProvider(filterProject));
+
+    return consumptionAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Error loading materials: $e')),
+      data: (materials) {
+        if (materials.isEmpty) {
+          return const Center(
+            child: Text('No material purchases recorded for this project yet.'),
+          );
+        }
+
+        final totalSpend = materials.fold<double>(0.0, (sum, m) => sum + m.totalAmount);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Summary KPI
+            Container(
+              margin: EdgeInsets.only(bottom: 12.h),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEEF2FF),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: const Color(0xFFC7D2FE)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.inventory_2_rounded, color: const Color(0xFF4F46E5), size: 20.sp),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      'Total Material Consumption: ${CurrencyFormatter.format(totalSpend)} across ${materials.length} material categories',
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF312E81),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: DataTableCard(
+                title: 'Project Material Consumption Breakdown',
+                columns: const [
+                  DataColumn(label: Text('#')),
+                  DataColumn(label: Text('Material Category')),
+                  DataColumn(label: Text('Total Quantity')),
+                  DataColumn(label: Text('Unit')),
+                  DataColumn(label: Text('Avg Rate (₹)')),
+                  DataColumn(label: Text('Total Cost (₹)')),
+                  DataColumn(label: Text('Bills')),
+                  DataColumn(label: Text('Latest Purchase')),
+                ],
+                rows: materials.asMap().entries.map((entry) {
+                  final idx = entry.key + 1;
+                  final m = entry.value;
+
+                  final qtyStr = m.totalQuantity % 1 == 0
+                      ? m.totalQuantity.toInt().toString()
+                      : m.totalQuantity.toStringAsFixed(2);
+
+                  return DataRow(
+                    cells: [
+                      DataCell(Text(idx.toString(), style: const TextStyle(color: Color(0xFF94A3B8)))),
+                      DataCell(Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.category_outlined, size: 16.sp, color: const Color(0xFF4F46E5)),
+                          SizedBox(width: 6.w),
+                          Text(m.categoryName, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        ],
+                      )),
+                      DataCell(Text(qtyStr, style: const TextStyle(fontWeight: FontWeight.bold))),
+                      DataCell(Text(m.unit)),
+                      DataCell(Text(CurrencyFormatter.format(m.avgUnitRate))),
+                      DataCell(Text(
+                        CurrencyFormatter.format(m.totalAmount),
+                        style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF0F172A)),
+                      )),
+                      DataCell(Text('${m.billCount} bills')),
+                      DataCell(Text(
+                        m.lastPurchaseDate != null
+                            ? '${DateFormatter.format(m.lastPurchaseDate!)}${m.lastVendorName != null ? ' (${m.lastVendorName})' : ''}'
+                            : '—',
+                        style: TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B)),
+                      )),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

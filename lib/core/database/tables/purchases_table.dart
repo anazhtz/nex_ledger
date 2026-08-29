@@ -20,4 +20,5 @@ class Purchases extends Table {
       boolean().withDefault(const Constant(false))();
   RealColumn get allocatedAmount =>
       real().withDefault(const Constant(0.0))();
+  TextColumn get materialCategory => text().nullable()();
 }

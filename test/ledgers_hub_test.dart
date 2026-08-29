@@ -326,11 +326,16 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
+      final container = ProviderContainer(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+        ],
+      );
+      addTearDown(container.dispose);
+
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            appDatabaseProvider.overrideWithValue(db),
-          ],
+        UncontrolledProviderScope(
+          container: container,
           child: ScreenUtilInit(
             designSize: const Size(1440, 900),
             minTextAdapt: true,

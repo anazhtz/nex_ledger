@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
+import 'package:nex_ledger/features/purchase/models/material_consumption.dart';
 
 class PurchaseRepository {
   final PurchaseDao _purchaseDao;
@@ -14,6 +15,10 @@ class PurchaseRepository {
 
   Stream<List<PurchaseDetail>> watchPurchasesByProject(int projectId) =>
       _purchaseDao.watchPurchasesByProject(projectId);
+
+  Stream<List<MaterialConsumptionSummary>> watchMaterialConsumptionByProject(
+          int projectId) =>
+      _purchaseDao.watchMaterialConsumptionByProject(projectId);
 
   /// Watch only pending/partial purchases — used for Accounts Payable view.
   Stream<List<PurchaseDetail>> watchPendingPurchases({int? projectId}) =>
@@ -43,6 +48,7 @@ class PurchaseRepository {
     double quantity = 1.0,
     double unitRate = 0.0,
     String? unit,
+    String? materialCategory,
     double paidAmount = 0.0,
     required PaymentStatus paymentStatus,
     PaymentMode? paymentMode,
@@ -103,6 +109,7 @@ class PurchaseRepository {
               quantity: Value(quantity),
               unitRate: Value(unitRate),
               unit: Value(unit),
+              materialCategory: Value(materialCategory?.trim()),
               paidAmount: Value(actualPaid),
               paymentStatus: paymentStatus,
               isAdvanceStock: Value(isAdvanceStock),
@@ -250,6 +257,7 @@ class PurchaseRepository {
     double quantity = 1.0,
     double unitRate = 0.0,
     String? unit,
+    String? materialCategory,
     double paidAmount = 0.0,
     PaymentStatus paymentStatus = PaymentStatus.paid,
     PaymentMode? paymentMode,
@@ -289,6 +297,7 @@ class PurchaseRepository {
           quantity: Value(quantity),
           unitRate: Value(unitRate),
           unit: Value(unit?.trim()),
+          materialCategory: Value(materialCategory?.trim()),
           paidAmount: Value(paidAmount),
           paymentStatus: Value(paymentStatus),
           isAdvanceStock: Value(isAdvanceStock),

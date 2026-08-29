@@ -3,6 +3,7 @@ import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/database_provider.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 import 'package:nex_ledger/features/purchase/data/purchase_repository.dart';
+import 'package:nex_ledger/features/purchase/models/material_consumption.dart';
 
 final purchaseRepositoryProvider = Provider<PurchaseRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
@@ -101,6 +102,29 @@ final totalUnallocatedStockAssetProvider = StreamProvider<double>((ref) {
           pd.transaction.amount - pd.purchase.allocatedAmount;
       return sum + (remaining > 0 ? remaining : 0.0);
     });
+  });
+});
+
+// ─── Project Material Consumption Providers ──────────────────────────────────
+
+/// Stream of all material consumption categories for a project.
+final projectMaterialConsumptionProvider =
+    StreamProvider.family<List<MaterialConsumptionSummary>, int>((ref, projectId) {
+  final repo = ref.watch(purchaseRepositoryProvider);
+  return repo.watchMaterialConsumptionByProject(projectId);
+});
+
+/// Stream of single material category consumption for real-time in-form display.
+final projectSingleMaterialConsumptionProvider =
+    StreamProvider.family<MaterialConsumptionSummary?, ({int projectId, String category})>((ref, args) {
+  final repo = ref.watch(purchaseRepositoryProvider);
+  return repo.watchMaterialConsumptionByProject(args.projectId).map((list) {
+    for (final item in list) {
+      if (item.categoryName.toLowerCase() == args.category.toLowerCase()) {
+        return item;
+      }
+    }
+    return null;
   });
 });
 

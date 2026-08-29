@@ -4,10 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
+import 'package:nex_ledger/core/constants/material_constants.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/features/bank_accounts/providers/bank_account_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
+import 'package:nex_ledger/features/purchase/models/material_consumption.dart';
 import 'package:nex_ledger/features/purchase/providers/purchase_providers.dart';
 
 class PurchaseFormScreen extends ConsumerStatefulWidget {
@@ -35,9 +37,11 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
     'Bags',
     'Tons',
     'Kg',
+    'CFT',
     'Sq.ft',
     'Cu.m',
     'Litres',
+    'Meters',
     'Trips',
     'Hours',
     'Lump sum',
@@ -47,6 +51,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
 
   int? _selectedProject;
   int? _selectedVendor;
+  String? _selectedCategory;
   PaymentStatus _paymentStatus = PaymentStatus.pending;
   PaymentMode? _paymentMode;
   int? _selectedBankAccountId;
@@ -94,6 +99,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
         _narrationCtrl.text = pd.transaction.narration ?? '';
         _refCtrl.text = pd.transaction.referenceNo ?? '';
         _isAdvanceStock = pd.purchase.isAdvanceStock;
+        _selectedCategory = pd.purchase.materialCategory;
       });
     }
   }
@@ -258,6 +264,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
               quantity: qty,
               unitRate: unitRate,
               unit: unit,
+              materialCategory: _selectedCategory,
               paidAmount: paidAmount,
               paymentStatus: _paymentStatus,
               paymentMode: _paymentMode,
@@ -290,6 +297,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
             quantity: qty,
             unitRate: unitRate,
             unit: unit,
+            materialCategory: _selectedCategory,
             paidAmount: paidAmount,
             paymentStatus: _paymentStatus,
             paymentMode: _paymentMode,
@@ -479,17 +487,71 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                 },
                               ),
                               SizedBox(height: 24.h),
-                              const Divider(color: Color(0xFFE2E8F0)),
+                               const Divider(color: Color(0xFFE2E8F0)),
                               SizedBox(height: 16.h),
                               Text(
-                                'Item, Quantity & Pricing',
+                                'Material Category & Item Details',
                                 style: TextStyle(
                                   fontSize: 14.sp,
                                   fontWeight: FontWeight.bold,
                                   color: const Color(0xFF0F172A),
                                 ),
                               ),
+                              SizedBox(height: 10.h),
+                              Text(
+                                'Select Category (Auto-sets unit & displays project consumption):',
+                                style: TextStyle(
+                                  fontSize: 11.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                              SizedBox(height: 8.h),
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children: kStandardMaterialCategories.map((cat) {
+                                    final isSelected = _selectedCategory == cat.name;
+                                    return Padding(
+                                      padding: EdgeInsets.only(right: 8.w),
+                                      child: ChoiceChip(
+                                        avatar: Icon(
+                                          cat.icon,
+                                          size: 16.sp,
+                                          color: isSelected ? Colors.white : cat.color,
+                                        ),
+                                        label: Text(cat.name),
+                                        selected: isSelected,
+                                        selectedColor: const Color(0xFF4F46E5),
+                                        labelStyle: TextStyle(
+                                          fontSize: 12.sp,
+                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                          color: isSelected ? Colors.white : const Color(0xFF334155),
+                                        ),
+                                        onSelected: (selected) {
+                                          setState(() {
+                                            if (selected) {
+                                              _selectedCategory = cat.name;
+                                              _unitCtrl.text = cat.defaultUnit;
+                                              if (_descCtrl.text.isEmpty) {
+                                                _descCtrl.text = cat.name;
+                                              }
+                                            } else {
+                                              _selectedCategory = null;
+                                            }
+                                          });
+                                        },
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
                               SizedBox(height: 12.h),
+
+                              // ─── Live In-Form Project Material Consumption Alert ───
+                              if (_selectedProject != null && _selectedCategory != null && !_isAdvanceStock)
+                                _buildLiveMaterialConsumptionCard(context),
+
                               TextFormField(
                                 controller: _descCtrl,
                                 decoration: const InputDecoration(
@@ -1067,6 +1129,96 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
           .toList(),
       onChanged: (v) => setState(() => _selectedProject = v),
       validator: (v) => v == null ? 'Required' : null,
+    );
+  }
+
+  Widget _buildLiveMaterialConsumptionCard(BuildContext context) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final statsAsync = ref.watch(projectSingleMaterialConsumptionProvider(
+          (projectId: _selectedProject!, category: _selectedCategory!),
+        ));
+
+        return statsAsync.when(
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
+          data: (summary) {
+            if (summary == null || summary.totalQuantity <= 0) {
+              return Container(
+                margin: EdgeInsets.only(bottom: 14.h),
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(8.r),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline_rounded, size: 16.sp, color: const Color(0xFF64748B)),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        'First entry for $_selectedCategory under this project. No previous bills.',
+                        style: TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B)),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            final qtyStr = summary.totalQuantity % 1 == 0
+                ? summary.totalQuantity.toInt().toString()
+                : summary.totalQuantity.toStringAsFixed(1);
+
+            return Container(
+              margin: EdgeInsets.only(bottom: 14.h),
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFF6FF),
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(color: const Color(0xFFBFDBFE)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(6.r),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDBEAFE),
+                      borderRadius: BorderRadius.circular(6.r),
+                    ),
+                    child: Icon(Icons.analytics_outlined, size: 18.sp, color: const Color(0xFF2563EB)),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Project History: $qtyStr ${summary.unit} of $_selectedCategory already procured',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF1E3A8A),
+                          ),
+                        ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          'Total spend: ${CurrencyFormatter.format(summary.totalAmount)} across ${summary.billCount} bills • Avg Rate: ${CurrencyFormatter.format(summary.avgUnitRate)}/${summary.unit}${summary.lastVendorName != null ? ' • Last vendor: ${summary.lastVendorName}' : ''}',
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            color: const Color(0xFF1E40AF),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

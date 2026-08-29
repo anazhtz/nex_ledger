@@ -6,6 +6,8 @@ import 'package:nex_ledger/core/database/tables/transactions_table.dart';
 import 'package:nex_ledger/core/database/tables/vendors_table.dart';
 import 'package:nex_ledger/core/database/tables/projects_table.dart';
 
+import 'package:nex_ledger/features/purchase/models/material_consumption.dart';
+
 part 'purchase_dao.g.dart';
 
 /// Combined result with all related entities.
@@ -212,5 +214,61 @@ class PurchaseDao extends DatabaseAccessor<AppDatabase>
               )
               .toList(),
         );
+  }
+
+  /// Stream of aggregated material consumption for a project grouped by category.
+  Stream<List<MaterialConsumptionSummary>> watchMaterialConsumptionByProject(int projectId) {
+    return watchPurchasesByProject(projectId).map((purchasesList) {
+      final map = <String, List<PurchaseDetail>>{};
+
+      for (final p in purchasesList) {
+        final cat = p.purchase.materialCategory?.trim().isNotEmpty == true
+            ? p.purchase.materialCategory!.trim()
+            : 'General Material';
+        map.putIfAbsent(cat, () => []).add(p);
+      }
+
+      final results = <MaterialConsumptionSummary>[];
+
+      for (final entry in map.entries) {
+        final catName = entry.key;
+        final list = entry.value;
+
+        double totalQty = 0.0;
+        double totalAmt = 0.0;
+        String unit = list.first.purchase.unit ?? 'Units';
+        DateTime? latestDate;
+        String? latestVendor;
+
+        for (final item in list) {
+          totalQty += item.purchase.quantity;
+          totalAmt += item.transaction.amount;
+          if (item.purchase.unit != null && item.purchase.unit!.isNotEmpty) {
+            unit = item.purchase.unit!;
+          }
+          if (latestDate == null || item.transaction.date.isAfter(latestDate)) {
+            latestDate = item.transaction.date;
+            latestVendor = item.vendor.name;
+          }
+        }
+
+        final avgRate = totalQty > 0 ? (totalAmt / totalQty) : 0.0;
+
+        results.add(MaterialConsumptionSummary(
+          categoryName: catName,
+          totalQuantity: totalQty,
+          unit: unit,
+          totalAmount: totalAmt,
+          avgUnitRate: avgRate,
+          billCount: list.length,
+          lastPurchaseDate: latestDate,
+          lastVendorName: latestVendor,
+        ));
+      }
+
+      // Sort by highest amount spent first
+      results.sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
+      return results;
+    });
   }
 }
