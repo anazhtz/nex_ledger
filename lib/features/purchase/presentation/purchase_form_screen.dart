@@ -60,6 +60,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
   bool _isAdvanceStock = false;
   bool _loading = false;
   bool _showAddVendor = false;
+  bool _expandAllCategories = false;
 
   bool get _isEditing => widget.purchaseId != null;
 
@@ -359,24 +360,28 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                       onPressed: () => context.go('/purchases'),
                     ),
                     SizedBox(width: 8.w),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _isEditing ? 'Edit Purchase Entry' : 'New Purchase Entry',
-                          style: theme.textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _isEditing ? 'Edit Purchase Entry' : 'New Purchase Entry',
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        Text(
-                          _isEditing
-                              ? 'Modify purchase details, rates, payment status, or vendor bills'
-                              : 'Record materials, equipment, petty expenses, and vendor credit bills',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: const Color(0xFF64748B),
+                          Text(
+                            _isEditing
+                                ? 'Modify purchase details, rates, payment status, or vendor bills'
+                                : 'Record materials, equipment, petty expenses, and vendor credit bills',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: const Color(0xFF64748B),
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -498,56 +503,136 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                   color: const Color(0xFF0F172A),
                                 ),
                               ),
-                              SizedBox(height: 10.h),
-                              Text(
-                                'Select Category (Auto-sets unit & displays project consumption):',
-                                style: TextStyle(
-                                  fontSize: 11.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF64748B),
-                                ),
-                              ),
-                              SizedBox(height: 8.h),
-                              SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Row(
-                                  children: kStandardMaterialCategories.map((cat) {
-                                    final isSelected = _selectedCategory == cat.name;
-                                    return Padding(
-                                      padding: EdgeInsets.only(right: 8.w),
-                                      child: ChoiceChip(
-                                        avatar: Icon(
-                                          cat.icon,
-                                          size: 16.sp,
-                                          color: isSelected ? Colors.white : cat.color,
-                                        ),
-                                        label: Text(cat.name),
-                                        selected: isSelected,
-                                        selectedColor: const Color(0xFF4F46E5),
-                                        labelStyle: TextStyle(
-                                          fontSize: 12.sp,
-                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                          color: isSelected ? Colors.white : const Color(0xFF334155),
-                                        ),
-                                        onSelected: (selected) {
-                                          setState(() {
-                                            if (selected) {
-                                              _selectedCategory = cat.name;
-                                              _unitCtrl.text = cat.defaultUnit;
-                                              if (_descCtrl.text.isEmpty) {
-                                                _descCtrl.text = cat.name;
-                                              }
-                                            } else {
-                                              _selectedCategory = null;
-                                            }
-                                          });
-                                        },
+                               SizedBox(height: 8.h),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      'Material Category (Auto-sets unit & stats):',
+                                      style: TextStyle(
+                                        fontSize: 11.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF64748B),
                                       ),
-                                    );
-                                  }).toList(),
-                                ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  SizedBox(width: 6.w),
+                                  TextButton.icon(
+                                    onPressed: () => setState(() => _expandAllCategories = !_expandAllCategories),
+                                    icon: Icon(
+                                      _expandAllCategories ? Icons.unfold_less_rounded : Icons.grid_view_rounded,
+                                      size: 14.sp,
+                                    ),
+                                    label: Text(
+                                      _expandAllCategories ? 'Collapse' : 'View All (${kStandardMaterialCategories.length})',
+                                      style: TextStyle(fontSize: 11.sp),
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              SizedBox(height: 12.h),
+                              SizedBox(height: 6.h),
+                              if (_expandAllCategories)
+                                Wrap(
+                                  spacing: 8.w,
+                                  runSpacing: 8.h,
+                                  children: kStandardMaterialCategories.map((cat) => _buildCategoryChip(cat)).toList(),
+                                )
+                              else
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  physics: const BouncingScrollPhysics(),
+                                  child: Row(
+                                    children: kStandardMaterialCategories.map((cat) {
+                                      return Padding(
+                                        padding: EdgeInsets.only(right: 8.w),
+                                        child: _buildCategoryChip(cat),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              SizedBox(height: 10.h),
+
+                              // ─── Quick 1-Click Selectable Item Presets for Selected Category ───
+                              if (_selectedCategory != null) ...[
+                                () {
+                                  final currentPreset = kStandardMaterialCategories
+                                      .where((c) => c.name == _selectedCategory)
+                                      .firstOrNull;
+                                  if (currentPreset == null || currentPreset.commonItems.isEmpty) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return Container(
+                                    margin: EdgeInsets.only(bottom: 12.h),
+                                    padding: EdgeInsets.all(12.r),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF1F5F9),
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      border: Border.all(color: const Color(0xFFCBD5E1)),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(Icons.touch_app_rounded, size: 15.sp, color: const Color(0xFF4F46E5)),
+                                            SizedBox(width: 6.w),
+                                            Text(
+                                              'Quick Items for ${currentPreset.name} (Click to auto-fill):',
+                                              style: TextStyle(
+                                                fontSize: 11.sp,
+                                                fontWeight: FontWeight.bold,
+                                                color: const Color(0xFF1E293B),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 8.h),
+                                        SingleChildScrollView(
+                                          scrollDirection: Axis.horizontal,
+                                          physics: const BouncingScrollPhysics(),
+                                          child: Row(
+                                            children: currentPreset.commonItems.map((item) {
+                                              final isSelected = _descCtrl.text == item;
+                                              return Padding(
+                                                padding: EdgeInsets.only(right: 6.w),
+                                                child: ActionChip(
+                                                  avatar: Icon(
+                                                    isSelected ? Icons.check_circle_rounded : Icons.add_circle_outline_rounded,
+                                                    size: 14.sp,
+                                                    color: isSelected ? Colors.white : const Color(0xFF4F46E5),
+                                                  ),
+                                                  label: Text(item),
+                                                  backgroundColor: isSelected ? const Color(0xFF4F46E5) : Colors.white,
+                                                  side: BorderSide(
+                                                    color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFFCBD5E1),
+                                                  ),
+                                                  labelStyle: TextStyle(
+                                                    fontSize: 11.sp,
+                                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                                    color: isSelected ? Colors.white : const Color(0xFF1E293B),
+                                                  ),
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      _descCtrl.text = item;
+                                                      _unitCtrl.text = currentPreset.defaultUnit;
+                                                    });
+                                                  },
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }(),
+                              ],
 
                               // ─── Live In-Form Project Material Consumption Alert ───
                               if (_selectedProject != null && _selectedCategory != null && !_isAdvanceStock)
@@ -1129,6 +1214,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
 
     return DropdownButtonFormField<int>(
       value: selectedProjectValue,
+      isExpanded: true,
       decoration: const InputDecoration(
         labelText: 'Select Target Project *',
         prefixIcon: Icon(Icons.folder_outlined),
@@ -1233,4 +1319,67 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
       },
     );
   }
+
+  Widget _buildCategoryChip(MaterialCategoryPreset cat) {
+    final isSelected = _selectedCategory == cat.name;
+    return ChoiceChip(
+      avatar: Icon(
+        cat.icon,
+        size: 15.sp,
+        color: isSelected ? Colors.white : cat.color,
+      ),
+      label: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(cat.name),
+          SizedBox(width: 5.w),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.h),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? Colors.white.withValues(alpha: 0.25)
+                  : const Color(0xFFE2E8F0),
+              borderRadius: BorderRadius.circular(4.r),
+            ),
+            child: Text(
+              cat.defaultUnit,
+              style: TextStyle(
+                fontSize: 9.sp,
+                fontWeight: FontWeight.bold,
+                color: isSelected ? Colors.white : const Color(0xFF64748B),
+              ),
+            ),
+          ),
+        ],
+      ),
+      selected: isSelected,
+      selectedColor: const Color(0xFF4F46E5),
+      backgroundColor: Colors.white,
+      side: BorderSide(
+        color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFFCBD5E1),
+        width: isSelected ? 1.5 : 1.0,
+      ),
+      labelStyle: TextStyle(
+        fontSize: 11.sp,
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+        color: isSelected ? Colors.white : const Color(0xFF334155),
+      ),
+      onSelected: (selected) {
+        setState(() {
+          if (selected) {
+            _selectedCategory = cat.name;
+            _unitCtrl.text = cat.defaultUnit;
+            if (_descCtrl.text.isEmpty && cat.commonItems.isNotEmpty) {
+              _descCtrl.text = cat.commonItems.first;
+            } else if (_descCtrl.text.isEmpty) {
+              _descCtrl.text = cat.name;
+            }
+          } else {
+            _selectedCategory = null;
+          }
+        });
+      },
+    );
+  }
 }
+

@@ -55,26 +55,29 @@ class _SubcontractHubScreenState extends ConsumerState<SubcontractHubScreen>
               spacing: 16.w,
               runSpacing: 12.h,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Subcontracts & Piece-Rate Work Orders',
-                      style: TextStyle(
-                        fontSize: 22.sp,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF0F172A),
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 550.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Subcontracts & Piece-Rate Work Orders',
+                        style: TextStyle(
+                          fontSize: 22.sp,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0F172A),
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      'Measurement contracts, running RA bills, advance tracking & retention accounting',
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: const Color(0xFF64748B),
+                      SizedBox(height: 4.h),
+                      Text(
+                        'Measurement contracts, running RA bills, advance tracking & retention accounting',
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          color: const Color(0xFF64748B),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 Wrap(
                   spacing: 8.w,
@@ -125,33 +128,35 @@ class _SubcontractHubScreenState extends ConsumerState<SubcontractHubScreen>
                 padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
                 child: Row(
                   children: [
-                    TabBar(
-                      controller: _tabController,
-                      isScrollable: true,
-                      tabAlignment: TabAlignment.start,
-                      indicatorColor: const Color(0xFF4F46E5),
-                      labelColor: const Color(0xFF4F46E5),
-                      unselectedLabelColor: const Color(0xFF64748B),
-                      labelStyle: TextStyle(
-                          fontSize: 13.sp, fontWeight: FontWeight.bold),
-                      unselectedLabelStyle: TextStyle(
-                          fontSize: 13.sp, fontWeight: FontWeight.w500),
-                      tabs: const [
-                        Tab(
-                            icon: Icon(Icons.assignment_outlined, size: 16),
-                            text: 'Work Orders'),
-                        Tab(
-                            icon: Icon(Icons.straighten_rounded, size: 16),
-                            text: 'Measurement Bills (RA)'),
-                        Tab(
-                            icon: Icon(Icons.payments_outlined, size: 16),
-                            text: 'Payments & Advances'),
-                        Tab(
-                            icon: Icon(Icons.groups_outlined, size: 16),
-                            text: 'Contractors & Dues'),
-                      ],
+                    Expanded(
+                      child: TabBar(
+                        controller: _tabController,
+                        isScrollable: true,
+                        tabAlignment: TabAlignment.start,
+                        indicatorColor: const Color(0xFF4F46E5),
+                        labelColor: const Color(0xFF4F46E5),
+                        unselectedLabelColor: const Color(0xFF64748B),
+                        labelStyle: TextStyle(
+                            fontSize: 13.sp, fontWeight: FontWeight.bold),
+                        unselectedLabelStyle: TextStyle(
+                            fontSize: 13.sp, fontWeight: FontWeight.w500),
+                        tabs: const [
+                          Tab(
+                              icon: Icon(Icons.assignment_outlined, size: 16),
+                              text: 'Work Orders'),
+                          Tab(
+                              icon: Icon(Icons.straighten_rounded, size: 16),
+                              text: 'Measurement Bills (RA)'),
+                          Tab(
+                              icon: Icon(Icons.payments_outlined, size: 16),
+                              text: 'Payments & Advances'),
+                          Tab(
+                              icon: Icon(Icons.groups_outlined, size: 16),
+                              text: 'Contractors & Dues'),
+                        ],
+                      ),
                     ),
-                    const Spacer(),
+                    SizedBox(width: 12.w),
                     projectsAsync.when(
                       loading: () => const SizedBox.shrink(),
                       error: (_, __) => const SizedBox.shrink(),
