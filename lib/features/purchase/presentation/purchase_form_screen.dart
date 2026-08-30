@@ -1302,48 +1302,52 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                     width: _isAdvanceStock ? 1.5 : 1,
                                   ),
                                 ),
-                                child: SwitchListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  value: _isAdvanceStock,
-                                  title: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.inventory_2_outlined,
-                                        size: 20.sp,
-                                        color: _isAdvanceStock
-                                            ? const Color(0xFFD97706)
-                                            : theme.colorScheme.onSurface,
-                                      ),
-                                      SizedBox(width: 8.w),
-                                      Expanded(
-                                        child: Text(
-                                          'Hold as Advance Stock / Asset',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            color: _isAdvanceStock
-                                                ? const Color(0xFF92400E)
-                                                : theme.colorScheme.onSurface,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: SwitchListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    value: _isAdvanceStock,
+                                    title: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.inventory_2_outlined,
+                                          size: 20.sp,
+                                          color: _isAdvanceStock
+                                              ? const Color(0xFFD97706)
+                                              : theme.colorScheme.onSurface,
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  subtitle: Padding(
-                                    padding: EdgeInsets.only(top: 4.h),
-                                    child: Text(
+                                        SizedBox(width: 8.w),
+                                        Expanded(
+                                          child: Text(
+                                            'Hold as Advance Stock / Asset',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              color: _isAdvanceStock
+                                                  ? const Color(0xFF92400E)
+                                                  : theme.colorScheme.onSurface,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    subtitle: Text(
                                       _isAdvanceStock
-                                          ? 'Held as company stock asset. Does NOT affect project P&L now. You can allocate it to projects later.'
-                                          : 'Standard purchase: Recognized as an immediate cost in project P&L.',
+                                          ? 'Bulk stock held for future allocation. Does not hit P&L now.'
+                                          : 'Standard site purchase — hits project P&L immediately.',
                                       style: TextStyle(
-                                        fontSize: 12.sp,
+                                        fontSize: 11.sp,
                                         color: _isAdvanceStock
                                             ? const Color(0xFFB45309)
-                                            : theme.colorScheme.onSurfaceVariant,
+                                            : const Color(0xFF64748B),
                                       ),
                                     ),
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _isAdvanceStock = val;
+                                      });
+                                    },
                                   ),
-                                  onChanged: (v) => setState(() => _isAdvanceStock = v),
                                 ),
                               ),
                               SizedBox(height: 24.h),
