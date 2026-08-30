@@ -50,6 +50,13 @@ jobs:
           name: nex_ledger-windows-x64
           path: nex_ledger-windows-x64.zip
 
+      - name: Publish Windows Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          generate_release_notes: true
+          files: nex_ledger-windows-x64.zip
+
   build-macos:
     name: Build macOS Release
     runs-on: macos-latest
@@ -75,7 +82,7 @@ jobs:
         run: flutter test
 
       - name: Build macOS Application
-        run: flutter build macos --release --no-codesign
+        run: flutter build macos --release
 
       - name: Compress macOS bundle
         run: |
@@ -88,28 +95,9 @@ jobs:
           name: nex_ledger-macos
           path: nex_ledger-macos.zip
 
-  publish-release:
-    name: Publish GitHub Release
-    needs: [build-windows, build-macos]
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
-
-    steps:
-      - name: Download Windows Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: nex_ledger-windows-x64
-
-      - name: Download macOS Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: nex_ledger-macos
-
-      - name: Publish GitHub Release
+      - name: Publish macOS Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           generate_release_notes: true
-          files: |
-            nex_ledger-windows-x64.zip
-            nex_ledger-macos.zip
+          files: nex_ledger-macos.zip
