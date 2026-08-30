@@ -11,6 +11,7 @@ import 'package:nex_ledger/core/database/daos/labour_dao.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
 import 'package:nex_ledger/features/reports/data/report_repository.dart';
 import 'package:nex_ledger/features/reports/models/ledger_models.dart';
+import 'package:nex_ledger/features/materials/models/project_material_entry.dart';
 
 /// Senior CA-Grade Financial Excel Export Engine for NexLedger.
 /// Generates audit-ready .xlsx workbooks for P&L, Cash Book, Deposits, Labour, and Ledgers.
@@ -452,4 +453,133 @@ class ExcelExportService {
       'Ledger_${safeName}_${DateFormatter.format(DateTime.now()).replaceAll(' ', '_')}.xlsx',
     );
   }
+
+  /// 6. Export Project Material Quantity Statement & Delivery Log to Excel
+  static Future<String?> exportMaterialQuantityStatement({
+    required ProjectMaterialSummary summary,
+    DateTimeRange? dateRange,
+  }) async {
+    final excel = Excel.createExcel();
+    final sheet = excel['Material Consumption'];
+    excel.delete('Sheet1');
+
+    // Title & Info
+    sheet.appendRow([TextCellValue('NEXLEDGER ERP — PROJECT MATERIAL QUANTITY REGISTER')]);
+    sheet.appendRow([
+      TextCellValue(
+        'Project: ${summary.projectCode != null ? '${summary.projectCode} — ' : ''}${summary.projectName}${summary.clientName != null ? ' (Client: ${summary.clientName})' : ''}',
+      ),
+    ]);
+    if (dateRange != null) {
+      sheet.appendRow([
+        TextCellValue(
+          'Period: ${DateFormatter.format(dateRange.start)} to ${DateFormatter.format(dateRange.end)}',
+        ),
+      ]);
+    } else {
+      sheet.appendRow([TextCellValue('Period: All-Time Project Inward Deliveries')]);
+    }
+    sheet.appendRow([TextCellValue('Generated On: ${DateFormatter.format(DateTime.now())}')]);
+    sheet.appendRow([TextCellValue('')]);
+
+    // KPI Summary Block
+    sheet.appendRow([
+      TextCellValue('SUMMARY METRICS'),
+      TextCellValue('Total Material Spend: ₹${summary.totalMaterialSpend.toStringAsFixed(2)}'),
+      TextCellValue('Total Delivery Consignments: ${summary.totalDeliveriesCount}'),
+      TextCellValue('Distinct Material Items: ${summary.totalDistinctItemsCount}'),
+    ]);
+    sheet.appendRow([TextCellValue('')]);
+
+    // Table Headers
+    sheet.appendRow([
+      TextCellValue('#'),
+      TextCellValue('Material Category'),
+      TextCellValue('Item Description'),
+      TextCellValue('Total Quantity Inward'),
+      TextCellValue('Unit'),
+      TextCellValue('Average Unit Rate (₹)'),
+      TextCellValue('Total Amount (₹)'),
+      TextCellValue('Delivery Bills Count'),
+      TextCellValue('Last Delivery Date'),
+      TextCellValue('Primary Supplier / Vendor'),
+    ]);
+
+    int index = 1;
+    for (final item in summary.items) {
+      sheet.appendRow([
+        IntCellValue(index++),
+        TextCellValue(item.materialCategory),
+        TextCellValue(item.itemDescription),
+        DoubleCellValue(item.totalQuantity),
+        TextCellValue(item.unit),
+        DoubleCellValue(item.avgUnitRate),
+        DoubleCellValue(item.totalAmount),
+        IntCellValue(item.inwardCount),
+        TextCellValue(item.lastDeliveryDate != null ? DateFormatter.format(item.lastDeliveryDate!) : '—'),
+        TextCellValue(item.primaryVendor ?? '—'),
+      ]);
+    }
+
+    sheet.appendRow([TextCellValue('')]);
+    sheet.appendRow([
+      TextCellValue('TOTALS'),
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue(''),
+      DoubleCellValue(summary.totalMaterialSpend),
+      IntCellValue(summary.totalDeliveriesCount),
+      TextCellValue(''),
+      TextCellValue(''),
+    ]);
+
+    // ── Delivery Log Sheet ──
+    final logSheet = excel['Delivery Inward Log'];
+    logSheet.appendRow([TextCellValue('PROJECT MATERIAL INWARD DELIVERY LOG')]);
+    logSheet.appendRow([TextCellValue('')]);
+    logSheet.appendRow([
+      TextCellValue('Delivery Date'),
+      TextCellValue('Challan / Bill Ref No'),
+      TextCellValue('Item Description'),
+      TextCellValue('Material Category'),
+      TextCellValue('Quantity'),
+      TextCellValue('Unit'),
+      TextCellValue('Unit Rate (₹)'),
+      TextCellValue('Total Amount (₹)'),
+      TextCellValue('Supplier / Vendor'),
+      TextCellValue('Project'),
+      TextCellValue('Payment Status'),
+      TextCellValue('Payment Mode'),
+      TextCellValue('Notes / Narration'),
+    ]);
+
+    for (final item in summary.items) {
+      for (final del in item.deliveryHistory) {
+        logSheet.appendRow([
+          TextCellValue(DateFormatter.format(del.transaction.date)),
+          TextCellValue(del.transaction.referenceNo ?? '—'),
+          TextCellValue(del.purchase.itemDescription),
+          TextCellValue(del.purchase.materialCategory ?? 'General Material'),
+          DoubleCellValue(del.purchase.quantity),
+          TextCellValue(del.purchase.unit ?? 'Units'),
+          DoubleCellValue(del.purchase.unitRate),
+          DoubleCellValue(del.transaction.amount),
+          TextCellValue(del.vendor.name),
+          TextCellValue(del.project.name),
+          TextCellValue(del.purchase.paymentStatus.displayName),
+          TextCellValue(del.transaction.paymentMode?.displayName ?? '—'),
+          TextCellValue(del.transaction.narration ?? '—'),
+        ]);
+      }
+    }
+
+    final safeProjName = (summary.projectCode ?? summary.projectName).replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_');
+    return _saveExcelFile(
+      excel,
+      'Materials_${safeProjName}_${DateFormatter.format(DateTime.now()).replaceAll(' ', '_')}.xlsx',
+    );
+  }
 }
+

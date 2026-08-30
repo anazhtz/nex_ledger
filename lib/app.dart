@@ -43,6 +43,7 @@ import 'package:nex_ledger/features/equipment/presentation/equipment_log_form_sc
 import 'package:nex_ledger/features/petty_cash/presentation/petty_cash_hub_screen.dart';
 import 'package:nex_ledger/features/petty_cash/presentation/petty_cash_voucher_form_screen.dart';
 import 'package:nex_ledger/features/petty_cash/presentation/petty_cash_wallet_form_screen.dart';
+import 'package:nex_ledger/features/materials/presentation/material_register_screen.dart';
 import 'package:nex_ledger/shared/widgets/app_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -134,6 +135,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                 ),
               ),
             ],
+          ),
+          GoRoute(
+            path: '/materials',
+            builder: (c, s) => MaterialRegisterScreen(
+              initialProjectId: int.tryParse(s.uri.queryParameters['projectId'] ?? ''),
+            ),
           ),
           GoRoute(
             path: '/labour/attendance',

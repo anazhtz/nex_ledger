@@ -62,6 +62,12 @@ class _AppShellState extends ConsumerState<AppShell> {
       section: 'OVERVIEW',
     ),
     NavItem(
+      icon: Icons.inventory_2_rounded,
+      label: 'Material Register',
+      path: '/materials',
+      section: 'OVERVIEW',
+    ),
+    NavItem(
       icon: Icons.business_center_rounded,
       label: 'Client Billing',
       path: '/client-billing',
@@ -186,6 +192,7 @@ class _AppShellState extends ConsumerState<AppShell> {
         // Gateway Navigation
         const SingleActivator(LogicalKeyboardKey.keyD, alt: true): () => context.go('/'),
         const SingleActivator(LogicalKeyboardKey.keyC, alt: true): () => context.go('/cash-book'),
+        const SingleActivator(LogicalKeyboardKey.keyM, alt: true): () => context.go('/materials'),
         const SingleActivator(LogicalKeyboardKey.keyB, alt: true): () => context.go('/bank-accounts'),
         const SingleActivator(LogicalKeyboardKey.keyR, alt: true): () => context.go('/reports/project-pnl'),
         const SingleActivator(LogicalKeyboardKey.keyY, alt: true): () => context.go('/reports/day-book'),
