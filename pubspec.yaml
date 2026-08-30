@@ -1,7 +1,7 @@
 name: nex_ledger
 description: "NexLedger — Mini ERP for project-wise cash flow, purchases, labour, and deposits."
 publish_to: 'none'
-version: 1.0.7+8
+version: 1.0.8+9
 
 environment:
   sdk: ^3.5.0
