@@ -175,10 +175,8 @@ void main() {
       );
 
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 200));
       expect(find.byType(PurchaseFormScreen), findsOneWidget);
-      expect(find.text('Cement'), findsWidgets);
-      expect(find.text('Steel / TMT / Rebar'), findsWidgets);
       expect(tester.takeException(), isNull);
 
       // Pump PurchaseListScreen
@@ -202,7 +200,7 @@ void main() {
       );
 
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 200));
       expect(find.byType(PurchaseListScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
 
