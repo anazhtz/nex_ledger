@@ -56,6 +56,10 @@ class PurchaseRepository {
     String? narration,
     String? referenceNo,
     bool isAdvanceStock = false,
+    String? hsnCode,
+    bool taxApplicable = false,
+    double gstRate = 0.0,
+    double gstAmount = 0.0,
   }) async {
     final isFullPaid = paymentStatus == PaymentStatus.paid;
     final isPartial = paymentStatus == PaymentStatus.partial;
@@ -90,7 +94,8 @@ class PurchaseRepository {
             projectId: projectId,
             date: date,
             type: TransactionType.purchasePayment,
-            affectsPnl: const Value(false), // P&L already recognized by main purchase bill
+            affectsPnl: const Value(
+                false), // P&L already recognized by main purchase bill
             affectsCash: const Value(true), // moves cash
             amount: actualPaid,
             paymentMode: Value(paymentMode),
@@ -110,6 +115,10 @@ class PurchaseRepository {
               unitRate: Value(unitRate),
               unit: Value(unit),
               materialCategory: Value(materialCategory?.trim()),
+              hsnCode: Value(hsnCode?.trim()),
+              taxApplicable: Value(taxApplicable),
+              gstRate: Value(gstRate),
+              gstAmount: Value(gstAmount),
               paidAmount: Value(actualPaid),
               paymentStatus: paymentStatus,
               isAdvanceStock: Value(isAdvanceStock),
@@ -167,7 +176,8 @@ class PurchaseRepository {
           : PaymentStatus.partial;
 
       // Update the purchase record with new paid amount and status.
-      await _purchaseDao.updatePaymentDetails(purchaseId, totalNowPaid, newStatus);
+      await _purchaseDao.updatePaymentDetails(
+          purchaseId, totalNowPaid, newStatus);
     });
   }
 
@@ -217,8 +227,7 @@ class PurchaseRepository {
       );
 
       // 2. Update allocated amount on the advance stock purchase record
-      final newAllocated =
-          detail.purchase.allocatedAmount + amountToAllocate;
+      final newAllocated = detail.purchase.allocatedAmount + amountToAllocate;
       await _purchaseDao.updateAllocatedAmount(purchaseId, newAllocated);
     });
   }
@@ -241,8 +250,11 @@ class PurchaseRepository {
     final detail = await _purchaseDao.getPurchaseById(purchaseId);
     if (detail == null) return;
     await _db.transaction(() async {
-      await (_db.delete(_db.purchases)..where((p) => p.id.equals(purchaseId))).go();
-      await (_db.delete(_db.transactions)..where((t) => t.id.equals(detail.transaction.id))).go();
+      await (_db.delete(_db.purchases)..where((p) => p.id.equals(purchaseId)))
+          .go();
+      await (_db.delete(_db.transactions)
+            ..where((t) => t.id.equals(detail.transaction.id)))
+          .go();
     });
   }
 
@@ -265,6 +277,10 @@ class PurchaseRepository {
     String? referenceNo,
     String? narration,
     bool isAdvanceStock = false,
+    String? hsnCode,
+    bool taxApplicable = false,
+    double gstRate = 0.0,
+    double gstAmount = 0.0,
   }) async {
     final detail = await _purchaseDao.getPurchaseById(purchaseId);
     if (detail == null) throw StateError('Purchase $purchaseId not found');
@@ -290,7 +306,8 @@ class PurchaseRepository {
       );
 
       // Update purchase row
-      await (_db.update(_db.purchases)..where((p) => p.id.equals(purchaseId))).write(
+      await (_db.update(_db.purchases)..where((p) => p.id.equals(purchaseId)))
+          .write(
         PurchasesCompanion(
           vendorId: Value(vendorId),
           itemDescription: Value(itemDescription.trim()),
@@ -298,6 +315,10 @@ class PurchaseRepository {
           unitRate: Value(unitRate),
           unit: Value(unit?.trim()),
           materialCategory: Value(materialCategory?.trim()),
+          hsnCode: Value(hsnCode?.trim()),
+          taxApplicable: Value(taxApplicable),
+          gstRate: Value(gstRate),
+          gstAmount: Value(gstAmount),
           paidAmount: Value(paidAmount),
           paymentStatus: Value(paymentStatus),
           isAdvanceStock: Value(isAdvanceStock),

@@ -67,7 +67,16 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     expect(find.byWidget(screen), findsOneWidget);
-    expect(tester.takeException(), isNull);
+    final ex = tester.takeException();
+    if (ex is FlutterError) {
+      for (final prop in ex.diagnostics) {
+        print('DIAG: ${prop.name} -> ${prop.toDescription()}');
+        for (final sub in prop.getChildren()) {
+          print('  SUB: ${sub.name} -> ${sub.toDescription()}');
+        }
+      }
+    }
+    expect(ex, isNull);
   }
 
   group('UI Layout & Responsiveness Audit across All Screens', () {

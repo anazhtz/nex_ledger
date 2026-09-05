@@ -3,13 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
-import 'package:nex_ledger/core/constants/material_constants.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
-import 'package:nex_ledger/core/database/database_provider.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
 import 'package:nex_ledger/features/purchase/data/purchase_repository.dart';
-import 'package:nex_ledger/features/purchase/models/material_consumption.dart';
 import 'package:nex_ledger/features/purchase/providers/purchase_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 import 'package:nex_ledger/features/reports/providers/report_providers.dart';
@@ -220,30 +217,75 @@ class PurchaseListScreen extends ConsumerWidget {
                                   if (pd.purchase.materialCategory != null)
                                     Container(
                                       margin: const EdgeInsets.only(right: 6),
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 1),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFEEF2FF),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
                                         pd.purchase.materialCategory!,
-                                        style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.bold, color: const Color(0xFF4F46E5)),
+                                        style: TextStyle(
+                                            fontSize: 10.sp,
+                                            fontWeight: FontWeight.bold,
+                                            color: const Color(0xFF4F46E5)),
+                                      ),
+                                    ),
+                                  if (pd.purchase.hsnCode != null &&
+                                      pd.purchase.hsnCode!.trim().isNotEmpty)
+                                    Container(
+                                      margin: const EdgeInsets.only(right: 6),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 5, vertical: 1),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF1F5F9),
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(
+                                            color: const Color(0xFFCBD5E1)),
+                                      ),
+                                      child: Text(
+                                        'HSN: ${pd.purchase.hsnCode}',
+                                        style: TextStyle(
+                                            fontSize: 10.sp,
+                                            fontWeight: FontWeight.w600,
+                                            color: const Color(0xFF475569)),
                                       ),
                                     ),
                                   Text(
                                     pd.purchase.itemDescription,
-                                    style: const TextStyle(fontWeight: FontWeight.w600),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w600),
                                   ),
                                 ],
                               ),
-                              if (pd.purchase.quantity > 1 || pd.purchase.unitRate > 0)
-                                Text(
-                                  'Qty: ${pd.purchase.quantity % 1 == 0 ? pd.purchase.quantity.toInt() : pd.purchase.quantity} ${pd.purchase.unit ?? 'Nos'} @ ${CurrencyFormatter.format(pd.purchase.unitRate)}',
-                                  style: TextStyle(
-                                    fontSize: 11.sp,
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (pd.purchase.quantity > 1 ||
+                                      pd.purchase.unitRate > 0)
+                                    Text(
+                                      'Qty: ${pd.purchase.quantity % 1 == 0 ? pd.purchase.quantity.toInt() : pd.purchase.quantity} ${pd.purchase.unit ?? 'Nos'} @ ${CurrencyFormatter.format(pd.purchase.unitRate)}',
+                                      style: TextStyle(
+                                        fontSize: 11.sp,
+                                        color:
+                                            theme.colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  if (pd.purchase.taxApplicable &&
+                                      pd.purchase.gstAmount > 0)
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 6),
+                                      child: Text(
+                                        '• GST ${pd.purchase.gstRate % 1 == 0 ? pd.purchase.gstRate.toInt() : pd.purchase.gstRate}% (+${CurrencyFormatter.format(pd.purchase.gstAmount)})',
+                                        style: TextStyle(
+                                          fontSize: 10.sp,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFF16A34A),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
                             ],
                           ),
                         ),
@@ -269,11 +311,26 @@ class PurchaseListScreen extends ConsumerWidget {
                                   ),
                                 ),
                         ),
-                        DataCell(Text(
-                          CurrencyFormatter.format(pd.transaction.amount),
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w700),
-                        )),
+                        DataCell(
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                CurrencyFormatter.format(pd.transaction.amount),
+                                style: const TextStyle(fontWeight: FontWeight.w700),
+                              ),
+                              if (pd.purchase.taxApplicable && pd.purchase.gstAmount > 0)
+                                Text(
+                                  'Base: ${CurrencyFormatter.format(pd.transaction.amount - pd.purchase.gstAmount)}',
+                                  style: TextStyle(
+                                    fontSize: 10.sp,
+                                    color: const Color(0xFF64748B),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
                         DataCell(_PaymentStatusChip(
                             status: pd.purchase.paymentStatus)),
                         DataCell(Text(

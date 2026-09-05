@@ -21,4 +21,9 @@ class Purchases extends Table {
   RealColumn get allocatedAmount =>
       real().withDefault(const Constant(0.0))();
   TextColumn get materialCategory => text().nullable()();
+  TextColumn get hsnCode => text().nullable()();
+  BoolColumn get taxApplicable =>
+      boolean().withDefault(const Constant(false))();
+  RealColumn get gstRate => real().withDefault(const Constant(0.0))();
+  RealColumn get gstAmount => real().withDefault(const Constant(0.0))();
 }

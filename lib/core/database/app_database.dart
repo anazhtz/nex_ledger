@@ -121,7 +121,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -222,6 +222,12 @@ class AppDatabase extends _$AppDatabase {
           if (from < 17) {
             await m.createTable(pettyCashWallets);
             await m.createTable(pettyCashVouchers);
+          }
+          if (from < 18) {
+            await m.addColumn(purchases, purchases.hsnCode);
+            await m.addColumn(purchases, purchases.taxApplicable);
+            await m.addColumn(purchases, purchases.gstRate);
+            await m.addColumn(purchases, purchases.gstAmount);
           }
         },
       );

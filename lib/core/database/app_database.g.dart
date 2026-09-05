@@ -2923,6 +2923,38 @@ class $PurchasesTable extends Purchases
   late final GeneratedColumn<String> materialCategory = GeneratedColumn<String>(
       'material_category', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _hsnCodeMeta =
+      const VerificationMeta('hsnCode');
+  @override
+  late final GeneratedColumn<String> hsnCode = GeneratedColumn<String>(
+      'hsn_code', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _taxApplicableMeta =
+      const VerificationMeta('taxApplicable');
+  @override
+  late final GeneratedColumn<bool> taxApplicable = GeneratedColumn<bool>(
+      'tax_applicable', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("tax_applicable" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _gstRateMeta =
+      const VerificationMeta('gstRate');
+  @override
+  late final GeneratedColumn<double> gstRate = GeneratedColumn<double>(
+      'gst_rate', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _gstAmountMeta =
+      const VerificationMeta('gstAmount');
+  @override
+  late final GeneratedColumn<double> gstAmount = GeneratedColumn<double>(
+      'gst_amount', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -2936,7 +2968,11 @@ class $PurchasesTable extends Purchases
         paymentStatus,
         isAdvanceStock,
         allocatedAmount,
-        materialCategory
+        materialCategory,
+        hsnCode,
+        taxApplicable,
+        gstRate,
+        gstAmount
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3009,6 +3045,24 @@ class $PurchasesTable extends Purchases
           materialCategory.isAcceptableOrUnknown(
               data['material_category']!, _materialCategoryMeta));
     }
+    if (data.containsKey('hsn_code')) {
+      context.handle(_hsnCodeMeta,
+          hsnCode.isAcceptableOrUnknown(data['hsn_code']!, _hsnCodeMeta));
+    }
+    if (data.containsKey('tax_applicable')) {
+      context.handle(
+          _taxApplicableMeta,
+          taxApplicable.isAcceptableOrUnknown(
+              data['tax_applicable']!, _taxApplicableMeta));
+    }
+    if (data.containsKey('gst_rate')) {
+      context.handle(_gstRateMeta,
+          gstRate.isAcceptableOrUnknown(data['gst_rate']!, _gstRateMeta));
+    }
+    if (data.containsKey('gst_amount')) {
+      context.handle(_gstAmountMeta,
+          gstAmount.isAcceptableOrUnknown(data['gst_amount']!, _gstAmountMeta));
+    }
     return context;
   }
 
@@ -3043,6 +3097,14 @@ class $PurchasesTable extends Purchases
           DriftSqlType.double, data['${effectivePrefix}allocated_amount'])!,
       materialCategory: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}material_category']),
+      hsnCode: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}hsn_code']),
+      taxApplicable: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}tax_applicable'])!,
+      gstRate: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}gst_rate'])!,
+      gstAmount: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}gst_amount'])!,
     );
   }
 
@@ -3069,6 +3131,10 @@ class Purchase extends DataClass implements Insertable<Purchase> {
   final bool isAdvanceStock;
   final double allocatedAmount;
   final String? materialCategory;
+  final String? hsnCode;
+  final bool taxApplicable;
+  final double gstRate;
+  final double gstAmount;
   const Purchase(
       {required this.id,
       required this.transactionId,
@@ -3081,7 +3147,11 @@ class Purchase extends DataClass implements Insertable<Purchase> {
       required this.paymentStatus,
       required this.isAdvanceStock,
       required this.allocatedAmount,
-      this.materialCategory});
+      this.materialCategory,
+      this.hsnCode,
+      required this.taxApplicable,
+      required this.gstRate,
+      required this.gstAmount});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -3104,6 +3174,12 @@ class Purchase extends DataClass implements Insertable<Purchase> {
     if (!nullToAbsent || materialCategory != null) {
       map['material_category'] = Variable<String>(materialCategory);
     }
+    if (!nullToAbsent || hsnCode != null) {
+      map['hsn_code'] = Variable<String>(hsnCode);
+    }
+    map['tax_applicable'] = Variable<bool>(taxApplicable);
+    map['gst_rate'] = Variable<double>(gstRate);
+    map['gst_amount'] = Variable<double>(gstAmount);
     return map;
   }
 
@@ -3123,6 +3199,12 @@ class Purchase extends DataClass implements Insertable<Purchase> {
       materialCategory: materialCategory == null && nullToAbsent
           ? const Value.absent()
           : Value(materialCategory),
+      hsnCode: hsnCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(hsnCode),
+      taxApplicable: Value(taxApplicable),
+      gstRate: Value(gstRate),
+      gstAmount: Value(gstAmount),
     );
   }
 
@@ -3143,6 +3225,10 @@ class Purchase extends DataClass implements Insertable<Purchase> {
       isAdvanceStock: serializer.fromJson<bool>(json['isAdvanceStock']),
       allocatedAmount: serializer.fromJson<double>(json['allocatedAmount']),
       materialCategory: serializer.fromJson<String?>(json['materialCategory']),
+      hsnCode: serializer.fromJson<String?>(json['hsnCode']),
+      taxApplicable: serializer.fromJson<bool>(json['taxApplicable']),
+      gstRate: serializer.fromJson<double>(json['gstRate']),
+      gstAmount: serializer.fromJson<double>(json['gstAmount']),
     );
   }
   @override
@@ -3162,6 +3248,10 @@ class Purchase extends DataClass implements Insertable<Purchase> {
       'isAdvanceStock': serializer.toJson<bool>(isAdvanceStock),
       'allocatedAmount': serializer.toJson<double>(allocatedAmount),
       'materialCategory': serializer.toJson<String?>(materialCategory),
+      'hsnCode': serializer.toJson<String?>(hsnCode),
+      'taxApplicable': serializer.toJson<bool>(taxApplicable),
+      'gstRate': serializer.toJson<double>(gstRate),
+      'gstAmount': serializer.toJson<double>(gstAmount),
     };
   }
 
@@ -3177,7 +3267,11 @@ class Purchase extends DataClass implements Insertable<Purchase> {
           PaymentStatus? paymentStatus,
           bool? isAdvanceStock,
           double? allocatedAmount,
-          Value<String?> materialCategory = const Value.absent()}) =>
+          Value<String?> materialCategory = const Value.absent(),
+          Value<String?> hsnCode = const Value.absent(),
+          bool? taxApplicable,
+          double? gstRate,
+          double? gstAmount}) =>
       Purchase(
         id: id ?? this.id,
         transactionId: transactionId ?? this.transactionId,
@@ -3193,6 +3287,10 @@ class Purchase extends DataClass implements Insertable<Purchase> {
         materialCategory: materialCategory.present
             ? materialCategory.value
             : this.materialCategory,
+        hsnCode: hsnCode.present ? hsnCode.value : this.hsnCode,
+        taxApplicable: taxApplicable ?? this.taxApplicable,
+        gstRate: gstRate ?? this.gstRate,
+        gstAmount: gstAmount ?? this.gstAmount,
       );
   Purchase copyWithCompanion(PurchasesCompanion data) {
     return Purchase(
@@ -3221,6 +3319,12 @@ class Purchase extends DataClass implements Insertable<Purchase> {
       materialCategory: data.materialCategory.present
           ? data.materialCategory.value
           : this.materialCategory,
+      hsnCode: data.hsnCode.present ? data.hsnCode.value : this.hsnCode,
+      taxApplicable: data.taxApplicable.present
+          ? data.taxApplicable.value
+          : this.taxApplicable,
+      gstRate: data.gstRate.present ? data.gstRate.value : this.gstRate,
+      gstAmount: data.gstAmount.present ? data.gstAmount.value : this.gstAmount,
     );
   }
 
@@ -3238,7 +3342,11 @@ class Purchase extends DataClass implements Insertable<Purchase> {
           ..write('paymentStatus: $paymentStatus, ')
           ..write('isAdvanceStock: $isAdvanceStock, ')
           ..write('allocatedAmount: $allocatedAmount, ')
-          ..write('materialCategory: $materialCategory')
+          ..write('materialCategory: $materialCategory, ')
+          ..write('hsnCode: $hsnCode, ')
+          ..write('taxApplicable: $taxApplicable, ')
+          ..write('gstRate: $gstRate, ')
+          ..write('gstAmount: $gstAmount')
           ..write(')'))
         .toString();
   }
@@ -3256,7 +3364,11 @@ class Purchase extends DataClass implements Insertable<Purchase> {
       paymentStatus,
       isAdvanceStock,
       allocatedAmount,
-      materialCategory);
+      materialCategory,
+      hsnCode,
+      taxApplicable,
+      gstRate,
+      gstAmount);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3272,7 +3384,11 @@ class Purchase extends DataClass implements Insertable<Purchase> {
           other.paymentStatus == this.paymentStatus &&
           other.isAdvanceStock == this.isAdvanceStock &&
           other.allocatedAmount == this.allocatedAmount &&
-          other.materialCategory == this.materialCategory);
+          other.materialCategory == this.materialCategory &&
+          other.hsnCode == this.hsnCode &&
+          other.taxApplicable == this.taxApplicable &&
+          other.gstRate == this.gstRate &&
+          other.gstAmount == this.gstAmount);
 }
 
 class PurchasesCompanion extends UpdateCompanion<Purchase> {
@@ -3288,6 +3404,10 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
   final Value<bool> isAdvanceStock;
   final Value<double> allocatedAmount;
   final Value<String?> materialCategory;
+  final Value<String?> hsnCode;
+  final Value<bool> taxApplicable;
+  final Value<double> gstRate;
+  final Value<double> gstAmount;
   const PurchasesCompanion({
     this.id = const Value.absent(),
     this.transactionId = const Value.absent(),
@@ -3301,6 +3421,10 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
     this.isAdvanceStock = const Value.absent(),
     this.allocatedAmount = const Value.absent(),
     this.materialCategory = const Value.absent(),
+    this.hsnCode = const Value.absent(),
+    this.taxApplicable = const Value.absent(),
+    this.gstRate = const Value.absent(),
+    this.gstAmount = const Value.absent(),
   });
   PurchasesCompanion.insert({
     this.id = const Value.absent(),
@@ -3315,6 +3439,10 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
     this.isAdvanceStock = const Value.absent(),
     this.allocatedAmount = const Value.absent(),
     this.materialCategory = const Value.absent(),
+    this.hsnCode = const Value.absent(),
+    this.taxApplicable = const Value.absent(),
+    this.gstRate = const Value.absent(),
+    this.gstAmount = const Value.absent(),
   })  : transactionId = Value(transactionId),
         vendorId = Value(vendorId),
         itemDescription = Value(itemDescription),
@@ -3332,6 +3460,10 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
     Expression<bool>? isAdvanceStock,
     Expression<double>? allocatedAmount,
     Expression<String>? materialCategory,
+    Expression<String>? hsnCode,
+    Expression<bool>? taxApplicable,
+    Expression<double>? gstRate,
+    Expression<double>? gstAmount,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -3346,6 +3478,10 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
       if (isAdvanceStock != null) 'is_advance_stock': isAdvanceStock,
       if (allocatedAmount != null) 'allocated_amount': allocatedAmount,
       if (materialCategory != null) 'material_category': materialCategory,
+      if (hsnCode != null) 'hsn_code': hsnCode,
+      if (taxApplicable != null) 'tax_applicable': taxApplicable,
+      if (gstRate != null) 'gst_rate': gstRate,
+      if (gstAmount != null) 'gst_amount': gstAmount,
     });
   }
 
@@ -3361,7 +3497,11 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
       Value<PaymentStatus>? paymentStatus,
       Value<bool>? isAdvanceStock,
       Value<double>? allocatedAmount,
-      Value<String?>? materialCategory}) {
+      Value<String?>? materialCategory,
+      Value<String?>? hsnCode,
+      Value<bool>? taxApplicable,
+      Value<double>? gstRate,
+      Value<double>? gstAmount}) {
     return PurchasesCompanion(
       id: id ?? this.id,
       transactionId: transactionId ?? this.transactionId,
@@ -3375,6 +3515,10 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
       isAdvanceStock: isAdvanceStock ?? this.isAdvanceStock,
       allocatedAmount: allocatedAmount ?? this.allocatedAmount,
       materialCategory: materialCategory ?? this.materialCategory,
+      hsnCode: hsnCode ?? this.hsnCode,
+      taxApplicable: taxApplicable ?? this.taxApplicable,
+      gstRate: gstRate ?? this.gstRate,
+      gstAmount: gstAmount ?? this.gstAmount,
     );
   }
 
@@ -3418,6 +3562,18 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
     if (materialCategory.present) {
       map['material_category'] = Variable<String>(materialCategory.value);
     }
+    if (hsnCode.present) {
+      map['hsn_code'] = Variable<String>(hsnCode.value);
+    }
+    if (taxApplicable.present) {
+      map['tax_applicable'] = Variable<bool>(taxApplicable.value);
+    }
+    if (gstRate.present) {
+      map['gst_rate'] = Variable<double>(gstRate.value);
+    }
+    if (gstAmount.present) {
+      map['gst_amount'] = Variable<double>(gstAmount.value);
+    }
     return map;
   }
 
@@ -3435,7 +3591,11 @@ class PurchasesCompanion extends UpdateCompanion<Purchase> {
           ..write('paymentStatus: $paymentStatus, ')
           ..write('isAdvanceStock: $isAdvanceStock, ')
           ..write('allocatedAmount: $allocatedAmount, ')
-          ..write('materialCategory: $materialCategory')
+          ..write('materialCategory: $materialCategory, ')
+          ..write('hsnCode: $hsnCode, ')
+          ..write('taxApplicable: $taxApplicable, ')
+          ..write('gstRate: $gstRate, ')
+          ..write('gstAmount: $gstAmount')
           ..write(')'))
         .toString();
   }
@@ -15480,6 +15640,10 @@ typedef $$PurchasesTableCreateCompanionBuilder = PurchasesCompanion Function({
   Value<bool> isAdvanceStock,
   Value<double> allocatedAmount,
   Value<String?> materialCategory,
+  Value<String?> hsnCode,
+  Value<bool> taxApplicable,
+  Value<double> gstRate,
+  Value<double> gstAmount,
 });
 typedef $$PurchasesTableUpdateCompanionBuilder = PurchasesCompanion Function({
   Value<int> id,
@@ -15494,6 +15658,10 @@ typedef $$PurchasesTableUpdateCompanionBuilder = PurchasesCompanion Function({
   Value<bool> isAdvanceStock,
   Value<double> allocatedAmount,
   Value<String?> materialCategory,
+  Value<String?> hsnCode,
+  Value<bool> taxApplicable,
+  Value<double> gstRate,
+  Value<double> gstAmount,
 });
 
 final class $$PurchasesTableReferences
@@ -15574,6 +15742,18 @@ class $$PurchasesTableFilterComposer
   ColumnFilters<String> get materialCategory => $composableBuilder(
       column: $table.materialCategory,
       builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get hsnCode => $composableBuilder(
+      column: $table.hsnCode, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get taxApplicable => $composableBuilder(
+      column: $table.taxApplicable, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get gstRate => $composableBuilder(
+      column: $table.gstRate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get gstAmount => $composableBuilder(
+      column: $table.gstAmount, builder: (column) => ColumnFilters(column));
 
   $$TransactionsTableFilterComposer get transactionId {
     final $$TransactionsTableFilterComposer composer = $composerBuilder(
@@ -15660,6 +15840,19 @@ class $$PurchasesTableOrderingComposer
       column: $table.materialCategory,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get hsnCode => $composableBuilder(
+      column: $table.hsnCode, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get taxApplicable => $composableBuilder(
+      column: $table.taxApplicable,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get gstRate => $composableBuilder(
+      column: $table.gstRate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get gstAmount => $composableBuilder(
+      column: $table.gstAmount, builder: (column) => ColumnOrderings(column));
+
   $$TransactionsTableOrderingComposer get transactionId {
     final $$TransactionsTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -15741,6 +15934,18 @@ class $$PurchasesTableAnnotationComposer
   GeneratedColumn<String> get materialCategory => $composableBuilder(
       column: $table.materialCategory, builder: (column) => column);
 
+  GeneratedColumn<String> get hsnCode =>
+      $composableBuilder(column: $table.hsnCode, builder: (column) => column);
+
+  GeneratedColumn<bool> get taxApplicable => $composableBuilder(
+      column: $table.taxApplicable, builder: (column) => column);
+
+  GeneratedColumn<double> get gstRate =>
+      $composableBuilder(column: $table.gstRate, builder: (column) => column);
+
+  GeneratedColumn<double> get gstAmount =>
+      $composableBuilder(column: $table.gstAmount, builder: (column) => column);
+
   $$TransactionsTableAnnotationComposer get transactionId {
     final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -15817,6 +16022,10 @@ class $$PurchasesTableTableManager extends RootTableManager<
             Value<bool> isAdvanceStock = const Value.absent(),
             Value<double> allocatedAmount = const Value.absent(),
             Value<String?> materialCategory = const Value.absent(),
+            Value<String?> hsnCode = const Value.absent(),
+            Value<bool> taxApplicable = const Value.absent(),
+            Value<double> gstRate = const Value.absent(),
+            Value<double> gstAmount = const Value.absent(),
           }) =>
               PurchasesCompanion(
             id: id,
@@ -15831,6 +16040,10 @@ class $$PurchasesTableTableManager extends RootTableManager<
             isAdvanceStock: isAdvanceStock,
             allocatedAmount: allocatedAmount,
             materialCategory: materialCategory,
+            hsnCode: hsnCode,
+            taxApplicable: taxApplicable,
+            gstRate: gstRate,
+            gstAmount: gstAmount,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -15845,6 +16058,10 @@ class $$PurchasesTableTableManager extends RootTableManager<
             Value<bool> isAdvanceStock = const Value.absent(),
             Value<double> allocatedAmount = const Value.absent(),
             Value<String?> materialCategory = const Value.absent(),
+            Value<String?> hsnCode = const Value.absent(),
+            Value<bool> taxApplicable = const Value.absent(),
+            Value<double> gstRate = const Value.absent(),
+            Value<double> gstAmount = const Value.absent(),
           }) =>
               PurchasesCompanion.insert(
             id: id,
@@ -15859,6 +16076,10 @@ class $$PurchasesTableTableManager extends RootTableManager<
             isAdvanceStock: isAdvanceStock,
             allocatedAmount: allocatedAmount,
             materialCategory: materialCategory,
+            hsnCode: hsnCode,
+            taxApplicable: taxApplicable,
+            gstRate: gstRate,
+            gstAmount: gstAmount,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (
