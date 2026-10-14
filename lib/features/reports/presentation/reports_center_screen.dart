@@ -96,6 +96,26 @@ const List<ReportGroup> kReportGroups = [
         ],
       ),
       ReportEntry(
+        icon: Icons.account_balance_rounded,
+        title: 'GST Purchase Register',
+        description:
+            'GST on every purchase invoice (CGST, SGST, IGST) by invoice, rate and supplier. Excel for your accountant.',
+        route: '/reports/gst-purchases',
+        keywords: [
+          'gst',
+          'tax',
+          'cgst',
+          'sgst',
+          'igst',
+          'gstin',
+          'hsn',
+          'input credit',
+          'itc',
+          'return',
+          'accountant'
+        ],
+      ),
+      ReportEntry(
         icon: Icons.store_mall_directory_rounded,
         title: 'Shop-wise Purchases',
         description:

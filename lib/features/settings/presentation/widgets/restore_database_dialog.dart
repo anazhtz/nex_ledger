@@ -24,7 +24,8 @@ class RestoreDatabaseDialog extends ConsumerStatefulWidget {
   }
 
   @override
-  ConsumerState<RestoreDatabaseDialog> createState() => _RestoreDatabaseDialogState();
+  ConsumerState<RestoreDatabaseDialog> createState() =>
+      _RestoreDatabaseDialogState();
 }
 
 class _RestoreDatabaseDialogState extends ConsumerState<RestoreDatabaseDialog> {
@@ -41,7 +42,8 @@ class _RestoreDatabaseDialogState extends ConsumerState<RestoreDatabaseDialog> {
 
     try {
       final result = await FilePicker.platform.pickFiles(
-        dialogTitle: 'Select NexLedger Database Backup (.db or .sqlite) to Restore',
+        dialogTitle:
+            'Select NexLedger Database Backup (.db or .sqlite) to Restore',
         type: FileType.custom,
         allowedExtensions: ['db', 'sqlite', 'sqlite3', 'bak'],
       );
@@ -52,7 +54,8 @@ class _RestoreDatabaseDialogState extends ConsumerState<RestoreDatabaseDialog> {
       }
 
       final filePath = result.files.single.path!;
-      final info = await DatabaseBackupRestoreService.inspectBackupFile(filePath);
+      final info =
+          await DatabaseBackupRestoreService.inspectBackupFile(filePath);
 
       setState(() {
         _selectedFileInfo = info;
@@ -193,11 +196,14 @@ class _RestoreDatabaseDialogState extends ConsumerState<RestoreDatabaseDialog> {
               // File Selection Box
               if (_selectedFileInfo == null) ...[
                 InkWell(
-                  onTap: _isInspecting || _isRestoring ? null : _pickAndInspectFile,
+                  onTap: _isInspecting || _isRestoring
+                      ? null
+                      : _pickAndInspectFile,
                   borderRadius: BorderRadius.circular(12.r),
                   child: Container(
                     width: double.infinity,
-                    padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
+                    padding:
+                        EdgeInsets.symmetric(vertical: 24.h, horizontal: 16.w),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(12.r),
@@ -281,10 +287,12 @@ class _RestoreDatabaseDialogState extends ConsumerState<RestoreDatabaseDialog> {
                           if (!_isRestoring)
                             TextButton.icon(
                               onPressed: _pickAndInspectFile,
-                              icon: const Icon(Icons.swap_horiz_rounded, size: 14),
+                              icon: const Icon(Icons.swap_horiz_rounded,
+                                  size: 14),
                               label: const Text('Change File'),
                               style: TextButton.styleFrom(
-                                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8.w, vertical: 4.h),
                               ),
                             ),
                         ],
@@ -294,12 +302,16 @@ class _RestoreDatabaseDialogState extends ConsumerState<RestoreDatabaseDialog> {
                         children: [
                           Text(
                             'Size: ${_selectedFileInfo!.formattedSize}',
-                            style: TextStyle(fontSize: 11.sp, color: const Color(0xFF475569)),
+                            style: TextStyle(
+                                fontSize: 11.sp,
+                                color: const Color(0xFF475569)),
                           ),
                           SizedBox(width: 16.w),
                           Text(
                             'Modified: ${_selectedFileInfo!.formattedDate}',
-                            style: TextStyle(fontSize: 11.sp, color: const Color(0xFF475569)),
+                            style: TextStyle(
+                                fontSize: 11.sp,
+                                color: const Color(0xFF475569)),
                           ),
                         ],
                       ),
@@ -331,12 +343,14 @@ class _RestoreDatabaseDialogState extends ConsumerState<RestoreDatabaseDialog> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.warning_amber_rounded, color: const Color(0xFFDC2626), size: 18.sp),
+                      Icon(Icons.warning_amber_rounded,
+                          color: const Color(0xFFDC2626), size: 18.sp),
                       SizedBox(width: 8.w),
                       Expanded(
                         child: Text(
                           _errorMessage!,
-                          style: TextStyle(fontSize: 11.sp, color: const Color(0xFF991B1B)),
+                          style: TextStyle(
+                              fontSize: 11.sp, color: const Color(0xFF991B1B)),
                         ),
                       ),
                     ],
@@ -356,7 +370,8 @@ class _RestoreDatabaseDialogState extends ConsumerState<RestoreDatabaseDialog> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.shield_outlined, color: const Color(0xFFD97706), size: 16.sp),
+                    Icon(Icons.shield_outlined,
+                        color: const Color(0xFFD97706), size: 16.sp),
                     SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
@@ -378,7 +393,9 @@ class _RestoreDatabaseDialogState extends ConsumerState<RestoreDatabaseDialog> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: _isRestoring ? null : () => Navigator.pop(context, false),
+                    onPressed: _isRestoring
+                        ? null
+                        : () => Navigator.pop(context, false),
                     child: const Text('Cancel'),
                   ),
                   SizedBox(width: 10.w),
@@ -398,10 +415,13 @@ class _RestoreDatabaseDialogState extends ConsumerState<RestoreDatabaseDialog> {
                             ),
                           )
                         : const Icon(Icons.restore_rounded, size: 16),
-                    label: Text(_isRestoring ? 'Restoring Database...' : 'Confirm & Restore'),
+                    label: Text(_isRestoring
+                        ? 'Restoring Database...'
+                        : 'Confirm & Restore'),
                     style: FilledButton.styleFrom(
                       backgroundColor: const Color(0xFFDC2626),
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 16.w, vertical: 12.h),
                     ),
                   ),
                 ],

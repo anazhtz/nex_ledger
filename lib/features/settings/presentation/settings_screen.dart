@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nex_ledger/features/settings/presentation/widgets/company_gst_card.dart';
 import 'package:nex_ledger/features/auth/presentation/widgets/recovery_key_widgets.dart';
 import 'package:nex_ledger/core/services/security_service.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
@@ -266,6 +267,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     color: const Color(0xFF64748B),
                   ),
                 ),
+                SizedBox(height: 20.h),
+
+                // Company GST details (used by purchase invoices)
+                const CompanyGstCard(),
                 SizedBox(height: 20.h),
 
                 // Master Security PIN Card

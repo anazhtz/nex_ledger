@@ -98,8 +98,7 @@ final advanceStockPurchasesProvider =
 final totalUnallocatedStockAssetProvider = StreamProvider<double>((ref) {
   return ref.watch(advanceStockPurchasesProvider.stream).map((list) {
     return list.fold<double>(0.0, (sum, pd) {
-      final remaining =
-          pd.transaction.amount - pd.purchase.allocatedAmount;
+      final remaining = pd.transaction.amount - pd.purchase.allocatedAmount;
       return sum + (remaining > 0 ? remaining : 0.0);
     });
   });
@@ -109,14 +108,16 @@ final totalUnallocatedStockAssetProvider = StreamProvider<double>((ref) {
 
 /// Stream of all material consumption categories for a project.
 final projectMaterialConsumptionProvider =
-    StreamProvider.family<List<MaterialConsumptionSummary>, int>((ref, projectId) {
+    StreamProvider.family<List<MaterialConsumptionSummary>, int>(
+        (ref, projectId) {
   final repo = ref.watch(purchaseRepositoryProvider);
   return repo.watchMaterialConsumptionByProject(projectId);
 });
 
 /// Stream of single material category consumption for real-time in-form display.
-final projectSingleMaterialConsumptionProvider =
-    StreamProvider.family<MaterialConsumptionSummary?, ({int projectId, String category})>((ref, args) {
+final projectSingleMaterialConsumptionProvider = StreamProvider.family<
+    MaterialConsumptionSummary?,
+    ({int projectId, String category})>((ref, args) {
   final repo = ref.watch(purchaseRepositoryProvider);
   return repo.watchMaterialConsumptionByProject(args.projectId).map((list) {
     for (final item in list) {
@@ -127,4 +128,3 @@ final projectSingleMaterialConsumptionProvider =
     return null;
   });
 });
-

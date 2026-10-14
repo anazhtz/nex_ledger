@@ -201,7 +201,7 @@ enum DepositStatus { held, adjusted, partiallyAdjusted, refunded }
 
 - Login / authentication / multi-user roles
 - Cloud sync, Supabase, any remote database
-- Invoice generation, GST/tax handling
+- Invoice generation for sales, GST returns filing / e-invoicing. (GST on **purchase** invoices IS supported: per-item GST rate, HSN, supplier GSTIN, CGST/SGST/IGST, and the GST Purchase Register. GST is part of the cost; input-tax-credit accounting is not done.)
 - Charts/graphs
 - PDF/Excel export of reports (Settings > Backup DB file export is the only export feature in v1)
 - Multi-currency support

@@ -80,8 +80,7 @@ class VendorDetailScreen extends ConsumerWidget {
                                               color: Colors.red.shade700)),
                                   Text(
                                     CurrencyFormatter.format(s.totalPending),
-                                    style: theme.textTheme.titleLarge
-                                        ?.copyWith(
+                                    style: theme.textTheme.titleLarge?.copyWith(
                                       color: Colors.red.shade700,
                                       fontWeight: FontWeight.w800,
                                     ),
@@ -215,14 +214,12 @@ class _SummaryTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style:
-                        theme.textTheme.labelSmall?.copyWith(color: color)),
+                    style: theme.textTheme.labelSmall?.copyWith(color: color)),
                 Text(
                   value,
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: color,
-                    fontWeight:
-                        bold ? FontWeight.w800 : FontWeight.w600,
+                    fontWeight: bold ? FontWeight.w800 : FontWeight.w600,
                   ),
                 ),
               ],
@@ -245,8 +242,8 @@ class _VendorPurchaseTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final total = purchases.fold<double>(
-        0.0, (sum, p) => sum + p.transaction.amount);
+    final total =
+        purchases.fold<double>(0.0, (sum, p) => sum + p.transaction.amount);
     final pending = purchases.fold<double>(
         0.0,
         (s, p) =>
@@ -255,7 +252,8 @@ class _VendorPurchaseTable extends StatelessWidget {
                 .clamp(0.0, double.infinity));
 
     return DataTableCard(
-      title: 'Purchase History  •  ${purchases.length} bills  •  Total: ${CurrencyFormatter.format(total)}'
+      title:
+          'Purchase History  •  ${purchases.length} bills  •  Total: ${CurrencyFormatter.format(total)}'
           '${pending > 0 ? "  •  Pending Due: ${CurrencyFormatter.format(pending)}" : ""}',
       emptyMessage: 'No purchases from this vendor yet.',
       columns: const [
@@ -268,9 +266,8 @@ class _VendorPurchaseTable extends StatelessWidget {
         DataColumn(label: Text('Action')),
       ],
       rows: purchases.map((pd) {
-        final isPending =
-            pd.purchase.paymentStatus == PaymentStatus.pending ||
-                pd.purchase.paymentStatus == PaymentStatus.partial;
+        final isPending = pd.purchase.paymentStatus == PaymentStatus.pending ||
+            pd.purchase.paymentStatus == PaymentStatus.partial;
         final isStock = pd.purchase.isAdvanceStock;
 
         return DataRow(cells: [
@@ -292,8 +289,8 @@ class _VendorPurchaseTable extends StatelessWidget {
                   if (isStock) ...[
                     const SizedBox(width: 6),
                     Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFEF3C7),
                         borderRadius: BorderRadius.circular(4),
@@ -312,8 +309,8 @@ class _VendorPurchaseTable extends StatelessWidget {
               if (pd.purchase.quantity > 0 && pd.purchase.unitRate > 0)
                 Text(
                   '${pd.purchase.quantity % 1 == 0 ? pd.purchase.quantity.toInt() : pd.purchase.quantity} ${pd.purchase.unit ?? 'units'} × ₹${pd.purchase.unitRate % 1 == 0 ? pd.purchase.unitRate.toInt() : pd.purchase.unitRate.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                      fontSize: 11, color: Color(0xFF64748B)),
+                  style:
+                      const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                 ),
             ],
           )),
@@ -334,25 +331,21 @@ class _VendorPurchaseTable extends StatelessWidget {
             ],
           )),
           DataCell(_PaymentStatusChip(pd.purchase.paymentStatus)),
-          DataCell(
-              Text(pd.transaction.paymentMode?.displayName ?? '—')),
+          DataCell(Text(pd.transaction.paymentMode?.displayName ?? '—')),
           DataCell(
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (isPending)
                   TextButton.icon(
-                    onPressed: () =>
-                        _showMarkPaidDialog(context, ref, pd),
+                    onPressed: () => _showMarkPaidDialog(context, ref, pd),
                     icon: const Icon(Icons.check_circle_outline, size: 16),
                     label: const Text('Mark Paid'),
                     style: TextButton.styleFrom(
-                      foregroundColor:
-                          Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.primary,
                     ),
                   ),
-                if (!isPending)
-                  const Text('—'),
+                if (!isPending) const Text('—'),
               ],
             ),
           ),
@@ -449,7 +442,8 @@ class _MarkPaidDialogState extends State<_MarkPaidDialog> {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Text('Already Paid: ${CurrencyFormatter.format(alreadyPaid)}',
+                        Text(
+                            'Already Paid: ${CurrencyFormatter.format(alreadyPaid)}',
                             style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.green.shade700,
@@ -516,9 +510,13 @@ class _MarkPaidDialogState extends State<_MarkPaidDialog> {
                   labelText: 'Payment Mode', isDense: true),
               items: [
                 const DropdownMenuItem(
-                    value: null, child: Text('— Select Mode —', overflow: TextOverflow.ellipsis)),
-                ...kSelectablePaymentModes.map((m) =>
-                    DropdownMenuItem(value: m, child: Text(m.displayName, overflow: TextOverflow.ellipsis))),
+                    value: null,
+                    child: Text('— Select Mode —',
+                        overflow: TextOverflow.ellipsis)),
+                ...kSelectablePaymentModes.map((m) => DropdownMenuItem(
+                    value: m,
+                    child:
+                        Text(m.displayName, overflow: TextOverflow.ellipsis))),
               ],
               onChanged: (v) => setState(() => _mode = v),
             ),
@@ -586,8 +584,7 @@ class _MarkPaidDialogState extends State<_MarkPaidDialog> {
         paymentDate: _date,
         amountPaid: amountPaid,
         paymentMode: _mode,
-        referenceNo:
-            _refCtrl.text.trim().isEmpty ? null : _refCtrl.text.trim(),
+        referenceNo: _refCtrl.text.trim().isEmpty ? null : _refCtrl.text.trim(),
       );
       if (!mounted) return;
       Navigator.pop(context);
@@ -620,8 +617,7 @@ class _PaymentStatusChip extends StatelessWidget {
     final (color, bg) = switch (status) {
       PaymentStatus.paid => (Colors.green.shade700, Colors.green.shade50),
       PaymentStatus.pending => (Colors.red.shade700, Colors.red.shade50),
-      PaymentStatus.partial =>
-        (Colors.orange.shade700, Colors.orange.shade50),
+      PaymentStatus.partial => (Colors.orange.shade700, Colors.orange.shade50),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

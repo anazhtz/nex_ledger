@@ -40,9 +40,13 @@ class LedgerRepository {
       final rawEvents = <_RawLedgerEvent>[];
 
       for (final p in filteredPurchases) {
-        final totalBill = p.purchase.quantity * p.purchase.unitRate > 0
-            ? p.purchase.quantity * p.purchase.unitRate
-            : p.transaction.amount;
+        // GST invoice rows already carry the full amount (item + GST); the
+        // qty × rate shortcut would leave the GST out of what is owed.
+        final totalBill = p.purchase.invoiceId != null
+            ? p.transaction.amount
+            : (p.purchase.quantity * p.purchase.unitRate > 0
+                ? p.purchase.quantity * p.purchase.unitRate
+                : p.transaction.amount);
 
         // 1. Credit entry: Purchase Bill / Material Invoice received (Payable increases)
         rawEvents.add(_RawLedgerEvent(

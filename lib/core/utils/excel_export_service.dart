@@ -9,6 +9,8 @@ import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/daos/deposit_dao.dart';
 import 'package:nex_ledger/core/database/daos/labour_dao.dart';
 import 'package:nex_ledger/core/database/daos/purchase_dao.dart';
+import 'package:nex_ledger/features/purchase/data/purchase_invoice_repository.dart';
+import 'package:nex_ledger/features/reports/data/gst_register.dart';
 import 'package:nex_ledger/features/reports/data/purchase_register.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
 import 'package:nex_ledger/features/reports/data/report_repository.dart';
@@ -733,5 +735,203 @@ class ExcelExportService {
         buildPurchaseRegisterWorkbook(rows: rows, filterText: filterText);
     final stamp = DateFormatter.toDbString(DateTime.now());
     return _saveExcelFile(excel, 'Purchase_Register_$stamp.xlsx');
+  }
+
+  // ─── GST Purchase Register ─────────────────────────────────────────────────
+
+  /// Four sheets for the accountant: invoice-wise, item-wise (with HSN),
+  /// rate-wise and supplier-wise. Kept separate from saving so it can be tested.
+  static Excel buildGstRegisterWorkbook({
+    required List<InvoiceDetail> rows,
+    required String filterText,
+  }) {
+    final excel = Excel.createExcel();
+    final inv = excel['Invoice Register'];
+    final items = excel['Item Details'];
+    final rates = excel['By GST Rate'];
+    final sup = excel['By Supplier'];
+    excel.delete('Sheet1');
+
+    final totals = gstRegisterTotals(rows);
+    final generated = 'Generated On: ${DateFormatter.format(DateTime.now())}';
+    void title(Sheet sh, String name) {
+      sh.appendRow([TextCellValue('NEXLEDGER ERP — $name')]);
+      sh.appendRow([TextCellValue(filterText)]);
+      sh.appendRow([TextCellValue(generated)]);
+      sh.appendRow([TextCellValue('')]);
+    }
+
+    // ── Invoice register ──
+    title(inv, 'GST PURCHASE REGISTER (INVOICE-WISE)');
+    inv.appendRow([
+      TextCellValue('#'),
+      TextCellValue('Purchase No'),
+      TextCellValue('Purchase Date'),
+      TextCellValue('Supplier Invoice No'),
+      TextCellValue('Invoice Date'),
+      TextCellValue('Supplier'),
+      TextCellValue('Supplier GSTIN'),
+      TextCellValue('State'),
+      TextCellValue('Project'),
+      TextCellValue('Type'),
+      TextCellValue('Taxable Value (₹)'),
+      TextCellValue('CGST (₹)'),
+      TextCellValue('SGST (₹)'),
+      TextCellValue('IGST (₹)'),
+      TextCellValue('Other Charges (₹)'),
+      TextCellValue('Round Off (₹)'),
+      TextCellValue('Invoice Total (₹)'),
+      TextCellValue('Paid (₹)'),
+      TextCellValue('Balance (₹)'),
+      TextCellValue('Status'),
+    ]);
+    var n = 1;
+    for (final d in rows) {
+      final i = d.invoice;
+      inv.appendRow([
+        IntCellValue(n++),
+        TextCellValue(i.purchaseNo),
+        TextCellValue(DateFormatter.format(i.date)),
+        TextCellValue(i.invoiceNo ?? '—'),
+        TextCellValue(
+            i.invoiceDate != null ? DateFormatter.format(i.invoiceDate!) : '—'),
+        TextCellValue(d.vendor.name),
+        TextCellValue(i.supplierGstin ?? '—'),
+        TextCellValue(i.supplierState ?? '—'),
+        TextCellValue('${d.project.code} — ${d.project.name}'),
+        TextCellValue(
+            i.isInterState ? 'Inter-state (IGST)' : 'Local (CGST+SGST)'),
+        DoubleCellValue(i.taxableValue),
+        DoubleCellValue(i.cgstAmount),
+        DoubleCellValue(i.sgstAmount),
+        DoubleCellValue(i.igstAmount),
+        DoubleCellValue(i.otherCharges),
+        DoubleCellValue(i.roundOff),
+        DoubleCellValue(i.grandTotal),
+        DoubleCellValue(d.paid),
+        DoubleCellValue(d.balance),
+        TextCellValue(d.status.displayName),
+      ]);
+    }
+    inv.appendRow([
+      TextCellValue(''),
+      TextCellValue('TOTAL (${totals.invoices} invoices)'),
+      for (var k = 0; k < 8; k++) TextCellValue(''),
+      DoubleCellValue(totals.taxable),
+      DoubleCellValue(totals.cgst),
+      DoubleCellValue(totals.sgst),
+      DoubleCellValue(totals.igst),
+      DoubleCellValue(totals.otherCharges),
+      DoubleCellValue(totals.roundOff),
+      DoubleCellValue(totals.total),
+    ]);
+
+    // ── Item details (HSN) ──
+    title(items, 'GST PURCHASE REGISTER (ITEM-WISE)');
+    items.appendRow([
+      TextCellValue('Purchase No'),
+      TextCellValue('Date'),
+      TextCellValue('Supplier'),
+      TextCellValue('Item'),
+      TextCellValue('HSN / SAC'),
+      TextCellValue('Qty'),
+      TextCellValue('Unit'),
+      TextCellValue('Rate (₹)'),
+      TextCellValue('Discount %'),
+      TextCellValue('Taxable (₹)'),
+      TextCellValue('GST %'),
+      TextCellValue('CGST (₹)'),
+      TextCellValue('SGST (₹)'),
+      TextCellValue('IGST (₹)'),
+    ]);
+    for (final d in rows) {
+      for (final l in d.lines.where((l) => !l.purchase.isOtherCharge)) {
+        final p = l.purchase;
+        items.appendRow([
+          TextCellValue(d.invoice.purchaseNo),
+          TextCellValue(DateFormatter.format(d.invoice.date)),
+          TextCellValue(d.vendor.name),
+          TextCellValue(p.itemDescription),
+          TextCellValue(p.hsn ?? '—'),
+          DoubleCellValue(p.quantity),
+          TextCellValue(p.unit ?? '—'),
+          DoubleCellValue(p.unitRate),
+          DoubleCellValue(p.discountPercent),
+          DoubleCellValue(p.taxableAmount),
+          DoubleCellValue(p.gstRate),
+          DoubleCellValue(p.cgstAmount),
+          DoubleCellValue(p.sgstAmount),
+          DoubleCellValue(p.igstAmount),
+        ]);
+      }
+    }
+
+    // ── Rate-wise ──
+    title(rates, 'GST PURCHASES BY RATE');
+    rates.appendRow([
+      TextCellValue('GST Rate %'),
+      TextCellValue('Items'),
+      TextCellValue('Taxable Value (₹)'),
+      TextCellValue('CGST (₹)'),
+      TextCellValue('SGST (₹)'),
+      TextCellValue('IGST (₹)'),
+      TextCellValue('Total GST (₹)'),
+    ]);
+    final byRate = summarizeByRate(rows);
+    for (final r in byRate) {
+      rates.appendRow([
+        DoubleCellValue(r.rate),
+        IntCellValue(r.items),
+        DoubleCellValue(r.taxable),
+        DoubleCellValue(r.cgst),
+        DoubleCellValue(r.sgst),
+        DoubleCellValue(r.igst),
+        DoubleCellValue(r.totalGst),
+      ]);
+    }
+    rates.appendRow([
+      TextCellValue('TOTAL'),
+      IntCellValue(byRate.fold<int>(0, (a, r) => a + r.items)),
+      DoubleCellValue(byRate.fold<double>(0, (a, r) => a + r.taxable)),
+      DoubleCellValue(byRate.fold<double>(0, (a, r) => a + r.cgst)),
+      DoubleCellValue(byRate.fold<double>(0, (a, r) => a + r.sgst)),
+      DoubleCellValue(byRate.fold<double>(0, (a, r) => a + r.igst)),
+      DoubleCellValue(byRate.fold<double>(0, (a, r) => a + r.totalGst)),
+    ]);
+
+    // ── Supplier-wise ──
+    title(sup, 'GST PURCHASES BY SUPPLIER');
+    sup.appendRow([
+      TextCellValue('#'),
+      TextCellValue('Supplier'),
+      TextCellValue('GSTIN'),
+      TextCellValue('Invoices'),
+      TextCellValue('Taxable Value (₹)'),
+      TextCellValue('GST (₹)'),
+      TextCellValue('Invoice Total (₹)'),
+    ]);
+    var k = 1;
+    for (final sm in summarizeBySupplier(rows)) {
+      sup.appendRow([
+        IntCellValue(k++),
+        TextCellValue(sm.name),
+        TextCellValue(sm.gstin ?? '—'),
+        IntCellValue(sm.invoices),
+        DoubleCellValue(sm.taxable),
+        DoubleCellValue(sm.gst),
+        DoubleCellValue(sm.total),
+      ]);
+    }
+
+    return excel;
+  }
+
+  static Future<String?> exportGstRegister({
+    required List<InvoiceDetail> rows,
+    required String filterText,
+  }) {
+    final excel = buildGstRegisterWorkbook(rows: rows, filterText: filterText);
+    final stamp = DateFormatter.toDbString(DateTime.now());
+    return _saveExcelFile(excel, 'GST_Purchase_Register_$stamp.xlsx');
   }
 }

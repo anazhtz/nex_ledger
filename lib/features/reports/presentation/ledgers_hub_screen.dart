@@ -961,7 +961,8 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                           onTap: s.investorId == null
                               ? null
                               : () => ref
-                                  .read(selectedLedgerInvestorIdProvider.notifier)
+                                  .read(
+                                      selectedLedgerInvestorIdProvider.notifier)
                                   .state = s.investorId,
                         ),
                         DataCell(Text(CurrencyFormatter.format(s.invested),

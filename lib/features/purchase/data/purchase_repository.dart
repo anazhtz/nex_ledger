@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
+import 'package:nex_ledger/features/purchase/data/purchase_invoice_repository.dart';
 import 'package:nex_ledger/features/purchase/models/material_consumption.dart';
 
 class PurchaseRepository {
@@ -9,6 +10,9 @@ class PurchaseRepository {
   final AppDatabase _db;
 
   PurchaseRepository(this._purchaseDao, this._transactionDao, this._db);
+
+  late final PurchaseInvoiceRepository _invoices =
+      PurchaseInvoiceRepository(_db);
 
   Stream<List<PurchaseDetail>> watchAllPurchases() =>
       _purchaseDao.watchAllPurchases();
@@ -90,7 +94,8 @@ class PurchaseRepository {
             projectId: projectId,
             date: date,
             type: TransactionType.purchasePayment,
-            affectsPnl: const Value(false), // P&L already recognized by main purchase bill
+            affectsPnl: const Value(
+                false), // P&L already recognized by main purchase bill
             affectsCash: const Value(true), // moves cash
             amount: actualPaid,
             paymentMode: Value(paymentMode),
@@ -139,6 +144,19 @@ class PurchaseRepository {
       throw StateError('Purchase $purchaseId not found');
     }
 
+    // Items that belong to a GST invoice are paid at invoice level.
+    if (detail.purchase.invoiceId != null) {
+      await _invoices.recordInvoicePayment(
+        invoiceId: detail.purchase.invoiceId!,
+        amount: amountPaid,
+        date: paymentDate,
+        paymentMode: paymentMode,
+        bankAccountId: bankAccountId,
+        referenceNo: referenceNo,
+      );
+      return;
+    }
+
     await _db.transaction(() async {
       // Insert the cash-outflow transaction (P&L unaffected — already booked).
       await _transactionDao.insertTransaction(
@@ -167,7 +185,8 @@ class PurchaseRepository {
           : PaymentStatus.partial;
 
       // Update the purchase record with new paid amount and status.
-      await _purchaseDao.updatePaymentDetails(purchaseId, totalNowPaid, newStatus);
+      await _purchaseDao.updatePaymentDetails(
+          purchaseId, totalNowPaid, newStatus);
     });
   }
 
@@ -217,8 +236,7 @@ class PurchaseRepository {
       );
 
       // 2. Update allocated amount on the advance stock purchase record
-      final newAllocated =
-          detail.purchase.allocatedAmount + amountToAllocate;
+      final newAllocated = detail.purchase.allocatedAmount + amountToAllocate;
       await _purchaseDao.updateAllocatedAmount(purchaseId, newAllocated);
     });
   }
@@ -240,9 +258,16 @@ class PurchaseRepository {
   Future<void> deletePurchase(int purchaseId) async {
     final detail = await _purchaseDao.getPurchaseById(purchaseId);
     if (detail == null) return;
+    if (detail.purchase.invoiceId != null) {
+      throw StateError(
+          'This item belongs to a GST invoice. Delete the whole invoice instead.');
+    }
     await _db.transaction(() async {
-      await (_db.delete(_db.purchases)..where((p) => p.id.equals(purchaseId))).go();
-      await (_db.delete(_db.transactions)..where((t) => t.id.equals(detail.transaction.id))).go();
+      await (_db.delete(_db.purchases)..where((p) => p.id.equals(purchaseId)))
+          .go();
+      await (_db.delete(_db.transactions)
+            ..where((t) => t.id.equals(detail.transaction.id)))
+          .go();
     });
   }
 
@@ -268,6 +293,10 @@ class PurchaseRepository {
   }) async {
     final detail = await _purchaseDao.getPurchaseById(purchaseId);
     if (detail == null) throw StateError('Purchase $purchaseId not found');
+    if (detail.purchase.invoiceId != null) {
+      throw StateError(
+          'This item belongs to a GST invoice. Edit the whole invoice instead.');
+    }
 
     await _db.transaction(() async {
       final affectsCash = paymentStatus == PaymentStatus.paid;
@@ -290,7 +319,8 @@ class PurchaseRepository {
       );
 
       // Update purchase row
-      await (_db.update(_db.purchases)..where((p) => p.id.equals(purchaseId))).write(
+      await (_db.update(_db.purchases)..where((p) => p.id.equals(purchaseId)))
+          .write(
         PurchasesCompanion(
           vendorId: Value(vendorId),
           itemDescription: Value(itemDescription.trim()),
@@ -307,17 +337,39 @@ class PurchaseRepository {
   }
 
   // --- Vendor ---
-  Future<int> addVendor(String name, {String? contact}) =>
+  Future<int> addVendor(
+    String name, {
+    String? contact,
+    String? gstin,
+    String? state,
+    String? address,
+  }) =>
       _purchaseDao.insertVendor(
-        VendorsCompanion.insert(name: name, contact: Value(contact)),
+        VendorsCompanion.insert(
+          name: name,
+          contact: Value(contact),
+          gstin: Value(gstin),
+          state: Value(state),
+          address: Value(address),
+        ),
       );
 
-  Future<void> updateVendor(int id, String name, {String? contact}) =>
+  Future<void> updateVendor(
+    int id,
+    String name, {
+    String? contact,
+    String? gstin,
+    String? state,
+    String? address,
+  }) =>
       _purchaseDao.updateVendor(
         VendorsCompanion(
           id: Value(id),
           name: Value(name),
           contact: Value(contact),
+          gstin: Value(gstin),
+          state: Value(state),
+          address: Value(address),
         ),
       );
 }

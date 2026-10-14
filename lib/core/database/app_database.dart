@@ -27,6 +27,9 @@ import 'tables/equipment_logs_table.dart';
 import 'tables/petty_cash_wallets_table.dart';
 import 'tables/petty_cash_vouchers_table.dart';
 import 'tables/investors_table.dart';
+import 'tables/purchase_invoices_table.dart';
+import 'tables/item_defaults_table.dart';
+import 'tables/app_settings_table.dart';
 import 'daos/project_dao.dart';
 import 'daos/transaction_dao.dart';
 import 'daos/purchase_dao.dart';
@@ -61,6 +64,9 @@ export 'tables/equipment_logs_table.dart';
 export 'tables/petty_cash_wallets_table.dart';
 export 'tables/petty_cash_vouchers_table.dart';
 export 'tables/investors_table.dart';
+export 'tables/purchase_invoices_table.dart';
+export 'tables/item_defaults_table.dart';
+export 'tables/app_settings_table.dart';
 export 'daos/project_dao.dart';
 export 'daos/transaction_dao.dart';
 export 'daos/purchase_dao.dart';
@@ -104,6 +110,9 @@ part 'app_database.g.dart';
     PettyCashWallets,
     PettyCashVouchers,
     Investors,
+    PurchaseInvoices,
+    ItemDefaults,
+    AppSettings,
   ],
   daos: [
     ProjectDao,
@@ -124,7 +133,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => 19;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -233,6 +242,27 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(investors);
             await m.addColumn(transactions, transactions.investorId);
           }
+          if (from < 19) {
+            // GST purchase invoices, supplier GSTIN, remembered item defaults,
+            // and company settings.
+            await m.createTable(purchaseInvoices);
+            await m.createTable(itemDefaults);
+            await m.createTable(appSettings);
+            await m.addColumn(vendors, vendors.gstin);
+            await m.addColumn(vendors, vendors.state);
+            await m.addColumn(vendors, vendors.address);
+            await m.addColumn(purchases, purchases.invoiceId);
+            await m.addColumn(purchases, purchases.hsn);
+            await m.addColumn(purchases, purchases.specification);
+            await m.addColumn(purchases, purchases.discountPercent);
+            await m.addColumn(purchases, purchases.gstRate);
+            await m.addColumn(purchases, purchases.taxableAmount);
+            await m.addColumn(purchases, purchases.cgstAmount);
+            await m.addColumn(purchases, purchases.sgstAmount);
+            await m.addColumn(purchases, purchases.igstAmount);
+            await m.addColumn(purchases, purchases.isOtherCharge);
+            await m.addColumn(transactions, transactions.invoiceId);
+          }
         },
       );
 
@@ -315,6 +345,33 @@ class AppDatabase extends _$AppDatabase {
         'Other Expense',
       ];
 
+  // ─── Company settings (key-value) ─────────────────────────────────────────
+
+  static const settingCompanyGstin = 'company_gstin';
+  static const settingCompanyState = 'company_state_code';
+
+  Future<String?> getSetting(String key) async {
+    final row = await (select(appSettings)..where((s) => s.key.equals(key)))
+        .getSingleOrNull();
+    return row?.value;
+  }
+
+  /// A null or blank [value] removes the setting.
+  Future<void> setSetting(String key, String? value) async {
+    final v = value?.trim();
+    if (v == null || v.isEmpty) {
+      await (delete(appSettings)..where((s) => s.key.equals(key))).go();
+    } else {
+      await into(appSettings).insertOnConflictUpdate(
+          AppSettingsCompanion.insert(key: key, value: Value(v)));
+    }
+  }
+
+  Stream<String?> watchSetting(String key) =>
+      (select(appSettings)..where((s) => s.key.equals(key)))
+          .watchSingleOrNull()
+          .map((row) => row?.value);
+
   /// Safely wipes all transactional data and resets the ledger on any OS (including Windows)
   /// without deleting or locking the physical SQLite database file.
   Future<void> wipeAndResetData() async {
@@ -322,6 +379,8 @@ class AppDatabase extends _$AppDatabase {
       await delete(transactions).go();
       await delete(investors).go();
       await delete(purchases).go();
+      await delete(purchaseInvoices).go();
+      await delete(itemDefaults).go();
       await delete(attendance).go();
       await delete(deposits).go();
       await delete(workers).go();

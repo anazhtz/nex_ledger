@@ -12,6 +12,8 @@ mixin _$EquipmentDaoMixin on DatabaseAccessor<AppDatabase> {
   $ExpenseCategoriesTable get expenseCategories =>
       attachedDatabase.expenseCategories;
   $BankAccountsTable get bankAccounts => attachedDatabase.bankAccounts;
+  $PurchaseInvoicesTable get purchaseInvoices =>
+      attachedDatabase.purchaseInvoices;
   $InvestorsTable get investors => attachedDatabase.investors;
   $TransactionsTable get transactions => attachedDatabase.transactions;
 }

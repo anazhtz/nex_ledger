@@ -13,9 +13,14 @@ import 'package:nex_ledger/features/purchase/models/material_consumption.dart';
 import 'package:nex_ledger/features/purchase/providers/purchase_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 import 'package:nex_ledger/features/reports/providers/report_providers.dart';
+import 'package:nex_ledger/features/purchase/data/purchase_invoice_repository.dart';
+import 'package:nex_ledger/features/purchase/presentation/widgets/allocate_stock_dialog.dart';
+import 'package:nex_ledger/features/purchase/presentation/widgets/invoice_widgets.dart';
+import 'package:nex_ledger/features/purchase/providers/purchase_invoice_providers.dart';
 import 'package:nex_ledger/shared/widgets/data_table_card.dart';
 
-final purchaseViewTabProvider = StateProvider<int>((ref) => 0); // 0 = Invoices, 1 = Material Breakdown
+final purchaseViewTabProvider =
+    StateProvider<int>((ref) => 0); // 0 = Invoices, 1 = Material Breakdown
 
 class PurchaseListScreen extends ConsumerWidget {
   const PurchaseListScreen({super.key});
@@ -82,7 +87,9 @@ class PurchaseListScreen extends ConsumerWidget {
                   ),
                 ),
                 stockAssetAsync.maybeWhen(
-                  data: (stock) => stock > 0 ? const SizedBox(width: 12) : const SizedBox.shrink(),
+                  data: (stock) => stock > 0
+                      ? const SizedBox(width: 12)
+                      : const SizedBox.shrink(),
                   orElse: () => const SizedBox.shrink(),
                 ),
                 // Advance Stock Asset summary card
@@ -171,36 +178,38 @@ class PurchaseListScreen extends ConsumerWidget {
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
                   error: (e, _) => Center(child: Text('Error: $e')),
-                  data: (purchases) => DataTableCard(
-                    emptyMessage: 'No purchases found.',
-                    columns: const [
-                      DataColumn(label: Text('Date')),
-                      DataColumn(label: Text('Project')),
-                      DataColumn(label: Text('Vendor')),
-                      DataColumn(label: Text('Description')),
-                      DataColumn(label: Text('Classification')),
-                      DataColumn(label: Text('Amount'), numeric: true),
-                      DataColumn(label: Text('Payment')),
-                      DataColumn(label: Text('Mode')),
-                      DataColumn(label: Text('Actions')),
-                    ],
-                    rows: purchases.map((pd) {
-                      final isPending =
-                          pd.purchase.paymentStatus == PaymentStatus.pending ||
-                              pd.purchase.paymentStatus == PaymentStatus.partial;
+                  data: (purchases) {
+                    // GST invoices come from their own list and show as one
+                    // row each; their item rows are hidden here.
+                    final invoices =
+                        ref.watch(invoiceListProvider).asData?.value ??
+                            const <InvoiceDetail>[];
+                    final scope =
+                        filterProject ?? ref.watch(selectedProjectIdProvider);
+                    final shownInvoices = invoices
+                        .where((i) =>
+                            scope == null || i.invoice.projectId == scope)
+                        .toList();
+                    final legacyPurchases = purchases
+                        .where((p) => p.purchase.invoiceId == null)
+                        .toList();
+
+                    DataRow buildLegacyRow(PurchaseDetail pd) {
+                      final isPending = pd.purchase.paymentStatus ==
+                              PaymentStatus.pending ||
+                          pd.purchase.paymentStatus == PaymentStatus.partial;
                       final isStock = pd.purchase.isAdvanceStock;
                       final unallocated =
                           pd.transaction.amount - pd.purchase.allocatedAmount;
                       final canAllocate = isStock && unallocated > 0.01;
 
                       return DataRow(cells: [
-                        DataCell(Text(
-                            DateFormatter.format(pd.transaction.date))),
+                        DataCell(
+                            Text(DateFormatter.format(pd.transaction.date))),
                         DataCell(Text(pd.project.name,
                             overflow: TextOverflow.ellipsis)),
                         DataCell(GestureDetector(
-                          onTap: () => context.push(
-                              '/vendors/${pd.vendor.id}'),
+                          onTap: () => context.push('/vendors/${pd.vendor.id}'),
                           child: Text(
                             pd.vendor.name,
                             style: TextStyle(
@@ -220,23 +229,29 @@ class PurchaseListScreen extends ConsumerWidget {
                                   if (pd.purchase.materialCategory != null)
                                     Container(
                                       margin: const EdgeInsets.only(right: 6),
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 1),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFEAF1FB),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
                                         pd.purchase.materialCategory!,
-                                        style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.bold, color: const Color(0xFF1F5FBF)),
+                                        style: TextStyle(
+                                            fontSize: 10.sp,
+                                            fontWeight: FontWeight.bold,
+                                            color: const Color(0xFF1F5FBF)),
                                       ),
                                     ),
                                   Text(
                                     pd.purchase.itemDescription,
-                                    style: const TextStyle(fontWeight: FontWeight.w600),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w600),
                                   ),
                                 ],
                               ),
-                              if (pd.purchase.quantity > 1 || pd.purchase.unitRate > 0)
+                              if (pd.purchase.quantity > 1 ||
+                                  pd.purchase.unitRate > 0)
                                 Text(
                                   'Qty: ${pd.purchase.quantity % 1 == 0 ? pd.purchase.quantity.toInt() : pd.purchase.quantity} ${pd.purchase.unit ?? 'Nos'} @ ${CurrencyFormatter.format(pd.purchase.unitRate)}',
                                   style: TextStyle(
@@ -274,8 +289,7 @@ class PurchaseListScreen extends ConsumerWidget {
                         ),
                         DataCell(Text(
                           CurrencyFormatter.format(pd.transaction.amount),
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w700),
+                          style: const TextStyle(fontWeight: FontWeight.w700),
                         )),
                         DataCell(_PaymentStatusChip(
                             status: pd.purchase.paymentStatus)),
@@ -289,7 +303,8 @@ class PurchaseListScreen extends ConsumerWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 TextButton.icon(
-                                  icon: const Icon(Icons.edit_outlined, size: 15),
+                                  icon:
+                                      const Icon(Icons.edit_outlined, size: 15),
                                   label: const Text('Edit'),
                                   style: TextButton.styleFrom(
                                     visualDensity: VisualDensity.compact,
@@ -343,18 +358,193 @@ class PurchaseListScreen extends ConsumerWidget {
                           ),
                         ),
                       ]);
-                    }).toList(),
-                  ),
+                    }
+
+                    final entries = <({DateTime date, int id, DataRow row})>[
+                      for (final pd in legacyPurchases)
+                        (
+                          date: pd.transaction.date,
+                          id: pd.purchase.id,
+                          row: buildLegacyRow(pd)
+                        ),
+                      for (final inv in shownInvoices)
+                        (
+                          date: inv.invoice.date,
+                          id: inv.invoice.id,
+                          row: _buildInvoiceRow(context, inv),
+                        ),
+                    ]..sort((a, b) {
+                        final byDate = b.date.compareTo(a.date);
+                        return byDate != 0 ? byDate : b.id.compareTo(a.id);
+                      });
+
+                    return DataTableCard(
+                      emptyMessage: 'No purchases found.',
+                      columns: const [
+                        DataColumn(label: Text('Date')),
+                        DataColumn(label: Text('Project')),
+                        DataColumn(label: Text('Vendor')),
+                        DataColumn(label: Text('Description')),
+                        DataColumn(label: Text('Classification')),
+                        DataColumn(label: Text('Amount'), numeric: true),
+                        DataColumn(label: Text('Payment')),
+                        DataColumn(label: Text('Mode')),
+                        DataColumn(label: Text('Actions')),
+                      ],
+                      rows: [for (final e in entries) e.row],
+                    );
+                  },
                 ),
               )
             else
               Expanded(
-                child: _buildMaterialBreakdownView(context, ref, filterProject, theme),
+                child: _buildMaterialBreakdownView(
+                    context, ref, filterProject, theme),
               ),
           ],
         ),
       ),
     );
+  }
+
+  /// One table row for a whole GST invoice.
+  DataRow _buildInvoiceRow(BuildContext context, InvoiceDetail inv) {
+    final theme = Theme.of(context);
+    final itemCount = inv.lines.where((l) => !l.purchase.isOtherCharge).length;
+    final gst = inv.invoice.cgstAmount +
+        inv.invoice.sgstAmount +
+        inv.invoice.igstAmount;
+    final unpaid = inv.balance > 0;
+    void open() => InvoiceDetailDialog.show(context, inv.invoice.id);
+
+    return DataRow(cells: [
+      DataCell(Text(DateFormatter.format(inv.invoice.date)), onTap: open),
+      DataCell(Text(inv.project.name, overflow: TextOverflow.ellipsis),
+          onTap: open),
+      DataCell(
+        GestureDetector(
+          onTap: () => context.push('/vendors/${inv.vendor.id}'),
+          child: Text(
+            inv.vendor.name,
+            style: TextStyle(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+      DataCell(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              inv.invoice.purchaseNo,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            Text(
+              [
+                if ((inv.invoice.invoiceNo ?? '').isNotEmpty)
+                  inv.invoice.invoiceNo!,
+                '$itemCount item${itemCount == 1 ? '' : 's'}',
+                if (gst > 0) 'GST ${CurrencyFormatter.format(gst)}',
+              ].join('  ·  '),
+              style: TextStyle(
+                  fontSize: 11.sp, color: theme.colorScheme.onSurfaceVariant),
+            ),
+          ],
+        ),
+        onTap: open,
+      ),
+      DataCell(
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: inv.invoice.isAdvanceStock
+                ? const Color(0xFFFEF3C7)
+                : const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            inv.invoice.isAdvanceStock ? 'Stock Asset' : 'Direct Cost',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: inv.invoice.isAdvanceStock
+                  ? const Color(0xFFB45309)
+                  : const Color(0xFF475569),
+            ),
+          ),
+        ),
+        onTap: open,
+      ),
+      DataCell(
+        Text(
+          CurrencyFormatter.format(inv.total),
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+        onTap: open,
+      ),
+      DataCell(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            InvoiceStatusChip(inv.status),
+            if (unpaid && inv.dueDate != null)
+              Text(
+                'Due ${DateFormatter.format(inv.dueDate!)}',
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  color: inv.dueDate!.isBefore(DateTime.now())
+                      ? Colors.red.shade700
+                      : theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+          ],
+        ),
+        onTap: open,
+      ),
+      const DataCell(Text('—')),
+      DataCell(
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextButton.icon(
+                onPressed: open,
+                icon: const Icon(Icons.visibility_outlined, size: 15),
+                label: const Text('View'),
+                style:
+                    TextButton.styleFrom(visualDensity: VisualDensity.compact),
+              ),
+              TextButton.icon(
+                onPressed: () =>
+                    context.go('/purchases/invoice/${inv.invoice.id}/edit'),
+                icon: const Icon(Icons.edit_outlined, size: 15),
+                label: const Text('Edit'),
+                style:
+                    TextButton.styleFrom(visualDensity: VisualDensity.compact),
+              ),
+              if (unpaid)
+                TextButton.icon(
+                  onPressed: () => showDialog<void>(
+                    context: context,
+                    builder: (_) => InvoicePayDialog(invoiceId: inv.invoice.id),
+                  ),
+                  icon: const Icon(Icons.check_circle_outline, size: 15),
+                  label: const Text('Pay'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: theme.colorScheme.primary,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    ]);
   }
 
   Widget _buildMaterialBreakdownView(
@@ -376,7 +566,8 @@ class PurchaseListScreen extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.filter_alt_outlined, size: 48.sp, color: const Color(0xFF94A3B8)),
+                Icon(Icons.filter_alt_outlined,
+                    size: 48.sp, color: const Color(0xFF94A3B8)),
                 SizedBox(height: 12.h),
                 Text(
                   'Select a Project to View Material Consumption',
@@ -389,7 +580,8 @@ class PurchaseListScreen extends ConsumerWidget {
                 SizedBox(height: 6.h),
                 Text(
                   'Use the project dropdown filter above to see total quantities of Cement, Steel, Metal, Sand, etc. consumed by that specific project.',
-                  style: TextStyle(fontSize: 12.sp, color: const Color(0xFF64748B)),
+                  style: TextStyle(
+                      fontSize: 12.sp, color: const Color(0xFF64748B)),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -399,7 +591,8 @@ class PurchaseListScreen extends ConsumerWidget {
       );
     }
 
-    final consumptionAsync = ref.watch(projectMaterialConsumptionProvider(filterProject));
+    final consumptionAsync =
+        ref.watch(projectMaterialConsumptionProvider(filterProject));
 
     return consumptionAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -411,7 +604,8 @@ class PurchaseListScreen extends ConsumerWidget {
           );
         }
 
-        final totalSpend = materials.fold<double>(0.0, (sum, m) => sum + m.totalAmount);
+        final totalSpend =
+            materials.fold<double>(0.0, (sum, m) => sum + m.totalAmount);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -427,7 +621,8 @@ class PurchaseListScreen extends ConsumerWidget {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.inventory_2_rounded, color: const Color(0xFF1F5FBF), size: 20.sp),
+                  Icon(Icons.inventory_2_rounded,
+                      color: const Color(0xFF1F5FBF), size: 20.sp),
                   SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
@@ -465,28 +660,36 @@ class PurchaseListScreen extends ConsumerWidget {
 
                   return DataRow(
                     cells: [
-                      DataCell(Text(idx.toString(), style: const TextStyle(color: Color(0xFF94A3B8)))),
+                      DataCell(Text(idx.toString(),
+                          style: const TextStyle(color: Color(0xFF94A3B8)))),
                       DataCell(Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.category_outlined, size: 16.sp, color: const Color(0xFF1F5FBF)),
+                          Icon(Icons.category_outlined,
+                              size: 16.sp, color: const Color(0xFF1F5FBF)),
                           SizedBox(width: 6.w),
-                          Text(m.categoryName, style: const TextStyle(fontWeight: FontWeight.w600)),
+                          Text(m.categoryName,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w600)),
                         ],
                       )),
-                      DataCell(Text(qtyStr, style: const TextStyle(fontWeight: FontWeight.bold))),
+                      DataCell(Text(qtyStr,
+                          style: const TextStyle(fontWeight: FontWeight.bold))),
                       DataCell(Text(m.unit)),
                       DataCell(Text(CurrencyFormatter.format(m.avgUnitRate))),
                       DataCell(Text(
                         CurrencyFormatter.format(m.totalAmount),
-                        style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF0F172A)),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF0F172A)),
                       )),
                       DataCell(Text('${m.billCount} bills')),
                       DataCell(Text(
                         m.lastPurchaseDate != null
                             ? '${DateFormatter.format(m.lastPurchaseDate!)}${m.lastVendorName != null ? ' (${m.lastVendorName})' : ''}'
                             : '—',
-                        style: TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B)),
+                        style: TextStyle(
+                            fontSize: 11.sp, color: const Color(0xFF64748B)),
                       )),
                     ],
                   );
@@ -517,7 +720,7 @@ class PurchaseListScreen extends ConsumerWidget {
   ) {
     showDialog<void>(
       context: context,
-      builder: (_) => _AllocateStockDialog(pd: pd),
+      builder: (_) => AllocateStockDialog(pd: pd),
     );
   }
 
@@ -742,26 +945,31 @@ class _AccountsPayableCard extends StatelessWidget {
             Icon(Icons.account_balance_wallet_outlined,
                 color: theme.colorScheme.error, size: 28),
             const SizedBox(width: 14),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Accounts Payable (Vendor Dues)',
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: theme.colorScheme.error,
-                    fontWeight: FontWeight.w600,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Accounts Payable (Vendor Dues)',
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: theme.colorScheme.error,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Unpaid vendor bills — expense recognized, cash not yet moved',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+                  const SizedBox(height: 2),
+                  Text(
+                    'Unpaid vendor bills — expense recognized, cash not yet moved',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            const Spacer(),
+            const SizedBox(width: 12),
             Text(
               CurrencyFormatter.format(amount),
               style: theme.textTheme.titleLarge?.copyWith(
@@ -773,264 +981,6 @@ class _AccountsPayableCard extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Allocate Stock to Project Dialog
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _AllocateStockDialog extends ConsumerStatefulWidget {
-  final PurchaseDetail pd;
-  const _AllocateStockDialog({required this.pd});
-
-  @override
-  ConsumerState<_AllocateStockDialog> createState() =>
-      _AllocateStockDialogState();
-}
-
-class _AllocateStockDialogState extends ConsumerState<_AllocateStockDialog> {
-  final _amountCtrl = TextEditingController();
-  final _narrationCtrl = TextEditingController();
-  final _refCtrl = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-
-  int? _targetProjectId;
-  DateTime _date = DateTime.now();
-  bool _saving = false;
-
-  @override
-  void initState() {
-    super.initState();
-    final remaining = widget.pd.transaction.amount -
-        widget.pd.purchase.allocatedAmount;
-    _amountCtrl.text = remaining > 0 ? remaining.toStringAsFixed(0) : '';
-  }
-
-  @override
-  void dispose() {
-    _amountCtrl.dispose();
-    _narrationCtrl.dispose();
-    _refCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final projectsAsync = ref.watch(projectListProvider);
-    final totalStock = widget.pd.transaction.amount;
-    final allocated = widget.pd.purchase.allocatedAmount;
-    final unallocated = totalStock - allocated;
-
-    return AlertDialog(
-      title: Row(
-        children: [
-          const Icon(Icons.outbox_rounded, color: Color(0xFFD97706)),
-          const SizedBox(width: 10),
-          const Text('Allocate Stock to Project'),
-        ],
-      ),
-      content: SizedBox(
-        width: 460,
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Stock info card
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFEF3C7),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFFCD34D)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.pd.purchase.itemDescription,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF92400E),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Text(
-                          'Vendor: ${widget.pd.vendor.name}',
-                          style: const TextStyle(
-                              fontSize: 12, color: Color(0xFF78350F)),
-                        ),
-                        const Spacer(),
-                        Text(
-                          'Available: ${CurrencyFormatter.format(unallocated)}',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFFB45309),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-
-              // Target Project selector
-              projectsAsync.when(
-                loading: () => const LinearProgressIndicator(),
-                error: (_, __) => const SizedBox.shrink(),
-                data: (projects) => DropdownButtonFormField<int>(
-                  value: _targetProjectId,
-                  isExpanded: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Target Project to Charge *',
-                    isDense: true,
-                  ),
-                  items: projects
-                      .map((p) => DropdownMenuItem(
-                            value: p.id,
-                            child: Text('${p.code} — ${p.name}',
-                                overflow: TextOverflow.ellipsis),
-                          ))
-                      .toList(),
-                  onChanged: (v) => setState(() => _targetProjectId = v),
-                  validator: (v) => v == null ? 'Select target project' : null,
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              // Allocation Date + Amount
-              Row(
-                children: [
-                  Expanded(
-                    child: ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.calendar_today_outlined,
-                          size: 20),
-                      title: Text(
-                        'Date: ${DateFormatter.format(_date)}',
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                      onTap: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: _date,
-                          firstDate: DateTime(2020),
-                          lastDate: DateTime.now(),
-                        );
-                        if (picked != null) {
-                          setState(() => _date = picked);
-                        }
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _amountCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Allocated Amount *',
-                        prefixText: '₹ ',
-                        isDense: true,
-                      ),
-                      keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'Required';
-                        final val = double.tryParse(v);
-                        if (val == null || val <= 0) return 'Invalid';
-                        if (val > unallocated + 0.01) {
-                          return 'Max ${CurrencyFormatter.format(unallocated)}';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-
-              // Narration
-              TextFormField(
-                controller: _narrationCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Usage Note / Location (optional)',
-                  isDense: true,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: _saving ? null : () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        FilledButton.icon(
-          onPressed: _saving ? null : _allocate,
-          icon: _saving
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2))
-              : const Icon(Icons.outbox_rounded, size: 18),
-          label: Text(_saving ? 'Allocating…' : 'Confirm Allocation'),
-          style: FilledButton.styleFrom(
-            backgroundColor: const Color(0xFFD97706),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _allocate() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _saving = true);
-    try {
-      final db = ref.read(appDatabaseProvider);
-      final repo = PurchaseRepository(db.purchaseDao, db.transactionDao, db);
-      final amount = double.parse(_amountCtrl.text.trim());
-
-      await repo.allocateStockToProject(
-        purchaseId: widget.pd.purchase.id,
-        targetProjectId: _targetProjectId!,
-        date: _date,
-        amountToAllocate: amount,
-        narration: _narrationCtrl.text.trim().isEmpty
-            ? null
-            : _narrationCtrl.text.trim(),
-        referenceNo: _refCtrl.text.trim().isEmpty
-            ? null
-            : _refCtrl.text.trim(),
-      );
-
-      if (!mounted) return;
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '${CurrencyFormatter.format(amount)} allocated to project successfully. Cost recognized in P&L!',
-          ),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } catch (e) {
-      setState(() => _saving = false);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
   }
 }
 
@@ -1077,7 +1027,8 @@ class _MarkPaidDialogState extends ConsumerState<_MarkPaidDialog> {
     return AlertDialog(
       title: Row(
         children: [
-          Icon(Icons.payment_rounded, color: theme.colorScheme.primary, size: 22.sp),
+          Icon(Icons.payment_rounded,
+              color: theme.colorScheme.primary, size: 22.sp),
           SizedBox(width: 8.w),
           const Text('Record Vendor Payment'),
         ],
@@ -1218,10 +1169,14 @@ class _MarkPaidDialogState extends ConsumerState<_MarkPaidDialog> {
               ),
               items: [
                 const DropdownMenuItem(
-                    value: null, child: Text('— Select Mode —', overflow: TextOverflow.ellipsis)),
+                    value: null,
+                    child: Text('— Select Mode —',
+                        overflow: TextOverflow.ellipsis)),
                 ...kSelectablePaymentModes.map(
                   (m) => DropdownMenuItem(
-                      value: m, child: Text(m.displayName, overflow: TextOverflow.ellipsis)),
+                      value: m,
+                      child:
+                          Text(m.displayName, overflow: TextOverflow.ellipsis)),
                 ),
               ],
               onChanged: (v) => setState(() => _paymentMode = v),
@@ -1343,8 +1298,8 @@ class _PaymentStatusChip extends StatelessWidget {
       ),
       child: Text(
         status.displayName,
-        style: TextStyle(
-            fontSize: 11, color: color, fontWeight: FontWeight.w500),
+        style:
+            TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w500),
       ),
     );
   }

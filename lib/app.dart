@@ -11,6 +11,7 @@ import 'package:nex_ledger/features/projects/presentation/project_form_screen.da
 import 'package:nex_ledger/features/cash_book/presentation/cash_book_list_screen.dart';
 import 'package:nex_ledger/features/cash_book/presentation/cash_book_entry_form.dart';
 import 'package:nex_ledger/features/purchase/presentation/purchase_list_screen.dart';
+import 'package:nex_ledger/features/purchase/presentation/purchase_invoice_form_screen.dart';
 import 'package:nex_ledger/features/purchase/presentation/purchase_form_screen.dart';
 import 'package:nex_ledger/features/labour/presentation/attendance_screen.dart';
 import 'package:nex_ledger/features/labour/presentation/labour_payment_screen.dart';
@@ -25,6 +26,7 @@ import 'package:nex_ledger/features/reports/presentation/consolidated_pnl_screen
 import 'package:nex_ledger/features/reports/presentation/day_book_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/ledgers_hub_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/reports_center_screen.dart';
+import 'package:nex_ledger/features/reports/presentation/gst_register_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/purchase_register_screen.dart';
 import 'package:nex_ledger/features/bank_accounts/presentation/bank_accounts_screen.dart';
 import 'package:nex_ledger/features/settings/presentation/settings_screen.dart';
@@ -128,8 +130,15 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: 'new',
-                builder: (c, s) => const PurchaseFormScreen(),
+                builder: (c, s) => const PurchaseInvoiceFormScreen(),
               ),
+              GoRoute(
+                path: 'invoice/:id/edit',
+                builder: (c, s) => PurchaseInvoiceFormScreen(
+                  invoiceId: int.parse(s.pathParameters['id']!),
+                ),
+              ),
+              // Single purchases entered before GST invoices existed.
               GoRoute(
                 path: ':id/edit',
                 builder: (c, s) => PurchaseFormScreen(
@@ -298,6 +307,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/reports/purchase-register',
             builder: (c, s) => const PurchaseRegisterScreen(),
+          ),
+          GoRoute(
+            path: '/reports/gst-purchases',
+            builder: (c, s) => const GstRegisterScreen(),
           ),
           GoRoute(
             path: '/reports/shop-wise',
