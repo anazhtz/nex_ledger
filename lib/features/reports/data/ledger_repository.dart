@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
+import 'package:nex_ledger/core/utils/wage_calculator.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
@@ -13,21 +14,26 @@ class LedgerRepository {
 
   // ─── 1. VENDOR / SUPPLIER LEDGER ──────────────────────────────────────────
 
-  Stream<({LedgerSummary summary, List<LedgerEntry> entries})> watchVendorLedger(
+  Stream<({LedgerSummary summary, List<LedgerEntry> entries})>
+      watchVendorLedger(
     int vendorId, {
     int? projectId,
     DateTimeRange? dateRange,
   }) {
     // Watch vendor purchases and general transactions reactively
-    return _db.purchaseDao.watchPurchasesByVendor(vendorId).asyncMap((purchases) async {
+    return _db.purchaseDao
+        .watchPurchasesByVendor(vendorId)
+        .asyncMap((purchases) async {
       final vendor = await _db.purchaseDao.getVendorById(vendorId);
       final vendorName = vendor?.name ?? 'Supplier #$vendorId';
-      final vendorSubtitle = vendor?.contact != null ? 'Contact: ${vendor!.contact}' : null;
+      final vendorSubtitle =
+          vendor?.contact != null ? 'Contact: ${vendor!.contact}' : null;
 
       // Filter by project if requested
       var filteredPurchases = purchases;
       if (projectId != null) {
-        filteredPurchases = purchases.where((p) => p.project.id == projectId).toList();
+        filteredPurchases =
+            purchases.where((p) => p.project.id == projectId).toList();
       }
 
       // Collect raw events: (date, isCredit, amount, ref, title, subtitle, projectCode, projectName, notes)
@@ -42,9 +48,11 @@ class LedgerRepository {
         rawEvents.add(_RawLedgerEvent(
           id: p.transaction.id,
           date: p.transaction.date,
-          referenceNo: p.transaction.referenceNo ?? 'PUR-${p.purchase.id.toString().padLeft(4, '0')}',
+          referenceNo: p.transaction.referenceNo ??
+              'PUR-${p.purchase.id.toString().padLeft(4, '0')}',
           title: p.purchase.itemDescription,
-          subtitle: 'Qty: ${p.purchase.quantity} ${p.purchase.unit ?? 'units'} @ ${CurrencyFormatter.format(p.purchase.unitRate)}',
+          subtitle:
+              'Qty: ${p.purchase.quantity} ${p.purchase.unit ?? 'units'} @ ${CurrencyFormatter.format(p.purchase.unitRate)}',
           projectCode: p.project.code,
           projectName: p.project.name,
           debit: 0.0,
@@ -60,7 +68,8 @@ class LedgerRepository {
             id: p.transaction.id,
             date: p.transaction.date,
             referenceNo: p.transaction.referenceNo,
-            title: 'Payment — ${p.transaction.paymentMode?.displayName ?? 'Paid'}',
+            title:
+                'Payment — ${p.transaction.paymentMode?.displayName ?? 'Paid'}',
             subtitle: 'Against Purchase #${p.purchase.id}',
             projectCode: p.project.code,
             projectName: p.project.name,
@@ -114,8 +123,10 @@ class LedgerRepository {
         runningBal += (event.credit - event.debit);
 
         final inDateRange = dateRange == null ||
-            (event.date.isAfter(dateRange.start.subtract(const Duration(seconds: 1))) &&
-                event.date.isBefore(dateRange.end.add(const Duration(days: 1))));
+            (event.date.isAfter(
+                    dateRange.start.subtract(const Duration(seconds: 1))) &&
+                event.date
+                    .isBefore(dateRange.end.add(const Duration(days: 1))));
 
         if (inDateRange) {
           totalBilled += event.credit;
@@ -150,7 +161,8 @@ class LedgerRepository {
         entitySubtitle: vendorSubtitle,
         debitLabel: 'Total Payments Made',
         creditLabel: 'Total Purchases Billed',
-        balanceLabel: runningBal >= 0 ? 'Net Outstanding Payable' : 'Net Advance Paid',
+        balanceLabel:
+            runningBal >= 0 ? 'Net Outstanding Payable' : 'Net Advance Paid',
         isPayable: true,
       );
 
@@ -161,12 +173,15 @@ class LedgerRepository {
 
   // ─── 2. LABOUR / WORKER LEDGER ────────────────────────────────────────────
 
-  Stream<({LedgerSummary summary, List<LedgerEntry> entries})> watchWorkerLedger(
+  Stream<({LedgerSummary summary, List<LedgerEntry> entries})>
+      watchWorkerLedger(
     int workerId, {
     int? projectId,
     DateTimeRange? dateRange,
   }) {
-    return _db.labourDao.watchWorkerAttendanceAll(workerId).asyncMap((attendanceList) async {
+    return _db.labourDao
+        .watchWorkerAttendanceAll(workerId)
+        .asyncMap((attendanceList) async {
       final worker = await _db.labourDao.getWorkerById(workerId);
       final workerName = worker?.name ?? 'Worker #$workerId';
       final workerSubtitle = worker != null
@@ -179,7 +194,9 @@ class LedgerRepository {
       var filteredAtt = attendanceList;
       var filteredPay = payments;
       if (projectId != null) {
-        filteredAtt = attendanceList.where((a) => a.attendance.projectId == projectId).toList();
+        filteredAtt = attendanceList
+            .where((a) => a.attendance.projectId == projectId)
+            .toList();
         filteredPay = payments.where((p) => p.projectId == projectId).toList();
       }
 
@@ -188,18 +205,26 @@ class LedgerRepository {
       // 1. Credit entries from daily attendance (Gross wages earned)
       for (final att in filteredAtt) {
         final days = att.attendance.status.payFraction;
-        if (days <= 0) continue; // Skip absent days
+        final otHours = att.attendance.overtimeHours;
+        if (days <= 0 && otHours <= 0) continue; // Skip absent days with no OT
 
         final dailyRate = worker?.dailyRate ?? 0.0;
-        final wageEarned = days * dailyRate;
-        final proj = await _db.projectDao.getProjectById(att.attendance.projectId);
+        final wageEarned = worker != null
+            ? dayWage(worker, att.attendance.status, otHours)
+            : days * dailyRate;
+        final proj =
+            await _db.projectDao.getProjectById(att.attendance.projectId);
 
         rawEvents.add(_RawLedgerEvent(
           id: att.attendance.id,
           date: att.attendance.date,
           referenceNo: 'ATT-${att.attendance.id}',
-          title: '${att.attendance.status.displayName} (${days}d)',
-          subtitle: 'Daily Wage Rate: ${CurrencyFormatter.format(dailyRate)}',
+          title: otHours > 0
+              ? '${att.attendance.status.displayName} (${days}d) + ${formatHours(otHours)}h OT'
+              : '${att.attendance.status.displayName} (${days}d)',
+          subtitle: otHours > 0 && worker != null
+              ? 'Daily Wage Rate: ${CurrencyFormatter.format(dailyRate)} • OT Rate: ${CurrencyFormatter.format(worker.effectiveOvertimeRate)}/hr'
+              : 'Daily Wage Rate: ${CurrencyFormatter.format(dailyRate)}',
           projectCode: proj?.code,
           projectName: proj?.name,
           debit: 0.0,
@@ -241,8 +266,10 @@ class LedgerRepository {
         runningBal += (event.credit - event.debit);
 
         final inDateRange = dateRange == null ||
-            (event.date.isAfter(dateRange.start.subtract(const Duration(seconds: 1))) &&
-                event.date.isBefore(dateRange.end.add(const Duration(days: 1))));
+            (event.date.isAfter(
+                    dateRange.start.subtract(const Duration(seconds: 1))) &&
+                event.date
+                    .isBefore(dateRange.end.add(const Duration(days: 1))));
 
         if (inDateRange) {
           totalEarned += event.credit;
@@ -277,7 +304,8 @@ class LedgerRepository {
         entitySubtitle: workerSubtitle,
         debitLabel: 'Total Payments Paid',
         creditLabel: 'Total Wages Earned',
-        balanceLabel: runningBal >= 0 ? 'Net Wage Due to Worker' : 'Net Advance Overpaid',
+        balanceLabel:
+            runningBal >= 0 ? 'Net Wage Due to Worker' : 'Net Advance Overpaid',
         isPayable: true,
       );
 
@@ -287,7 +315,8 @@ class LedgerRepository {
 
   // ─── 3. BANK & CASH ACCOUNT LEDGER ────────────────────────────────────────
 
-  Stream<({LedgerSummary summary, List<LedgerEntry> entries})> watchAccountLedger({
+  Stream<({LedgerSummary summary, List<LedgerEntry> entries})>
+      watchAccountLedger({
     int? bankAccountId,
     DateTimeRange? dateRange,
   }) {
@@ -297,7 +326,8 @@ class LedgerRepository {
         targetAccount = await _db.bankAccountDao.getAccountById(bankAccountId);
       }
 
-      final bool isCashInHand = bankAccountId == null || (targetAccount?.isCashAccount ?? false);
+      final bool isCashInHand =
+          bankAccountId == null || (targetAccount?.isCashAccount ?? false);
       final accountName = targetAccount != null
           ? targetAccount.accountName
           : '💵 Physical Cash Drawer / Cash in Hand';
@@ -320,13 +350,15 @@ class LedgerRepository {
             ? (t.bankAccountId == targetAccount.id ||
                 (targetAccount.isCashAccount &&
                     t.bankAccountId == null &&
-                    (t.paymentMode == PaymentMode.cash || t.paymentMode == null)) ||
+                    (t.paymentMode == PaymentMode.cash ||
+                        t.paymentMode == null)) ||
                 (!targetAccount.isCashAccount &&
                     targetAccount.isDefault &&
                     t.bankAccountId == null &&
                     t.paymentMode != PaymentMode.cash &&
                     t.paymentMode != null))
-            : (t.bankAccountId == null && (t.paymentMode == PaymentMode.cash || t.paymentMode == null));
+            : (t.bankAccountId == null &&
+                (t.paymentMode == PaymentMode.cash || t.paymentMode == null));
 
         if (!matchesThisAccount) continue;
 
@@ -337,8 +369,11 @@ class LedgerRepository {
           id: t.id,
           date: t.date,
           referenceNo: t.referenceNo ?? 'TXN-${t.id}',
-          title: t.narration?.isNotEmpty == true ? t.narration! : t.type.displayName,
-          subtitle: 'Type: ${t.type.displayName} • Mode: ${t.paymentMode?.displayName ?? 'Cash'}',
+          title: t.narration?.isNotEmpty == true
+              ? t.narration!
+              : t.type.displayName,
+          subtitle:
+              'Type: ${t.type.displayName} • Mode: ${t.paymentMode?.displayName ?? 'Cash'}',
           projectCode: proj?.code,
           projectName: proj?.name,
           debit: isOutflow ? t.amount : 0.0,
@@ -358,8 +393,10 @@ class LedgerRepository {
         runningBal += (event.credit - event.debit);
 
         final inDateRange = dateRange == null ||
-            (event.date.isAfter(dateRange.start.subtract(const Duration(seconds: 1))) &&
-                event.date.isBefore(dateRange.end.add(const Duration(days: 1))));
+            (event.date.isAfter(
+                    dateRange.start.subtract(const Duration(seconds: 1))) &&
+                event.date
+                    .isBefore(dateRange.end.add(const Duration(days: 1))));
 
         if (inDateRange) {
           totalInflow += event.credit;
@@ -404,8 +441,11 @@ class LedgerRepository {
 
   // ─── 4. PERSONAL / OWNER LEDGER ───────────────────────────────────────────
 
-  Stream<({LedgerSummary summary, List<LedgerEntry> entries})> watchPersonalLedger({
+  /// [investorId] limits the statement to one investor / partner (null = all).
+  Stream<({LedgerSummary summary, List<LedgerEntry> entries})>
+      watchPersonalLedger({
     DateTimeRange? dateRange,
+    int? investorId,
   }) {
     return _db.transactionDao.watchAllTransactions().asyncMap((_) async {
       final capitalTxns = await (_db.select(_db.transactions)
@@ -413,14 +453,23 @@ class LedgerRepository {
                   TransactionType.ownerCapital.name,
                   TransactionType.drawings.name,
                 ]))
+            ..where((t) => investorId == null
+                ? const Constant(true)
+                : t.investorId.equals(investorId))
             ..orderBy([(t) => OrderingTerm.asc(t.date)]))
           .get();
+
+      final investorNames = {
+        for (final i in await _db.select(_db.investors).get()) i.id: i.name,
+      };
 
       final rawEvents = <_RawLedgerEvent>[];
 
       for (final t in capitalTxns) {
         final proj = await _db.projectDao.getProjectById(t.projectId);
         final isDrawings = t.type == TransactionType.drawings;
+        final investorName =
+            t.investorId != null ? investorNames[t.investorId] : null;
 
         BankAccount? acc;
         if (t.bankAccountId != null) {
@@ -431,10 +480,15 @@ class LedgerRepository {
           id: t.id,
           date: t.date,
           referenceNo: t.referenceNo ?? 'CAP-${t.id}',
-          title: isDrawings ? 'Owner Personal Drawings' : 'Owner Capital Introduced',
+          title: (isDrawings
+                  ? 'Owner Personal Drawings'
+                  : 'Owner Capital Introduced') +
+              (investorName != null ? ' — $investorName' : ''),
           subtitle: t.narration?.isNotEmpty == true
               ? t.narration!
-              : (isDrawings ? 'Personal withdrawal from business funds' : 'Personal funds injected into business'),
+              : (isDrawings
+                  ? 'Personal withdrawal from business funds'
+                  : 'Personal funds injected into business'),
           projectCode: proj?.code,
           projectName: proj?.name,
           debit: isDrawings ? t.amount : 0.0,
@@ -455,8 +509,10 @@ class LedgerRepository {
         runningEquity += (event.credit - event.debit);
 
         final inDateRange = dateRange == null ||
-            (event.date.isAfter(dateRange.start.subtract(const Duration(seconds: 1))) &&
-                event.date.isBefore(dateRange.end.add(const Duration(days: 1))));
+            (event.date.isAfter(
+                    dateRange.start.subtract(const Duration(seconds: 1))) &&
+                event.date
+                    .isBefore(dateRange.end.add(const Duration(days: 1))));
 
         if (inDateRange) {
           if (event.transactionType == TransactionType.ownerCapital) {
@@ -476,7 +532,8 @@ class LedgerRepository {
             debit: event.debit,
             credit: event.credit,
             runningBalance: runningEquity,
-            balanceType: runningEquity >= 0 ? 'Cr (Net Invested)' : 'Dr (Net Withdrawn)',
+            balanceType:
+                runningEquity >= 0 ? 'Cr (Net Invested)' : 'Dr (Net Withdrawn)',
             transactionType: event.transactionType,
             paymentMode: event.paymentMode,
             accountName: event.accountName,
@@ -491,11 +548,16 @@ class LedgerRepository {
         totalCredit: totalCapitalInjected,
         closingBalance: runningEquity,
         totalEntries: statementEntries.length,
-        entityName: '👤 Owner Capital & Personal Drawings Ledger',
-        entitySubtitle: 'Track proprietor investments, capital introduced, and personal drawings from business funds',
+        entityName: investorId != null
+            ? '👤 ${investorNames[investorId] ?? 'Investor'} — Capital & Drawings'
+            : '👤 Investors, Owner Capital & Drawings Ledger',
+        entitySubtitle:
+            'Track each investor\'s capital introduced and withdrawals from business funds',
         debitLabel: 'Total Personal Drawings (Outflow)',
         creditLabel: 'Total Capital Injected (Inflow)',
-        balanceLabel: runningEquity >= 0 ? 'Net Owner Capital in Business' : 'Net Overdrawn by Owner',
+        balanceLabel: runningEquity >= 0
+            ? 'Net Owner Capital in Business'
+            : 'Net Overdrawn by Owner',
         isPayable: false,
       );
 
@@ -505,13 +567,15 @@ class LedgerRepository {
 
   // ─── 5. SUBCONTRACTOR / PIECE-RATE LEDGER ─────────────────────────────────
 
-  Stream<({LedgerSummary summary, List<LedgerEntry> entries})> watchSubcontractorLedger(
+  Stream<({LedgerSummary summary, List<LedgerEntry> entries})>
+      watchSubcontractorLedger(
     int subcontractorId, {
     int? projectId,
     DateTimeRange? dateRange,
   }) {
     return _db.subcontractDao.watchAllSubcontractors().asyncMap((subs) async {
-      final sub = await _db.subcontractDao.getSubcontractorById(subcontractorId);
+      final sub =
+          await _db.subcontractDao.getSubcontractorById(subcontractorId);
       final subName = sub?.name ?? 'Contractor #$subcontractorId';
       final subSubtitle = sub?.trade != null ? 'Trade: ${sub!.trade}' : null;
 
@@ -532,7 +596,9 @@ class LedgerRepository {
 
         for (final b in bills) {
           final wo = woMap[b.workOrderId];
-          final prj = wo != null ? await _db.projectDao.getProjectById(wo.projectId) : null;
+          final prj = wo != null
+              ? await _db.projectDao.getProjectById(wo.projectId)
+              : null;
 
           if (projectId != null && wo?.projectId != projectId) continue;
 
@@ -541,7 +607,8 @@ class LedgerRepository {
             date: b.date,
             referenceNo: b.billNumber,
             title: 'RA Bill: ${wo?.title ?? 'Subcontract Work'}',
-            subtitle: 'Measured: ${b.measuredQuantity} ${wo?.unit ?? ''} (Retention: ${CurrencyFormatter.format(b.retentionAmount)})',
+            subtitle:
+                'Measured: ${b.measuredQuantity} ${wo?.unit ?? ''} (Retention: ${CurrencyFormatter.format(b.retentionAmount)})',
             projectCode: prj?.code,
             projectName: prj?.name,
             debit: 0.0,
@@ -559,14 +626,18 @@ class LedgerRepository {
 
       for (final p in payments) {
         final wo = p.workOrderId != null ? woMap[p.workOrderId] : null;
-        final prj = wo != null ? await _db.projectDao.getProjectById(wo.projectId) : null;
+        final prj = wo != null
+            ? await _db.projectDao.getProjectById(wo.projectId)
+            : null;
 
-        if (projectId != null && wo != null && wo.projectId != projectId) continue;
+        if (projectId != null && wo != null && wo.projectId != projectId)
+          continue;
 
         rawEvents.add(_RawLedgerEvent(
           id: p.transactionId,
           date: p.paymentDate,
-          referenceNo: p.referenceNo ?? 'PAY-${p.id.toString().padLeft(4, '0')}',
+          referenceNo:
+              p.referenceNo ?? 'PAY-${p.id.toString().padLeft(4, '0')}',
           title: p.isRetentionRelease
               ? 'Retention Release'
               : (p.isAdvance ? 'Site Advance' : 'Bill Settlement'),
@@ -595,9 +666,11 @@ class LedgerRepository {
       final statementEntries = <LedgerEntry>[];
 
       for (final ev in rawEvents) {
-        final beforeDate = dateRange != null && ev.date.isBefore(dateRange.start);
+        final beforeDate =
+            dateRange != null && ev.date.isBefore(dateRange.start);
         final inRange = dateRange == null ||
-            (ev.date.isAfter(dateRange.start.subtract(const Duration(seconds: 1))) &&
+            (ev.date.isAfter(
+                    dateRange.start.subtract(const Duration(seconds: 1))) &&
                 ev.date.isBefore(dateRange.end.add(const Duration(days: 1))));
 
         if (beforeDate) {
@@ -638,7 +711,9 @@ class LedgerRepository {
         entitySubtitle: subSubtitle,
         debitLabel: 'Total Payments & Advances',
         creditLabel: 'Total Certified Net Bills',
-        balanceLabel: runningBalance >= 0 ? 'Net Balance Due to Contractor' : 'Net Advance Overpaid',
+        balanceLabel: runningBalance >= 0
+            ? 'Net Balance Due to Contractor'
+            : 'Net Advance Overpaid',
         isPayable: true,
       );
 
@@ -656,120 +731,220 @@ class LedgerRepository {
     return _db
         .customSelect(
           'SELECT 1',
-          readsFrom: {_db.projects, _db.clientRaBills, _db.clientReceipts, _db.transactions},
+          readsFrom: {
+            _db.projects,
+            _db.clientRaBills,
+            _db.clientReceipts,
+            _db.transactions
+          },
         )
         .watch()
         .asyncMap((_) async {
-      final project = await (_db.select(_db.projects)..where((p) => p.id.equals(projectId)))
-          .getSingleOrNull();
+          final project = await (_db.select(_db.projects)
+                ..where((p) => p.id.equals(projectId)))
+              .getSingleOrNull();
 
-      final clientName = project?.clientName ?? project?.name ?? 'Client Account';
-      final clientSubtitle = '${project?.code ?? ''} • Contract: ${project?.clientContractValue != null ? CurrencyFormatter.format(project!.clientContractValue) : '—'}';
+          final clientName =
+              project?.clientName ?? project?.name ?? 'Client Account';
+          final clientSubtitle =
+              '${project?.code ?? ''} • Contract: ${project?.clientContractValue != null ? CurrencyFormatter.format(project!.clientContractValue) : '—'}';
 
-      final bills = await (_db.select(_db.clientRaBills)
-            ..where((b) => b.projectId.equals(projectId)))
-          .get();
+          final bills = await (_db.select(_db.clientRaBills)
+                ..where((b) => b.projectId.equals(projectId)))
+              .get();
 
-      final receipts = await (_db.select(_db.clientReceipts)
-            ..where((r) => r.projectId.equals(projectId)))
-          .get();
+          final receipts = await (_db.select(_db.clientReceipts)
+                ..where((r) => r.projectId.equals(projectId)))
+              .get();
 
-      final rawEvents = <_RawLedgerEvent>[];
+          final rawEvents = <_RawLedgerEvent>[];
 
-      for (final b in bills) {
-        rawEvents.add(_RawLedgerEvent(
-          id: b.id,
-          date: b.billDate,
-          referenceNo: b.billNumber,
-          title: 'RA Bill ${b.billNumber}',
-          subtitle: '${b.stageOrDescription} (Gross: ${CurrencyFormatter.format(b.grossAmount)}, Ret: -${CurrencyFormatter.format(b.retentionAmount)})',
-          projectCode: project?.code,
-          projectName: project?.name,
-          debit: 0.0,
-          credit: b.netCertifiedAmount,
-          transactionType: TransactionType.clientRaBill,
-          notes: b.notes,
-        ));
-      }
+          for (final b in bills) {
+            rawEvents.add(_RawLedgerEvent(
+              id: b.id,
+              date: b.billDate,
+              referenceNo: b.billNumber,
+              title: 'RA Bill ${b.billNumber}',
+              subtitle:
+                  '${b.stageOrDescription} (Gross: ${CurrencyFormatter.format(b.grossAmount)}, Ret: -${CurrencyFormatter.format(b.retentionAmount)})',
+              projectCode: project?.code,
+              projectName: project?.name,
+              debit: 0.0,
+              credit: b.netCertifiedAmount,
+              transactionType: TransactionType.clientRaBill,
+              notes: b.notes,
+            ));
+          }
 
-      for (final r in receipts) {
-        rawEvents.add(_RawLedgerEvent(
-          id: r.id,
-          date: r.receiptDate,
-          referenceNo: r.referenceNo,
-          title: r.isRetentionRelease
-              ? 'Client Retention Released'
-              : (r.isAdvance
-                  ? 'Mobilization Advance Received'
-                  : 'Client Bill Payment Received'),
-          subtitle: 'Mode: ${r.paymentMode.displayName}${r.referenceNo != null ? ' • Ref: ${r.referenceNo}' : ''}',
-          projectCode: project?.code,
-          projectName: project?.name,
-          debit: r.amount,
-          credit: 0.0,
-          transactionType: TransactionType.clientReceipt,
-          paymentMode: r.paymentMode,
-          notes: r.notes,
-        ));
-      }
+          for (final r in receipts) {
+            rawEvents.add(_RawLedgerEvent(
+              id: r.id,
+              date: r.receiptDate,
+              referenceNo: r.referenceNo,
+              title: r.isRetentionRelease
+                  ? 'Client Retention Released'
+                  : (r.isAdvance
+                      ? 'Mobilization Advance Received'
+                      : 'Client Bill Payment Received'),
+              subtitle:
+                  'Mode: ${r.paymentMode.displayName}${r.referenceNo != null ? ' • Ref: ${r.referenceNo}' : ''}',
+              projectCode: project?.code,
+              projectName: project?.name,
+              debit: r.amount,
+              credit: 0.0,
+              transactionType: TransactionType.clientReceipt,
+              paymentMode: r.paymentMode,
+              notes: r.notes,
+            ));
+          }
 
-      rawEvents.sort((a, b) => a.date.compareTo(b.date));
+          rawEvents.sort((a, b) => a.date.compareTo(b.date));
 
-      double openingBalance = 0.0;
-      double runningBalance = 0.0;
-      double periodDebits = 0.0;
-      double periodCredits = 0.0;
-      final statementEntries = <LedgerEntry>[];
+          double openingBalance = 0.0;
+          double runningBalance = 0.0;
+          double periodDebits = 0.0;
+          double periodCredits = 0.0;
+          final statementEntries = <LedgerEntry>[];
 
-      for (final ev in rawEvents) {
-        final beforeDate = dateRange != null && ev.date.isBefore(dateRange.start);
-        final inRange = dateRange == null ||
-            (ev.date.isAfter(dateRange.start.subtract(const Duration(seconds: 1))) &&
-                ev.date.isBefore(dateRange.end.add(const Duration(days: 1))));
+          for (final ev in rawEvents) {
+            final beforeDate =
+                dateRange != null && ev.date.isBefore(dateRange.start);
+            final inRange = dateRange == null ||
+                (ev.date.isAfter(
+                        dateRange.start.subtract(const Duration(seconds: 1))) &&
+                    ev.date
+                        .isBefore(dateRange.end.add(const Duration(days: 1))));
 
-        if (beforeDate) {
-          openingBalance += (ev.credit - ev.debit);
-          runningBalance = openingBalance;
-        } else if (inRange) {
-          runningBalance += (ev.credit - ev.debit);
-          periodDebits += ev.debit;
-          periodCredits += ev.credit;
+            if (beforeDate) {
+              openingBalance += (ev.credit - ev.debit);
+              runningBalance = openingBalance;
+            } else if (inRange) {
+              runningBalance += (ev.credit - ev.debit);
+              periodDebits += ev.debit;
+              periodCredits += ev.credit;
 
-          statementEntries.add(LedgerEntry(
-            id: ev.id,
-            date: ev.date,
-            referenceNo: ev.referenceNo,
-            title: ev.title,
-            subtitle: ev.subtitle,
-            projectCode: ev.projectCode,
-            projectName: ev.projectName,
-            debit: ev.debit,
-            credit: ev.credit,
-            runningBalance: runningBalance,
-            balanceType: runningBalance >= 0 ? 'Dr (Due from Client)' : 'Cr (Advance Received)',
-            transactionType: ev.transactionType,
-            paymentMode: ev.paymentMode,
-            accountName: ev.accountName,
-            notes: ev.notes,
-          ));
+              statementEntries.add(LedgerEntry(
+                id: ev.id,
+                date: ev.date,
+                referenceNo: ev.referenceNo,
+                title: ev.title,
+                subtitle: ev.subtitle,
+                projectCode: ev.projectCode,
+                projectName: ev.projectName,
+                debit: ev.debit,
+                credit: ev.credit,
+                runningBalance: runningBalance,
+                balanceType: runningBalance >= 0
+                    ? 'Dr (Due from Client)'
+                    : 'Cr (Advance Received)',
+                transactionType: ev.transactionType,
+                paymentMode: ev.paymentMode,
+                accountName: ev.accountName,
+                notes: ev.notes,
+              ));
+            }
+          }
+
+          final summary = LedgerSummary(
+            openingBalance: openingBalance,
+            totalDebit: periodDebits,
+            totalCredit: periodCredits,
+            closingBalance: runningBalance,
+            totalEntries: statementEntries.length,
+            entityName: clientName,
+            entitySubtitle: clientSubtitle,
+            debitLabel: 'Total Receipts Collected',
+            creditLabel: 'Total Net Certified Invoiced',
+            balanceLabel: runningBalance >= 0
+                ? 'Net Receivable Due from Client'
+                : 'Net Advance Overpaid',
+            isPayable: false,
+          );
+
+          return (
+            summary: summary,
+            entries: statementEntries.reversed.toList()
+          );
+        });
+  }
+
+  // ─── Investors ────────────────────────────────────────────────────────────
+
+  Stream<List<Investor>> watchInvestors() => (_db.select(_db.investors)
+        ..where((i) => i.isActive.equals(true))
+        ..orderBy([(i) => OrderingTerm.asc(i.name)]))
+      .watch();
+
+  /// Adds an investor and returns the id. A name that already exists
+  /// (ignoring case and spacing) returns that investor instead of a duplicate.
+  Future<int> addInvestor({
+    required String name,
+    String? phone,
+    String? notes,
+  }) async {
+    final clean = name.trim();
+    if (clean.isEmpty) {
+      throw ArgumentError('Investor name is required');
+    }
+    final existing = await (_db.select(_db.investors)).get();
+    for (final i in existing) {
+      if (i.name.trim().toLowerCase() == clean.toLowerCase()) {
+        if (!i.isActive) {
+          await (_db.update(_db.investors)..where((x) => x.id.equals(i.id)))
+              .write(const InvestorsCompanion(isActive: Value(true)));
         }
+        return i.id;
+      }
+    }
+    return _db.into(_db.investors).insert(InvestorsCompanion.insert(
+          name: clean,
+          phone: Value(phone?.trim().isEmpty == true ? null : phone?.trim()),
+          notes: Value(notes?.trim().isEmpty == true ? null : notes?.trim()),
+        ));
+  }
+
+  /// Per-investor totals: invested, withdrawn, and net still in the business.
+  /// Entries with no investor are grouped as "Owner (General)".
+  Stream<List<InvestorSummary>> watchInvestorSummaries() {
+    return _db.transactionDao.watchAllTransactions().asyncMap((_) async {
+      final investors = await _db.select(_db.investors).get();
+      final txns = await (_db.select(_db.transactions)
+            ..where((t) => t.type.isIn([
+                  TransactionType.ownerCapital.name,
+                  TransactionType.drawings.name,
+                ])))
+          .get();
+
+      final invested = <int?, double>{};
+      final withdrawn = <int?, double>{};
+      for (final t in txns) {
+        final bucket =
+            t.type == TransactionType.drawings ? withdrawn : invested;
+        bucket[t.investorId] = (bucket[t.investorId] ?? 0.0) + t.amount;
       }
 
-      final summary = LedgerSummary(
-        openingBalance: openingBalance,
-        totalDebit: periodDebits,
-        totalCredit: periodCredits,
-        closingBalance: runningBalance,
-        totalEntries: statementEntries.length,
-        entityName: clientName,
-        entitySubtitle: clientSubtitle,
-        debitLabel: 'Total Receipts Collected',
-        creditLabel: 'Total Net Certified Invoiced',
-        balanceLabel: runningBalance >= 0 ? 'Net Receivable Due from Client' : 'Net Advance Overpaid',
-        isPayable: false,
-      );
+      final result = <InvestorSummary>[];
+      for (final i in investors) {
+        final inv = invested[i.id] ?? 0.0;
+        final out = withdrawn[i.id] ?? 0.0;
+        // Hide inactive investors with no history; always show active ones.
+        if (!i.isActive && inv == 0 && out == 0) continue;
+        result.add(InvestorSummary(
+            investorId: i.id, name: i.name, invested: inv, withdrawn: out));
+      }
+      result
+          .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
-      return (summary: summary, entries: statementEntries.reversed.toList());
+      final generalIn = invested[null] ?? 0.0;
+      final generalOut = withdrawn[null] ?? 0.0;
+      if (generalIn > 0 || generalOut > 0) {
+        result.add(InvestorSummary(
+            investorId: null,
+            name: 'Owner (General)',
+            invested: generalIn,
+            withdrawn: generalOut));
+      }
+      return result;
     });
   }
 
@@ -778,6 +953,7 @@ class LedgerRepository {
   Future<int> recordOwnerCapital({
     required double amount,
     required DateTime date,
+    int? investorId,
     int? bankAccountId,
     PaymentMode paymentMode = PaymentMode.bank,
     String? narration,
@@ -791,6 +967,7 @@ class LedgerRepository {
         projectId: projId,
         date: date,
         type: TransactionType.ownerCapital,
+        investorId: Value(investorId),
         affectsPnl: const Value(false), // Capital is equity, not income
         affectsCash: const Value(true), // Inflow to bank or cash
         amount: amount,
@@ -805,6 +982,7 @@ class LedgerRepository {
   Future<int> recordOwnerDrawings({
     required double amount,
     required DateTime date,
+    int? investorId,
     int? bankAccountId,
     PaymentMode paymentMode = PaymentMode.cash,
     String? narration,
@@ -818,12 +996,15 @@ class LedgerRepository {
         projectId: projId,
         date: date,
         type: TransactionType.drawings,
-        affectsPnl: const Value(false), // Drawings is equity withdrawal, not project expense
+        investorId: Value(investorId),
+        affectsPnl: const Value(
+            false), // Drawings is equity withdrawal, not project expense
         affectsCash: const Value(true), // Outflow from bank or cash
         amount: amount,
         bankAccountId: Value(bankAccountId),
         paymentMode: Value(paymentMode),
-        narration: Value(narration?.trim() ?? 'Owner personal withdrawal / drawings'),
+        narration:
+            Value(narration?.trim() ?? 'Owner personal withdrawal / drawings'),
         referenceNo: Value(referenceNo?.trim()),
       ),
     );

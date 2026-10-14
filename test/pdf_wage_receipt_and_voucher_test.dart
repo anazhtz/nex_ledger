@@ -30,6 +30,7 @@ void main() {
         workerCode: 'WRK-001',
         trade: 'Mason',
         dailyRate: 1000.0,
+        overtimeRate: 0.0,
       );
 
       final project = Project(

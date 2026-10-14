@@ -17,6 +17,7 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
   final _codeCtrl = TextEditingController();
   final _tradeCtrl = TextEditingController();
   final _rateCtrl = TextEditingController();
+  final _otRateCtrl = TextEditingController();
   int? _editingId;
   bool _showForm = false;
 
@@ -26,16 +27,27 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
     _codeCtrl.dispose();
     _tradeCtrl.dispose();
     _rateCtrl.dispose();
+    _otRateCtrl.dispose();
     super.dispose();
   }
 
-  void _openForm({int? id, String? name, String? code, String? trade, double? rate}) {
+  void _openForm({
+    int? id,
+    String? name,
+    String? code,
+    String? trade,
+    double? rate,
+    double? otRate,
+  }) {
     setState(() {
       _editingId = id;
       _nameCtrl.text = name ?? '';
       _codeCtrl.text = code ?? '';
       _tradeCtrl.text = trade ?? '';
       _rateCtrl.text = rate?.toStringAsFixed(0) ?? '';
+      _otRateCtrl.text = (otRate != null && otRate > 0)
+          ? (otRate % 1 == 0 ? otRate.toInt().toString() : otRate.toStringAsFixed(2))
+          : '';
       _showForm = true;
     });
   }
@@ -48,6 +60,7 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
       _codeCtrl.clear();
       _tradeCtrl.clear();
       _rateCtrl.clear();
+      _otRateCtrl.clear();
     });
   }
 
@@ -55,6 +68,9 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
     if (_nameCtrl.text.isEmpty) return;
     final repo = ref.read(labourRepositoryProvider);
     final rate = double.tryParse(_rateCtrl.text) ?? 0.0;
+    // Blank / invalid / negative OT rate = 0 = "use daily rate ÷ 8".
+    final otParsed = double.tryParse(_otRateCtrl.text) ?? 0.0;
+    final otRate = otParsed > 0 ? otParsed : 0.0;
     if (_editingId != null) {
       await repo.updateWorker(
         id: _editingId!,
@@ -62,6 +78,7 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
         workerCode: _codeCtrl.text.isNotEmpty ? _codeCtrl.text : null,
         trade: _tradeCtrl.text.isNotEmpty ? _tradeCtrl.text : null,
         dailyRate: rate,
+        overtimeRate: otRate,
       );
     } else {
       await repo.addWorker(
@@ -69,6 +86,7 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
         workerCode: _codeCtrl.text.isNotEmpty ? _codeCtrl.text : null,
         trade: _tradeCtrl.text.isNotEmpty ? _tradeCtrl.text : null,
         dailyRate: rate,
+        overtimeRate: otRate,
       );
     }
     _closeForm();
@@ -179,6 +197,7 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
                                     code: w.workerCode,
                                     trade: w.trade,
                                     rate: w.dailyRate,
+                                    otRate: w.overtimeRate,
                                   ),
                                 ),
                                 IconButton(
@@ -261,6 +280,19 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
                           decoration: const InputDecoration(
                             labelText: 'Daily Wage Rate (₹) *',
                             prefixText: '₹ ',
+                          ),
+                          keyboardType:
+                              const TextInputType.numberWithOptions(
+                                  decimal: true),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _otRateCtrl,
+                          decoration: const InputDecoration(
+                            labelText: 'Overtime Rate per Hour (₹) — optional',
+                            prefixText: '₹ ',
+                            helperText:
+                                'Leave blank to pay overtime at Daily Rate ÷ 8 hours',
                           ),
                           keyboardType:
                               const TextInputType.numberWithOptions(

@@ -517,7 +517,7 @@ class _MarkPaidDialogState extends State<_MarkPaidDialog> {
               items: [
                 const DropdownMenuItem(
                     value: null, child: Text('— Select Mode —', overflow: TextOverflow.ellipsis)),
-                ...PaymentMode.values.map((m) =>
+                ...kSelectablePaymentModes.map((m) =>
                     DropdownMenuItem(value: m, child: Text(m.displayName, overflow: TextOverflow.ellipsis))),
               ],
               onChanged: (v) => setState(() => _mode = v),

@@ -4,6 +4,7 @@ import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/tables/workers_table.dart';
 import 'package:nex_ledger/core/database/tables/attendance_table.dart';
 import 'package:nex_ledger/core/database/tables/projects_table.dart';
+import 'package:nex_ledger/core/utils/wage_calculator.dart';
 
 part 'labour_dao.g.dart';
 
@@ -22,6 +23,8 @@ class WorkerPaymentSummary {
   final double totalPaymentsPaid; // All-time payments issued
   final double amountDue; // Net running balance due
   final double rangeDays; // Selected date range days (for display)
+  final double totalOvertimeHours; // All-time overtime hours
+  final double totalOvertimeWages; // Overtime part of totalEarnedWages
 
   WorkerPaymentSummary({
     required this.worker,
@@ -30,6 +33,8 @@ class WorkerPaymentSummary {
     required this.totalPaymentsPaid,
     required this.amountDue,
     required this.rangeDays,
+    this.totalOvertimeHours = 0.0,
+    this.totalOvertimeWages = 0.0,
   });
 
   double get effectiveDays => rangeDays;
@@ -105,9 +110,12 @@ class LabourDao extends DatabaseAccessor<AppDatabase> with _$LabourDaoMixin {
         .getSingleOrNull();
 
     if (existing != null) {
-      // Row exists — update just the status column
+      // Row exists — update status (and overtime when supplied)
       await (update(attendance)..where((a) => a.id.equals(existing.id)))
-          .write(AttendanceCompanion(status: entry.status));
+          .write(AttendanceCompanion(
+        status: entry.status,
+        overtimeHours: entry.overtimeHours,
+      ));
     } else {
       // No row yet — insert fresh
       await into(attendance).insert(entry);
@@ -140,10 +148,14 @@ class LabourDao extends DatabaseAccessor<AppDatabase> with _$LabourDaoMixin {
         .get();
 
     double allTimeDays = 0.0;
+    double allTimeOtHours = 0.0;
+    double allTimeEarned = 0.0;
     for (final row in allRows) {
       allTimeDays += row.status.payFraction;
+      allTimeOtHours += row.overtimeHours;
+      allTimeEarned += dayWage(worker, row.status, row.overtimeHours);
     }
-    final allTimeEarned = allTimeDays * worker.dailyRate;
+    final allTimeOtWages = overtimePay(worker, allTimeOtHours);
 
     // 2. Range Attendance (for UI display filter)
     final rangeRows = await (select(attendance)
@@ -179,6 +191,8 @@ class LabourDao extends DatabaseAccessor<AppDatabase> with _$LabourDaoMixin {
       totalPaymentsPaid: totalPaid,
       amountDue: amountDue,
       rangeDays: rangeDays,
+      totalOvertimeHours: allTimeOtHours,
+      totalOvertimeWages: allTimeOtWages,
     );
   }
 

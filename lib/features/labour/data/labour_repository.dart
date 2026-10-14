@@ -18,6 +18,7 @@ class LabourRepository {
     String? workerCode,
     String? trade,
     required double dailyRate,
+    double overtimeRate = 0.0,
   }) =>
       _labourDao.insertWorker(
         WorkersCompanion.insert(
@@ -25,6 +26,7 @@ class LabourRepository {
           workerCode: Value(workerCode?.trim()),
           trade: Value(trade?.trim()),
           dailyRate: Value(dailyRate),
+          overtimeRate: Value(overtimeRate),
         ),
       );
 
@@ -34,6 +36,7 @@ class LabourRepository {
     String? workerCode,
     String? trade,
     required double dailyRate,
+    double overtimeRate = 0.0,
   }) =>
       _labourDao.updateWorker(
         WorkersCompanion(
@@ -42,6 +45,7 @@ class LabourRepository {
           workerCode: Value(workerCode?.trim()),
           trade: Value(trade?.trim()),
           dailyRate: Value(dailyRate),
+          overtimeRate: Value(overtimeRate),
         ),
       );
 
@@ -59,6 +63,7 @@ class LabourRepository {
     required int projectId,
     required DateTime date,
     required AttendanceStatus status,
+    double overtimeHours = 0.0,
   }) =>
       _labourDao.upsertAttendance(
         AttendanceCompanion.insert(
@@ -66,6 +71,7 @@ class LabourRepository {
           projectId: projectId,
           date: DateTime(date.year, date.month, date.day, 12), // noon, no TZ drift
           status: status,
+          overtimeHours: Value(overtimeHours),
         ),
       );
 
@@ -74,6 +80,7 @@ class LabourRepository {
     required int projectId,
     required DateTime date,
     required Map<int, AttendanceStatus> workerStatuses,
+    Map<int, double> overtimeHours = const {},
   }) async {
     final noonDate = DateTime(date.year, date.month, date.day, 12);
     final entries = workerStatuses.entries.map((e) {
@@ -82,6 +89,7 @@ class LabourRepository {
         projectId: projectId,
         date: noonDate,
         status: e.value,
+        overtimeHours: Value(overtimeHours[e.key] ?? 0.0),
       );
     }).toList();
     await _labourDao.saveBatchAttendance(entries);

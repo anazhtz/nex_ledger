@@ -387,7 +387,7 @@ class _ClientReceiptFormScreenState
                                   labelText: 'Payment Mode *',
                                   prefixIcon: Icon(Icons.payment_outlined),
                                 ),
-                                items: PaymentMode.values
+                                items: kSelectablePaymentModes
                                     .map((m) => DropdownMenuItem(
                                           value: m,
                                           child: Text(m.displayName),

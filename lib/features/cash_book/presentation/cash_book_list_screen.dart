@@ -67,22 +67,30 @@ class CashBookListScreen extends ConsumerWidget {
                   children: [
                     OutlinedButton.icon(
                       onPressed: () async {
-                        final txns = await ref.read(cashBookListProvider.future);
-                        final path = await ExcelExportService.exportCashBook(transactions: txns);
+                        final txns =
+                            await ref.read(cashBookListProvider.future);
+                        final path = await ExcelExportService.exportCashBook(
+                            transactions: txns);
                         if (path != null && context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Cash Book exported to Excel: $path'),
+                              content:
+                                  Text('Cash Book exported to Excel: $path'),
                               backgroundColor: const Color(0xFF059669),
                             ),
                           );
                         }
                       },
-                      icon: const Icon(Icons.table_chart_rounded, size: 18, color: Color(0xFF059669)),
-                      label: const Text('Export Excel (.xlsx)', style: TextStyle(color: Color(0xFF059669), fontWeight: FontWeight.bold)),
+                      icon: const Icon(Icons.table_chart_rounded,
+                          size: 18, color: Color(0xFF059669)),
+                      label: const Text('Export Excel (.xlsx)',
+                          style: TextStyle(
+                              color: Color(0xFF059669),
+                              fontWeight: FontWeight.bold)),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFF059669)),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
                       ),
                     ),
                     FilledButton.icon(
@@ -90,7 +98,8 @@ class CashBookListScreen extends ConsumerWidget {
                       icon: const Icon(Icons.add_rounded, size: 18),
                       label: const Text('Add Entry'),
                       style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 14),
                       ),
                     ),
                   ],
@@ -287,7 +296,8 @@ class CashBookListScreen extends ConsumerWidget {
                               onPressed: () {
                                 PdfPreviewDialog.show(
                                   context: context,
-                                  title: 'Payment Voucher — #${tw.transaction.id}',
+                                  title:
+                                      'Payment Voucher — #${tw.transaction.id}',
                                   pdfBuilder: (format) =>
                                       PdfReceiptService.generatePaymentVoucher(
                                     transactionId: tw.transaction.id,
@@ -360,8 +370,7 @@ class CashBookListScreen extends ConsumerWidget {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style:
-                FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
             child: const Text('Delete Entry'),
           ),
         ],

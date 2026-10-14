@@ -22,8 +22,7 @@ final projectPnlProvider =
 });
 
 /// Consolidated P&L across all projects (stream provider).
-final consolidatedPnlProvider =
-    StreamProvider<List<ProjectPnl>>((ref) {
+final consolidatedPnlProvider = StreamProvider<List<ProjectPnl>>((ref) {
   return ref.watch(reportRepositoryProvider).watchConsolidatedPnl();
 });
 
@@ -49,8 +48,7 @@ final accountsPayableProvider =
           .watchConsolidatedPnl()
           .map((list) => list.fold<double>(0, (s, p) => s + p.accountsPayable));
   if (projectId != null) {
-    return (pnlStream as Stream<ProjectPnl>)
-        .map((pnl) => pnl.accountsPayable);
+    return (pnlStream as Stream<ProjectPnl>).map((pnl) => pnl.accountsPayable);
   }
   return pnlStream as Stream<double>;
 });
@@ -69,8 +67,7 @@ final selectedDayBookDateProvider =
     StateProvider<DateTime>((ref) => DateTime.now());
 
 /// Day-book bank account filter provider.
-final selectedDayBookBankAccountIdProvider =
-    StateProvider<int?>((ref) => null);
+final selectedDayBookBankAccountIdProvider = StateProvider<int?>((ref) => null);
 
 /// Reactive day-book stream provider.
 final dayBookReportProvider = StreamProvider<DayBookReport>((ref) {

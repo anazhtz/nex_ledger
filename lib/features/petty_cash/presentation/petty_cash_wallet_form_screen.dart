@@ -81,9 +81,8 @@ class _PettyCashWalletFormScreenState
           assignedProjectId: _selectedProjectId,
           maxFloatLimit: limit,
           isActive: _isActive,
-          notes: _notesCtrl.text.trim().isNotEmpty
-              ? _notesCtrl.text.trim()
-              : null,
+          notes:
+              _notesCtrl.text.trim().isNotEmpty ? _notesCtrl.text.trim() : null,
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -103,9 +102,8 @@ class _PettyCashWalletFormScreenState
         assignedProjectId: _selectedProjectId,
         maxFloatLimit: limit,
         isActive: _isActive,
-        notes: _notesCtrl.text.trim().isNotEmpty
-            ? _notesCtrl.text.trim()
-            : null,
+        notes:
+            _notesCtrl.text.trim().isNotEmpty ? _notesCtrl.text.trim() : null,
       );
 
       if (mounted) {
@@ -121,8 +119,7 @@ class _PettyCashWalletFormScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Error: $e'),
-              backgroundColor: Colors.red.shade700),
+              content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
         );
       }
     } finally {
@@ -281,7 +278,8 @@ class _PettyCashWalletFormScreenState
                                   labelText: 'Max Approved Float Limit (₹) *',
                                   hintText: '50000',
                                   prefixText: '₹ ',
-                                  helperText: 'Maximum cash advance allowed in pocket at any time',
+                                  helperText:
+                                      'Maximum cash advance allowed in pocket at any time',
                                 ),
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
@@ -298,8 +296,7 @@ class _PettyCashWalletFormScreenState
                                 title: Text('Wallet Active',
                                     style: TextStyle(fontSize: 13.sp)),
                                 value: _isActive,
-                                onChanged: (v) =>
-                                    setState(() => _isActive = v),
+                                onChanged: (v) => setState(() => _isActive = v),
                                 contentPadding: EdgeInsets.zero,
                                 dense: true,
                               ),
@@ -314,7 +311,8 @@ class _PettyCashWalletFormScreenState
                           maxLines: 2,
                           decoration: const InputDecoration(
                             labelText: 'Notes / Remarks',
-                            hintText: 'e.g. Handles civil works, concrete pour overtime food & water supplies',
+                            hintText:
+                                'e.g. Handles civil works, concrete pour overtime food & water supplies',
                             prefixIcon: Icon(Icons.notes_outlined),
                           ),
                         ),

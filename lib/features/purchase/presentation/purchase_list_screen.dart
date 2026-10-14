@@ -246,6 +246,9 @@ class PurchaseListScreen extends ConsumerWidget {
                                 ),
                             ],
                           ),
+                          // Clicking the item opens the bill for editing.
+                          onTap: () =>
+                              context.go('/purchases/${pd.purchase.id}/edit'),
                         ),
                         DataCell(
                           pd.purchase.isAdvanceStock
@@ -285,9 +288,12 @@ class PurchaseListScreen extends ConsumerWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit_outlined, size: 17),
-                                  tooltip: 'Edit Bill',
+                                TextButton.icon(
+                                  icon: const Icon(Icons.edit_outlined, size: 15),
+                                  label: const Text('Edit'),
+                                  style: TextButton.styleFrom(
+                                    visualDensity: VisualDensity.compact,
+                                  ),
                                   onPressed: () => context
                                       .go('/purchases/${pd.purchase.id}/edit'),
                                 ),
@@ -1213,7 +1219,7 @@ class _MarkPaidDialogState extends ConsumerState<_MarkPaidDialog> {
               items: [
                 const DropdownMenuItem(
                     value: null, child: Text('— Select Mode —', overflow: TextOverflow.ellipsis)),
-                ...PaymentMode.values.map(
+                ...kSelectablePaymentModes.map(
                   (m) => DropdownMenuItem(
                       value: m, child: Text(m.displayName, overflow: TextOverflow.ellipsis)),
                 ),

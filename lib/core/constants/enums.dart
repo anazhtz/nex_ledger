@@ -254,13 +254,26 @@ const List<WorkOrderTradePreset> kStandardWorkOrderTrades = [
   WorkOrderTradePreset(name: 'General Subcontract', defaultUnit: 'Lump sum', description: 'Custom contract / specialized civil task'),
 ];
 
+/// Payment modes offered to users: Cash or Bank (cheque / online / transfer
+/// are all "Bank"). [PaymentMode.cheque] and [PaymentMode.online] stay in the
+/// enum only so records saved by older versions still load correctly.
+const List<PaymentMode> kSelectablePaymentModes = [
+  PaymentMode.cash,
+  PaymentMode.bank,
+];
+
 extension PaymentModeX on PaymentMode {
   String get displayName => switch (this) {
         PaymentMode.cash => 'Cash',
-        PaymentMode.bank => 'Bank Transfer',
-        PaymentMode.cheque => 'Cheque',
-        PaymentMode.online => 'Online',
+        PaymentMode.bank => 'Bank',
+        PaymentMode.cheque => 'Bank (Cheque)',
+        PaymentMode.online => 'Bank (Online)',
       };
+
+  /// Maps legacy modes onto the two selectable ones, so a dropdown that only
+  /// lists [kSelectablePaymentModes] never receives an unknown value.
+  PaymentMode get normalized =>
+      this == PaymentMode.cash ? PaymentMode.cash : PaymentMode.bank;
 }
 
 extension PaymentStatusX on PaymentStatus {

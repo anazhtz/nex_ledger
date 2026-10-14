@@ -80,12 +80,11 @@ class _SubcontractPaymentFormScreenState
     final accountsWithBalances =
         ref.read(bankAccountsWithBalancesProvider).asData?.value;
     if (accountsWithBalances != null && accountsWithBalances.isNotEmpty) {
-      final targetAcc = accountsWithBalances
-          .cast<BankAccountWithBalance?>()
-          .firstWhere(
-            (a) => a?.account.id == _selectedBankAccountId,
-            orElse: () => null,
-          );
+      final targetAcc =
+          accountsWithBalances.cast<BankAccountWithBalance?>().firstWhere(
+                (a) => a?.account.id == _selectedBankAccountId,
+                orElse: () => null,
+              );
       final currentBal = targetAcc != null
           ? targetAcc.currentBalance
           : (ref.read(liquiditySummaryProvider).asData?.value.totalLiquidity ??
@@ -97,7 +96,8 @@ class _SubcontractPaymentFormScreenState
           builder: (ctx) => AlertDialog(
             title: Row(
               children: [
-                Icon(Icons.warning_amber_rounded, color: Colors.orange.shade800),
+                Icon(Icons.warning_amber_rounded,
+                    color: Colors.orange.shade800),
                 const SizedBox(width: 8),
                 const Text('Negative Balance Warning'),
               ],
@@ -152,7 +152,8 @@ class _SubcontractPaymentFormScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
+          SnackBar(
+              content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
         );
       }
     } finally {
@@ -172,7 +173,8 @@ class _SubcontractPaymentFormScreenState
       bindings: {
         const SingleActivator(LogicalKeyboardKey.enter, control: true): _submit,
         const SingleActivator(LogicalKeyboardKey.enter, meta: true): _submit,
-        const SingleActivator(LogicalKeyboardKey.escape): () => context.go('/subcontracts'),
+        const SingleActivator(LogicalKeyboardKey.escape): () =>
+            context.go('/subcontracts'),
       },
       child: Scaffold(
         backgroundColor: theme.colorScheme.surfaceContainerLowest,
@@ -230,14 +232,16 @@ class _SubcontractPaymentFormScreenState
 
                         // ─── Subcontractor & Project ─────────────────────────
                         subsAsync.when(
-                          loading: () => const Center(
-                              child: LinearProgressIndicator()),
-                          error: (e, _) => Text('Error loading contractors: $e'),
+                          loading: () =>
+                              const Center(child: LinearProgressIndicator()),
+                          error: (e, _) =>
+                              Text('Error loading contractors: $e'),
                           data: (subs) => DropdownButtonFormField<int>(
                             isExpanded: true,
-                            value: subs.any((s) => s.id == _selectedSubcontractor)
-                                ? _selectedSubcontractor
-                                : null,
+                            value:
+                                subs.any((s) => s.id == _selectedSubcontractor)
+                                    ? _selectedSubcontractor
+                                    : null,
                             decoration: const InputDecoration(
                               labelText: 'Subcontractor / Contractor Gang *',
                               prefixIcon: Icon(Icons.person_outline),
@@ -268,9 +272,11 @@ class _SubcontractPaymentFormScreenState
                               child: projectsAsync.when(
                                 loading: () => const SizedBox.shrink(),
                                 error: (_, __) => const SizedBox.shrink(),
-                                data: (projects) => DropdownButtonFormField<int>(
+                                data: (projects) =>
+                                    DropdownButtonFormField<int>(
                                   isExpanded: true,
-                                  value: projects.any((p) => p.id == _selectedProject)
+                                  value: projects
+                                          .any((p) => p.id == _selectedProject)
                                       ? _selectedProject
                                       : null,
                                   decoration: const InputDecoration(
@@ -281,7 +287,8 @@ class _SubcontractPaymentFormScreenState
                                       .map((p) => DropdownMenuItem(
                                             value: p.id,
                                             child: Text('${p.code} — ${p.name}',
-                                                overflow: TextOverflow.ellipsis),
+                                                overflow:
+                                                    TextOverflow.ellipsis),
                                           ))
                                       .toList(),
                                   onChanged: (v) =>
@@ -313,7 +320,8 @@ class _SubcontractPaymentFormScreenState
                                     isExpanded: true,
                                     decoration: const InputDecoration(
                                       labelText: 'Linked Work Order (Optional)',
-                                      prefixIcon: Icon(Icons.assignment_outlined),
+                                      prefixIcon:
+                                          Icon(Icons.assignment_outlined),
                                     ),
                                     items: [
                                       const DropdownMenuItem(
@@ -322,16 +330,18 @@ class _SubcontractPaymentFormScreenState
                                             'General Running Advance (All Orders)',
                                             overflow: TextOverflow.ellipsis),
                                       ),
-                                      ...filteredWos.map((w) => DropdownMenuItem(
-                                            value: w.workOrder.id,
-                                            child: Text(
-                                              '${w.workOrder.orderNumber}: ${w.workOrder.title}',
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          )),
+                                      ...filteredWos
+                                          .map((w) => DropdownMenuItem(
+                                                value: w.workOrder.id,
+                                                child: Text(
+                                                  '${w.workOrder.orderNumber}: ${w.workOrder.title}',
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              )),
                                     ],
-                                    onChanged: (v) =>
-                                        setState(() => _selectedWorkOrderId = v),
+                                    onChanged: (v) => setState(
+                                        () => _selectedWorkOrderId = v),
                                   );
                                 },
                               ),
@@ -394,11 +404,14 @@ class _SubcontractPaymentFormScreenState
                                   prefixText: '₹ ',
                                   prefixIcon: Icon(Icons.currency_rupee),
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(
-                                    decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
                                 validator: (v) {
-                                  if (v == null || v.trim().isEmpty) return 'Required';
-                                  final num = double.tryParse(v.replaceAll(',', ''));
+                                  if (v == null || v.trim().isEmpty)
+                                    return 'Required';
+                                  final num =
+                                      double.tryParse(v.replaceAll(',', ''));
                                   if (num == null || num <= 0) return 'Invalid';
                                   return null;
                                 },
@@ -411,14 +424,16 @@ class _SubcontractPaymentFormScreenState
                                 child: InputDecorator(
                                   decoration: const InputDecoration(
                                     labelText: 'Payment Date *',
-                                    prefixIcon: Icon(Icons.calendar_today_outlined),
+                                    prefixIcon:
+                                        Icon(Icons.calendar_today_outlined),
                                   ),
                                   child: Text(
                                     '${_date.day.toString().padLeft(2, '0')}/'
                                     '${_date.month.toString().padLeft(2, '0')}/'
                                     '${_date.year}',
                                     style: TextStyle(
-                                        fontSize: 13.sp, fontWeight: FontWeight.w500),
+                                        fontSize: 13.sp,
+                                        fontWeight: FontWeight.w500),
                                   ),
                                 ),
                               ),
@@ -437,14 +452,15 @@ class _SubcontractPaymentFormScreenState
                                   labelText: 'Payment Mode *',
                                   prefixIcon: Icon(Icons.payment_outlined),
                                 ),
-                                items: PaymentMode.values
+                                items: kSelectablePaymentModes
                                     .map((m) => DropdownMenuItem(
                                           value: m,
                                           child: Text(m.displayName),
                                         ))
                                     .toList(),
                                 onChanged: (v) {
-                                  if (v != null) setState(() => _paymentMode = v);
+                                  if (v != null)
+                                    setState(() => _paymentMode = v);
                                 },
                               ),
                             ),
@@ -454,8 +470,10 @@ class _SubcontractPaymentFormScreenState
                                 loading: () => const SizedBox.shrink(),
                                 error: (_, __) => const SizedBox.shrink(),
                                 data: (accounts) {
-                                  final selectedAccountValue = accounts
-                                          .any((a) => a.account.id == _selectedBankAccountId)
+                                  final selectedAccountValue = accounts.any(
+                                          (a) =>
+                                              a.account.id ==
+                                              _selectedBankAccountId)
                                       ? _selectedBankAccountId
                                       : (accounts.isNotEmpty
                                           ? accounts.first.account.id
@@ -466,7 +484,8 @@ class _SubcontractPaymentFormScreenState
                                     isExpanded: true,
                                     decoration: const InputDecoration(
                                       labelText: 'Paid From Account',
-                                      prefixIcon: Icon(Icons.account_balance_outlined),
+                                      prefixIcon:
+                                          Icon(Icons.account_balance_outlined),
                                     ),
                                     items: accounts
                                         .map((a) => DropdownMenuItem(
@@ -477,8 +496,19 @@ class _SubcontractPaymentFormScreenState
                                               ),
                                             ))
                                         .toList(),
-                                    onChanged: (v) =>
-                                        setState(() => _selectedBankAccountId = v),
+                                    onChanged: (v) => setState(() {
+                                      _selectedBankAccountId = v;
+                                      // Keep Payment Mode in step with the chosen account.
+                                      final picked = accounts
+                                          .where((a) => a.account.id == v)
+                                          .firstOrNull;
+                                      if (picked != null) {
+                                        _paymentMode =
+                                            picked.account.isCashAccount
+                                                ? PaymentMode.cash
+                                                : PaymentMode.bank;
+                                      }
+                                    }),
                                   );
                                 },
                               ),

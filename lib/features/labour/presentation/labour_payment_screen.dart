@@ -6,6 +6,7 @@ import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
+import 'package:nex_ledger/core/utils/wage_calculator.dart';
 import 'package:nex_ledger/core/utils/pdf_receipt_service.dart';
 import 'package:nex_ledger/features/bank_accounts/data/bank_account_repository.dart';
 import 'package:nex_ledger/features/bank_accounts/providers/bank_account_providers.dart';
@@ -33,6 +34,10 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
   bool _loadingSummary = false;
   bool _paying = false;
 
+  /// Date the money was actually paid (saved on the transaction and wage slip).
+  /// The From/To range above is only a label for the period the payment covers.
+  DateTime _paymentDate = DateTime.now();
+
   PaymentMode? _paymentMode;
   int? _selectedBankAccountId;
   final _narrationCtrl = TextEditingController();
@@ -53,12 +58,13 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
     if (_selectedWorker == null || _selectedProject == null) return;
     setState(() => _loadingSummary = true);
     try {
-      final summary = await ref.read(labourRepositoryProvider).getPaymentSummary(
-            _selectedWorker!,
-            _selectedProject!,
-            _from,
-            _to,
-          );
+      final summary =
+          await ref.read(labourRepositoryProvider).getPaymentSummary(
+                _selectedWorker!,
+                _selectedProject!,
+                _from,
+                _to,
+              );
       setState(() => _summary = summary);
     } catch (e) {
       if (mounted) {
@@ -72,7 +78,9 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
   }
 
   Future<void> _recordPayment() async {
-    if (_summary == null || _selectedProject == null || _selectedWorker == null) {
+    if (_summary == null ||
+        _selectedProject == null ||
+        _selectedWorker == null) {
       return;
     }
 
@@ -88,12 +96,11 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
     final accountsWithBalances =
         ref.read(bankAccountsWithBalancesProvider).asData?.value;
     if (accountsWithBalances != null && accountsWithBalances.isNotEmpty) {
-      final targetAcc = accountsWithBalances
-          .cast<BankAccountWithBalance?>()
-          .firstWhere(
-            (a) => a?.account.id == _selectedBankAccountId,
-            orElse: () => null,
-          );
+      final targetAcc =
+          accountsWithBalances.cast<BankAccountWithBalance?>().firstWhere(
+                (a) => a?.account.id == _selectedBankAccountId,
+                orElse: () => null,
+              );
       final currentBal = targetAcc != null
           ? targetAcc.currentBalance
           : (ref.read(liquiditySummaryProvider).asData?.value.totalLiquidity ??
@@ -144,7 +151,7 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
       await ref.read(labourRepositoryProvider).recordPayment(
             workerId: workerId,
             projectId: projectId,
-            date: DateTime.now(),
+            date: _paymentDate,
             amount: currentAmount,
             paymentMode: _paymentMode ?? PaymentMode.cash,
             bankAccountId: _selectedBankAccountId,
@@ -210,11 +217,12 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
         worker: worker,
         project: project,
         amountPaid: amountPaid,
-        paymentDate: DateTime.now(),
+        paymentDate: _paymentDate,
         paymentMode: _paymentMode ?? PaymentMode.cash,
         bankAccountName: bankAcc,
         narration: _narrationCtrl.text.isNotEmpty ? _narrationCtrl.text : null,
         totalEffectiveDaysWorked: summary.totalDaysWorked,
+        totalOvertimeHours: summary.totalOvertimeHours,
         totalGrossWagesEarned: summary.totalEarnedWages,
         totalPaymentsIssued: summary.totalPaymentsPaid + amountPaid,
         netBalanceDueRemaining: (summary.amountDue - amountPaid) > 0
@@ -243,6 +251,16 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
     }
   }
 
+  Future<void> _pickPaymentDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _paymentDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+    );
+    if (picked != null) setState(() => _paymentDate = picked);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -252,9 +270,12 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
 
     return CallbackShortcuts(
       bindings: {
-        const SingleActivator(LogicalKeyboardKey.enter, control: true): _recordPayment,
-        const SingleActivator(LogicalKeyboardKey.enter, meta: true): _recordPayment,
-        const SingleActivator(LogicalKeyboardKey.escape): () => context.go('/labour/attendance'),
+        const SingleActivator(LogicalKeyboardKey.enter, control: true):
+            _recordPayment,
+        const SingleActivator(LogicalKeyboardKey.enter, meta: true):
+            _recordPayment,
+        const SingleActivator(LogicalKeyboardKey.escape): () =>
+            context.go('/labour/attendance'),
       },
       child: Focus(
         autofocus: true,
@@ -296,7 +317,8 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                 loading: () => const LinearProgressIndicator(),
                                 error: (_, __) => const SizedBox.shrink(),
                                 data: (projects) {
-                                  final globalId = ref.watch(selectedProjectIdProvider);
+                                  final globalId =
+                                      ref.watch(selectedProjectIdProvider);
                                   return _buildProjectSelector(
                                       projects, globalId, theme);
                                 },
@@ -307,13 +329,15 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                               workersAsync.when(
                                 loading: () => const LinearProgressIndicator(),
                                 error: (_, __) => const SizedBox.shrink(),
-                                data: (workers) => DropdownButtonFormField<int?>(
+                                data: (workers) =>
+                                    DropdownButtonFormField<int?>(
                                   value: _selectedWorker,
-                                  decoration:
-                                      const InputDecoration(labelText: 'Worker'),
+                                  decoration: const InputDecoration(
+                                      labelText: 'Worker'),
                                   items: [
                                     const DropdownMenuItem(
-                                        value: null, child: Text('Select Worker')),
+                                        value: null,
+                                        child: Text('Select Worker')),
                                     ...workers.map((w) => DropdownMenuItem(
                                           value: w.id,
                                           child: Text(
@@ -341,7 +365,8 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                               Icons.calendar_today_outlined,
                                               size: 16),
                                         ),
-                                        child: Text(DateFormatter.format(_from)),
+                                        child:
+                                            Text(DateFormatter.format(_from)),
                                       ),
                                     ),
                                   ),
@@ -380,48 +405,79 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                 const SizedBox(height: 16),
                                 Text('All-Time Running Balance Summary',
                                     style: theme.textTheme.titleMedium
-                                        ?.copyWith(fontWeight: FontWeight.bold)),
+                                        ?.copyWith(
+                                            fontWeight: FontWeight.bold)),
                                 const SizedBox(height: 12),
                                 _SummaryRow(
-                                    label: 'Worker Name', value: _summary!.worker.name),
+                                    label: 'Worker Name',
+                                    value: _summary!.worker.name),
                                 _SummaryRow(
                                     label: 'Daily Wage Rate',
-                                    value: '${CurrencyFormatter.format(_summary!.worker.dailyRate)} / day'),
+                                    value:
+                                        '${CurrencyFormatter.format(_summary!.worker.dailyRate)} / day'),
                                 _SummaryRow(
                                     label: 'Total Days Worked (All-Time)',
-                                    value: '${_summary!.totalDaysWorked.toStringAsFixed(1)} days'),
+                                    value:
+                                        '${_summary!.totalDaysWorked.toStringAsFixed(1)} days'),
+                                if (_summary!.totalOvertimeHours > 0)
+                                  _SummaryRow(
+                                      label: 'Overtime Worked (All-Time)',
+                                      value:
+                                          '${formatHours(_summary!.totalOvertimeHours)} hrs = ${CurrencyFormatter.format(_summary!.totalOvertimeWages)}'),
                                 _SummaryRow(
-                                    label: 'Gross Earned Wages (All-Time)',
-                                    value: CurrencyFormatter.format(_summary!.totalEarnedWages)),
+                                    label: 'Gross Earned Wages (All-Time, incl. OT)',
+                                    value: CurrencyFormatter.format(
+                                        _summary!.totalEarnedWages)),
                                 _SummaryRow(
-                                    label: 'Less: Total Payments Disbursed (All-Time)',
-                                    value: '-${CurrencyFormatter.format(_summary!.totalPaymentsPaid)}',
+                                    label:
+                                        'Less: Total Payments Disbursed (All-Time)',
+                                    value:
+                                        '-${CurrencyFormatter.format(_summary!.totalPaymentsPaid)}',
                                     valueColor: const Color(0xFFEF4444)),
                                 const Divider(height: 24),
                                 _SummaryRow(
                                   label: 'Net Outstanding Wage Balance Due',
-                                  value: CurrencyFormatter.format(_summary!.amountDue),
+                                  value: CurrencyFormatter.format(
+                                      _summary!.amountDue),
                                   bold: true,
                                   valueColor: const Color(0xFF1F5FBF),
                                 ),
                                 const SizedBox(height: 16),
 
+                                // Payment date
+                                InkWell(
+                                  onTap: _pickPaymentDate,
+                                  child: InputDecorator(
+                                    decoration: const InputDecoration(
+                                      labelText: 'Payment Date',
+                                      suffixIcon: Icon(
+                                          Icons.calendar_today_outlined,
+                                          size: 16),
+                                    ),
+                                    child: Text(
+                                        DateFormatter.format(_paymentDate)),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+
                                 // Payment mode
                                 DropdownButtonFormField<PaymentMode?>(
                                   value: _paymentMode,
-                                  decoration:
-                                      const InputDecoration(labelText: 'Payment Mode'),
+                                  decoration: const InputDecoration(
+                                      labelText: 'Payment Mode'),
                                   items: [
                                     const DropdownMenuItem(
-                                        value: null, child: Text('— Select Mode —')),
-                                    ...PaymentMode.values.map(
+                                        value: null,
+                                        child: Text('— Select Mode —')),
+                                    ...kSelectablePaymentModes.map(
                                       (m) => DropdownMenuItem(
                                         value: m,
                                         child: Text(m.displayName),
                                       ),
                                     ),
                                   ],
-                                  onChanged: (v) => setState(() => _paymentMode = v),
+                                  onChanged: (v) =>
+                                      setState(() => _paymentMode = v),
                                 ),
                                 const SizedBox(height: 12),
 
@@ -430,7 +486,8 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                   loading: () => const SizedBox.shrink(),
                                   error: (_, __) => const SizedBox.shrink(),
                                   data: (accounts) {
-                                    if (accounts.isEmpty) return const SizedBox.shrink();
+                                    if (accounts.isEmpty)
+                                      return const SizedBox.shrink();
                                     return Column(
                                       children: [
                                         DropdownButtonFormField<int?>(
@@ -438,12 +495,15 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                           isExpanded: true,
                                           decoration: const InputDecoration(
                                             labelText: 'Paid From (Account)',
-                                            prefixIcon: Icon(Icons.account_balance_outlined),
+                                            prefixIcon: Icon(
+                                                Icons.account_balance_outlined),
                                           ),
                                           items: [
                                             const DropdownMenuItem(
                                               value: null,
-                                              child: Text('— Auto (Default) —', overflow: TextOverflow.ellipsis),
+                                              child: Text('— Auto (Default) —',
+                                                  overflow:
+                                                      TextOverflow.ellipsis),
                                             ),
                                             ...accounts.map(
                                               (a) => DropdownMenuItem(
@@ -453,7 +513,8 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                                     Expanded(
                                                       child: Text(
                                                         '${a.account.accountName} (${a.account.isCashAccount ? 'Cash' : 'Bank'})',
-                                                        overflow: TextOverflow.ellipsis,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                                       ),
                                                     ),
                                                     const SizedBox(width: 4),
@@ -461,10 +522,14 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                                       '• ${CurrencyFormatter.format(a.currentBalance)}',
                                                       style: TextStyle(
                                                         fontSize: 11,
-                                                        color: a.currentBalance < 0
-                                                            ? Colors.red.shade700
-                                                            : Colors.green.shade700,
-                                                        fontWeight: FontWeight.w600,
+                                                        color:
+                                                            a.currentBalance < 0
+                                                                ? Colors.red
+                                                                    .shade700
+                                                                : Colors.green
+                                                                    .shade700,
+                                                        fontWeight:
+                                                            FontWeight.w600,
                                                       ),
                                                     ),
                                                   ],
@@ -472,8 +537,19 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                               ),
                                             ),
                                           ],
-                                          onChanged: (v) => setState(
-                                              () => _selectedBankAccountId = v),
+                                          onChanged: (v) => setState(() {
+                                            _selectedBankAccountId = v;
+                                            // Keep Payment Mode in step with the chosen account.
+                                            final picked = accounts
+                                                .where((a) => a.account.id == v)
+                                                .firstOrNull;
+                                            if (picked != null) {
+                                              _paymentMode =
+                                                  picked.account.isCashAccount
+                                                      ? PaymentMode.cash
+                                                      : PaymentMode.bank;
+                                            }
+                                          }),
                                         ),
                                         const SizedBox(height: 12),
                                       ],
@@ -481,61 +557,65 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                   },
                                 ),
 
-                                 TextFormField(
-                                   controller: _narrationCtrl,
-                                   decoration:
-                                       const InputDecoration(labelText: 'Narration'),
-                                 ),
-                                 const SizedBox(height: 12),
+                                TextFormField(
+                                  controller: _narrationCtrl,
+                                  decoration: const InputDecoration(
+                                      labelText: 'Narration'),
+                                ),
+                                const SizedBox(height: 12),
 
-                                 // ─── Real-Time Project Labour Budget Warning ───
-                                 if (_selectedProject != null && _summary!.amountDue > 0)
-                                   BudgetWarningBanner(
-                                     projectId: _selectedProject,
-                                     costHead: BudgetCostHead.labour,
-                                     addedAmount: _summary!.amountDue,
-                                   ),
+                                // ─── Real-Time Project Labour Budget Warning ───
+                                if (_selectedProject != null &&
+                                    _summary!.amountDue > 0)
+                                  BudgetWarningBanner(
+                                    projectId: _selectedProject,
+                                    costHead: BudgetCostHead.labour,
+                                    addedAmount: _summary!.amountDue,
+                                  ),
 
-                                 const SizedBox(height: 16),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: FilledButton.icon(
-                                      onPressed: _paying || _summary!.amountDue <= 0
-                                          ? null
-                                          : _recordPayment,
-                                      icon: const Icon(Icons.payments_outlined),
-                                      label: _paying
-                                          ? const SizedBox(
-                                              width: 18,
-                                              height: 18,
-                                              child: CircularProgressIndicator(
-                                                  strokeWidth: 2),
-                                            )
-                                          : Text(
-                                              'Record Payment of ${CurrencyFormatter.format(_summary!.amountDue)}'),
-                                    ),
+                                const SizedBox(height: 16),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: FilledButton.icon(
+                                    onPressed:
+                                        _paying || _summary!.amountDue <= 0
+                                            ? null
+                                            : _recordPayment,
+                                    icon: const Icon(Icons.payments_outlined),
+                                    label: _paying
+                                        ? const SizedBox(
+                                            width: 18,
+                                            height: 18,
+                                            child: CircularProgressIndicator(
+                                                strokeWidth: 2),
+                                          )
+                                        : Text(
+                                            'Record Payment of ${CurrencyFormatter.format(_summary!.amountDue)}'),
                                   ),
-                                  const SizedBox(height: 8),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: OutlinedButton.icon(
-                                      onPressed: _summary == null
-                                          ? null
-                                          : () => _printWageReceipt(
-                                                workerId: _selectedWorker!,
-                                                projectId: _selectedProject!,
-                                                amountPaid: _summary!.amountDue,
-                                                summary: _summary!,
-                                              ),
-                                      icon: const Icon(Icons.print_outlined, size: 18),
-                                      label: const Text('Preview / Print Wage Slip (PDF)'),
-                                    ),
+                                ),
+                                const SizedBox(height: 8),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton.icon(
+                                    onPressed: _summary == null
+                                        ? null
+                                        : () => _printWageReceipt(
+                                              workerId: _selectedWorker!,
+                                              projectId: _selectedProject!,
+                                              amountPaid: _summary!.amountDue,
+                                              summary: _summary!,
+                                            ),
+                                    icon: const Icon(Icons.print_outlined,
+                                        size: 18),
+                                    label: const Text(
+                                        'Preview / Print Wage Slip (PDF)'),
                                   ),
-                               ],
-                             ],
-                           ),
-                         ),
-                       ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -612,7 +692,8 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
       items: projects
           .map((p) => DropdownMenuItem(
                 value: p.id,
-                child: Text('${p.code} — ${p.name}', overflow: TextOverflow.ellipsis),
+                child: Text('${p.code} — ${p.name}',
+                    overflow: TextOverflow.ellipsis),
               ))
           .toList(),
       onChanged: (v) => setState(() => _selectedProject = v),

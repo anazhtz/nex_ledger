@@ -303,10 +303,9 @@ class ReportRepository {
           if (txn.expenseCategoryId == null) continue;
           final cat = catById[txn.expenseCategoryId!];
           if (cat == null) continue;
-          result
-              .putIfAbsent(cat.groupName, () => {})
-              .update(cat.subCategory, (v) => v + txn.amount,
-                  ifAbsent: () => txn.amount);
+          result.putIfAbsent(cat.groupName, () => {}).update(
+              cat.subCategory, (v) => v + txn.amount,
+              ifAbsent: () => txn.amount);
         }
         return result;
       },
@@ -318,8 +317,7 @@ class ReportRepository {
       watchProjectPnl(projectId).first;
 
   /// One-off read of consolidated P&L across all projects (e.g. for Excel exports).
-  Future<List<ProjectPnl>> getConsolidatedPnl() =>
-      watchConsolidatedPnl().first;
+  Future<List<ProjectPnl>> getConsolidatedPnl() => watchConsolidatedPnl().first;
 
   /// Watch deposit ledger for a project.
   Stream<List<DepositDetail>> watchDepositLedger(int projectId) =>
@@ -342,8 +340,10 @@ class ReportRepository {
     int? projectId,
     int? bankAccountId,
   }) {
-    final startOfDay = DateTime(selectedDate.year, selectedDate.month, selectedDate.day, 0, 0, 0);
-    final endOfDay = DateTime(selectedDate.year, selectedDate.month, selectedDate.day, 23, 59, 59, 999);
+    final startOfDay = DateTime(
+        selectedDate.year, selectedDate.month, selectedDate.day, 0, 0, 0);
+    final endOfDay = DateTime(selectedDate.year, selectedDate.month,
+        selectedDate.day, 23, 59, 59, 999);
 
     final rawTxnsStream = _txnDao.watchAllRawTransactions();
     final projectsStream = _projectDao.watchAllProjects();
@@ -380,9 +380,11 @@ class ReportRepository {
 
         // Filter transactions for this day
         final dayTxns = allTxns.where((t) {
-          if (t.date.isBefore(startOfDay) || t.date.isAfter(endOfDay)) return false;
+          if (t.date.isBefore(startOfDay) || t.date.isAfter(endOfDay))
+            return false;
           if (projectId != null && t.projectId != projectId) return false;
-          if (bankAccountId != null && t.bankAccountId != bankAccountId) return false;
+          if (bankAccountId != null && t.bankAccountId != bankAccountId)
+            return false;
           return true;
         }).toList();
 

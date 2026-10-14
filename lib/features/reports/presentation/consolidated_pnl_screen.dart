@@ -35,8 +35,8 @@ class ConsolidatedPnlScreen extends ConsumerWidget {
                     ),
                     Text(
                       'All projects + Admin Overhead combined',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant),
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -44,11 +44,13 @@ class ConsolidatedPnlScreen extends ConsumerWidget {
                 FilledButton.icon(
                   onPressed: () async {
                     final pnls = await ref.read(consolidatedPnlProvider.future);
-                    final path = await ExcelExportService.exportPnlReport(projectPnls: pnls);
+                    final path = await ExcelExportService.exportPnlReport(
+                        projectPnls: pnls);
                     if (path != null && context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Consolidated P&L exported to Excel: $path'),
+                          content:
+                              Text('Consolidated P&L exported to Excel: $path'),
                           backgroundColor: const Color(0xFF059669),
                         ),
                       );
@@ -65,8 +67,7 @@ class ConsolidatedPnlScreen extends ConsumerWidget {
             const SizedBox(height: 24),
             Expanded(
               child: pnlAsync.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Center(child: Text('Error: $e')),
                 data: (pnls) {
                   if (pnls.isEmpty) {
@@ -94,8 +95,10 @@ class ConsolidatedPnlScreen extends ConsumerWidget {
                     totalDepositsHeld += p.depositsHeld;
                     totalAccountsPayable += p.accountsPayable;
                   }
-                  final totalNet =
-                      totalIncome - totalExpenses - totalPurchases - totalLabour;
+                  final totalNet = totalIncome -
+                      totalExpenses -
+                      totalPurchases -
+                      totalLabour;
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,21 +122,13 @@ class ConsolidatedPnlScreen extends ConsumerWidget {
                                 alignment: WrapAlignment.start,
                                 crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
-                                  _TotalChip(
-                                      'Income',
-                                      totalIncome,
+                                  _TotalChip('Income', totalIncome,
                                       Colors.green.shade700),
-                                  _TotalChip(
-                                      'Expenses',
-                                      totalExpenses,
+                                  _TotalChip('Expenses', totalExpenses,
                                       Colors.red.shade700),
-                                  _TotalChip(
-                                      'Purchases',
-                                      totalPurchases,
+                                  _TotalChip('Purchases', totalPurchases,
                                       Colors.orange.shade700),
-                                  _TotalChip(
-                                      'Labour',
-                                      totalLabour,
+                                  _TotalChip('Labour', totalLabour,
                                       Colors.purple.shade700),
                                   stockAssetAsync.maybeWhen(
                                     data: (stock) => stock > 0
@@ -152,8 +147,7 @@ class ConsolidatedPnlScreen extends ConsumerWidget {
                                       color: totalNet >= 0
                                           ? Colors.green.shade50
                                           : Colors.red.shade50,
-                                      borderRadius:
-                                          BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
                                           color: totalNet >= 0
                                               ? Colors.green.shade200
@@ -198,22 +192,14 @@ class ConsolidatedPnlScreen extends ConsumerWidget {
                             DataColumn(label: Text('Code')),
                             DataColumn(label: Text('Project')),
                             DataColumn(label: Text('Type')),
+                            DataColumn(label: Text('Income'), numeric: true),
+                            DataColumn(label: Text('Expenses'), numeric: true),
+                            DataColumn(label: Text('Purchases'), numeric: true),
+                            DataColumn(label: Text('Labour'), numeric: true),
+                            DataColumn(label: Text('Net P&L'), numeric: true),
                             DataColumn(
-                                label: Text('Income'), numeric: true),
-                            DataColumn(
-                                label: Text('Expenses'), numeric: true),
-                            DataColumn(
-                                label: Text('Purchases'), numeric: true),
-                            DataColumn(
-                                label: Text('Labour'), numeric: true),
-                            DataColumn(
-                                label: Text('Net P&L'), numeric: true),
-                            DataColumn(
-                                label: Text('Deposit Held'),
-                                numeric: true),
-                            DataColumn(
-                                label: Text('Payable'),
-                                numeric: true),
+                                label: Text('Deposit Held'), numeric: true),
+                            DataColumn(label: Text('Payable'), numeric: true),
                           ],
                           rows: [
                             ...pnls.map((pnl) {
@@ -224,16 +210,15 @@ class ConsolidatedPnlScreen extends ConsumerWidget {
                                         fontWeight: FontWeight.w600))),
                                 DataCell(Text(pnl.project.name,
                                     overflow: TextOverflow.ellipsis)),
+                                DataCell(Text(pnl.project.type.displayName)),
                                 DataCell(
-                                    Text(pnl.project.type.displayName)),
+                                    Text(CurrencyFormatter.format(pnl.income))),
                                 DataCell(Text(
-                                    CurrencyFormatter.format(pnl.income))),
-                                DataCell(Text(CurrencyFormatter.format(
-                                    pnl.expenses))),
-                                DataCell(Text(CurrencyFormatter.format(
-                                    pnl.purchases))),
-                                DataCell(Text(CurrencyFormatter.format(
-                                    pnl.labourCosts))),
+                                    CurrencyFormatter.format(pnl.expenses))),
+                                DataCell(Text(
+                                    CurrencyFormatter.format(pnl.purchases))),
+                                DataCell(Text(
+                                    CurrencyFormatter.format(pnl.labourCosts))),
                                 DataCell(Text(
                                   CurrencyFormatter.format(pnl.netPnl),
                                   style: TextStyle(
@@ -246,8 +231,7 @@ class ConsolidatedPnlScreen extends ConsumerWidget {
                                 DataCell(Text(CurrencyFormatter.format(
                                     pnl.depositsHeld))),
                                 DataCell(Text(
-                                  CurrencyFormatter.format(
-                                      pnl.accountsPayable),
+                                  CurrencyFormatter.format(pnl.accountsPayable),
                                   style: pnl.accountsPayable > 0
                                       ? TextStyle(
                                           color: Colors.red.shade700,
@@ -300,8 +284,7 @@ class ConsolidatedPnlScreen extends ConsumerWidget {
                                   ),
                                 )),
                                 DataCell(Text(
-                                  CurrencyFormatter.format(
-                                      totalDepositsHeld),
+                                  CurrencyFormatter.format(totalDepositsHeld),
                                   style: const TextStyle(
                                       fontWeight: FontWeight.w700),
                                 )),
@@ -343,8 +326,7 @@ class _TotalChip extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: TextStyle(fontSize: 12, color: color)),
+        Text(label, style: TextStyle(fontSize: 12, color: color)),
         const SizedBox(height: 2),
         Text(
           CurrencyFormatter.format(value),

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:nex_ledger/core/utils/wage_calculator.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
@@ -39,6 +40,7 @@ class PdfReceiptService {
     required double totalGrossWagesEarned,
     required double totalPaymentsIssued,
     required double netBalanceDueRemaining,
+    double totalOvertimeHours = 0.0,
     String? firmName,
   }) async {
     final pdf = pw.Document(title: 'Wage Receipt - ${worker.name}');
@@ -160,6 +162,10 @@ class PdfReceiptService {
                           pw.Text(
                               'Daily Wage Rate: ${_formatInr(worker.dailyRate)} / day',
                               style: const pw.TextStyle(fontSize: 9)),
+                          if (totalOvertimeHours > 0)
+                            pw.Text(
+                                'Overtime Rate: ${_formatInr(worker.effectiveOvertimeRate)} / hour',
+                                style: const pw.TextStyle(fontSize: 9)),
                         ],
                       ),
                     ),
@@ -271,7 +277,9 @@ class PdfReceiptService {
                   ),
                   pw.TableRow(
                     children: [
-                      _td('${totalEffectiveDaysWorked.toStringAsFixed(1)} Days'),
+                      _td(totalOvertimeHours > 0
+                          ? '${totalEffectiveDaysWorked.toStringAsFixed(1)} Days + ${formatHours(totalOvertimeHours)} hrs OT'
+                          : '${totalEffectiveDaysWorked.toStringAsFixed(1)} Days'),
                       _td(_formatInr(totalGrossWagesEarned)),
                       _td(_formatInr(totalPaymentsIssued)),
                       _td(

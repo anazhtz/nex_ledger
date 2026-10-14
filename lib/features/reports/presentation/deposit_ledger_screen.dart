@@ -50,19 +50,21 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
                     ),
                     Text(
                       'Track deposits paid to Govt/clients (Assets) and deposits received from clients (Liabilities)',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant),
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                     ),
                   ],
                 );
                 final exportBtn = FilledButton.icon(
                   onPressed: () async {
                     final deposits = await ref.read(depositListProvider.future);
-                    final path = await ExcelExportService.exportDeposits(deposits: deposits);
+                    final path = await ExcelExportService.exportDeposits(
+                        deposits: deposits);
                     if (path != null && context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Deposit Ledger exported to Excel: $path'),
+                          content:
+                              Text('Deposit Ledger exported to Excel: $path'),
                           backgroundColor: const Color(0xFF059669),
                         ),
                       );
@@ -110,8 +112,7 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
                       const InputDecoration(labelText: 'Select Project'),
                   items: [
                     const DropdownMenuItem(
-                        value: null,
-                        child: Text('— Show all projects —')),
+                        value: null, child: Text('— Show all projects —')),
                     ...projects.map(
                       (p) => DropdownMenuItem(
                         value: p.id,
@@ -122,9 +123,7 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
                   ],
                   onChanged: (v) {
                     setState(() => _selectedProject = v);
-                    ref
-                        .read(depositProjectFilterProvider.notifier)
-                        .state = v;
+                    ref.read(depositProjectFilterProvider.notifier).state = v;
                   },
                 ),
               ),
@@ -134,11 +133,10 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
             Expanded(
               child: Consumer(
                 builder: (context, ref, _) {
-                  final depositsAsync =
-                      ref.watch(filteredDepositListProvider);
+                  final depositsAsync = ref.watch(filteredDepositListProvider);
                   return depositsAsync.when(
-                    loading: () => const Center(
-                        child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (e, _) => Center(child: Text('Error: $e')),
                     data: (deposits) {
                       double totalPaid = 0;
@@ -147,11 +145,13 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
                       double totalReceivedHeld = 0;
 
                       for (final d in deposits) {
-                        final isPaid = d.deposit.depositType == DepositType.paid;
+                        final isPaid =
+                            d.deposit.depositType == DepositType.paid;
                         final amount = d.transaction.amount;
                         final isHeld = d.deposit.status == DepositStatus.held ||
                             d.deposit.status == DepositStatus.partiallyAdjusted;
-                        final remaining = (amount - d.deposit.adjustedAmount).clamp(0.0, double.infinity);
+                        final remaining = (amount - d.deposit.adjustedAmount)
+                            .clamp(0.0, double.infinity);
 
                         if (isPaid) {
                           totalPaid += amount;
@@ -172,7 +172,8 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
                               final s1 = _SummaryCard(
                                 label: 'Deposits Paid to Govt (Asset)',
                                 value: totalPaid,
-                                subtitle: 'Held with Govt: ${CurrencyFormatter.format(totalPaidHeld)}',
+                                subtitle:
+                                    'Held with Govt: ${CurrencyFormatter.format(totalPaidHeld)}',
                                 color: Colors.blue.shade700,
                               );
                               final s2 = _SummaryCard(
@@ -184,7 +185,8 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
                               final s3 = _SummaryCard(
                                 label: 'Client Deposits Received (Liability)',
                                 value: totalReceived,
-                                subtitle: 'Liability Held: ${CurrencyFormatter.format(totalReceivedHeld)}',
+                                subtitle:
+                                    'Liability Held: ${CurrencyFormatter.format(totalReceivedHeld)}',
                                 color: Colors.orange.shade700,
                               );
 
@@ -227,17 +229,23 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
                                 DataColumn(label: Text('Narration')),
                               ],
                               rows: deposits.map((dd) {
-                                final isPaid = dd.deposit.depositType == DepositType.paid;
+                                final isPaid =
+                                    dd.deposit.depositType == DepositType.paid;
                                 return DataRow(cells: [
                                   DataCell(Text(DateFormatter.format(
                                       dd.transaction.date))),
                                   DataCell(Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 3),
                                     decoration: BoxDecoration(
-                                      color: isPaid ? Colors.blue.shade50 : Colors.orange.shade50,
+                                      color: isPaid
+                                          ? Colors.blue.shade50
+                                          : Colors.orange.shade50,
                                       borderRadius: BorderRadius.circular(4),
                                       border: Border.all(
-                                        color: isPaid ? Colors.blue.shade200 : Colors.orange.shade200,
+                                        color: isPaid
+                                            ? Colors.blue.shade200
+                                            : Colors.orange.shade200,
                                       ),
                                     ),
                                     child: Text(
@@ -245,7 +253,9 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
                                       style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w600,
-                                        color: isPaid ? Colors.blue.shade800 : Colors.orange.shade900,
+                                        color: isPaid
+                                            ? Colors.blue.shade800
+                                            : Colors.orange.shade900,
                                       ),
                                     ),
                                   )),
@@ -255,16 +265,17 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
                                     CurrencyFormatter.format(
                                         dd.transaction.amount),
                                     style: TextStyle(
-                                        color: isPaid ? Colors.blue.shade700 : Colors.orange.shade700,
+                                        color: isPaid
+                                            ? Colors.blue.shade700
+                                            : Colors.orange.shade700,
                                         fontWeight: FontWeight.w500),
                                   )),
-                                  DataCell(_StatusText(
-                                      status: dd.deposit.status)),
+                                  DataCell(
+                                      _StatusText(status: dd.deposit.status)),
                                   DataCell(Text(
-                                      dd.deposit.adjustmentReference ??
-                                          '—')),
-                                  DataCell(Text(
-                                      dd.transaction.narration ?? '—')),
+                                      dd.deposit.adjustmentReference ?? '—')),
+                                  DataCell(
+                                      Text(dd.transaction.narration ?? '—')),
                                 ]);
                               }).toList(),
                             ),

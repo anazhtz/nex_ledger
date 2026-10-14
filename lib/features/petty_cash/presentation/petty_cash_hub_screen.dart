@@ -48,7 +48,8 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
     );
   }
 
-  Future<void> _exportPettyCashVouchersToCsv(List<PettyCashVoucherDetail> vouchers) async {
+  Future<void> _exportPettyCashVouchersToCsv(
+      List<PettyCashVoucherDetail> vouchers) async {
     try {
       final buffer = StringBuffer();
       buffer.writeln(
@@ -78,10 +79,30 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Export failed: $e'), backgroundColor: Colors.red),
         );
       }
     }
+  }
+
+  void _showGuide(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('How does Petty Cash work?'),
+        content: SizedBox(
+          width: 640,
+          child: SingleChildScrollView(child: const _PettyCashGuideBody()),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -131,10 +152,19 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                   spacing: 8.w,
                   runSpacing: 8.h,
                   children: [
+                    TextButton.icon(
+                      onPressed: () => _showGuide(context),
+                      icon: Icon(Icons.help_outline_rounded, size: 16.sp),
+                      label: const Text('How it works'),
+                    ),
                     OutlinedButton.icon(
                       onPressed: () {
-                        final list = ref.read(allPettyCashVouchersProvider).valueOrNull ?? [];
-                        if (list.isNotEmpty) _exportPettyCashVouchersToCsv(list);
+                        final list = ref
+                                .read(allPettyCashVouchersProvider)
+                                .valueOrNull ??
+                            [];
+                        if (list.isNotEmpty)
+                          _exportPettyCashVouchersToCsv(list);
                       },
                       icon: Icon(Icons.file_download_outlined, size: 16.sp),
                       label: const Text('Export CSV Audit'),
@@ -146,7 +176,8 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                     ),
                     OutlinedButton.icon(
                       onPressed: () => _openDisburseDialog(isReturn: true),
-                      icon: Icon(Icons.arrow_back_rounded, size: 16.sp, color: const Color(0xFF059669)),
+                      icon: Icon(Icons.arrow_back_rounded,
+                          size: 16.sp, color: const Color(0xFF059669)),
                       label: const Text('Return Cash'),
                     ),
                     FilledButton.tonalIcon(
@@ -186,8 +217,12 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                 unselectedLabelColor: const Color(0xFF64748B),
                 indicatorColor: const Color(0xFF2563EB),
                 tabs: const [
-                  Tab(icon: Icon(Icons.wallet_outlined), text: 'Supervisor Cash Wallets'),
-                  Tab(icon: Icon(Icons.receipt_long_outlined), text: 'Daily Vouchers & Cash Ledger'),
+                  Tab(
+                      icon: Icon(Icons.wallet_outlined),
+                      text: 'Supervisor Cash Wallets'),
+                  Tab(
+                      icon: Icon(Icons.receipt_long_outlined),
+                      text: 'Daily Vouchers & Cash Ledger'),
                 ],
               ),
             ),
@@ -264,7 +299,8 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                   width: cardWidth,
                   child: _buildKpiCard(
                     title: 'Unspent Cash in Pockets',
-                    value: CurrencyFormatter.format(m.totalCashInSupervisorsPockets),
+                    value: CurrencyFormatter.format(
+                        m.totalCashInSupervisorsPockets),
                     subtitle: 'Running physical cash on sites',
                     icon: Icons.account_balance_wallet_rounded,
                     color: const Color(0xFFD97706),
@@ -367,7 +403,8 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                   hintText: 'Search supervisor name, phone, site...',
                   prefixIcon: Icon(Icons.search, size: 18.sp),
                   isDense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
                 ),
                 onChanged: (v) =>
                     ref.read(pettyCashSearchQueryProvider.notifier).state = v,
@@ -385,19 +422,40 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
             data: (wallets) {
               if (wallets.isEmpty) {
                 return Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.account_balance_wallet_outlined, size: 48.sp, color: const Color(0xFF94A3B8)),
-                      SizedBox(height: 12.h),
-                      Text('No supervisor wallets registered.',
-                          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: const Color(0xFF64748B))),
-                      SizedBox(height: 8.h),
-                      FilledButton.tonal(
-                        onPressed: () => context.go('/petty-cash/wallets/new'),
-                        child: const Text('+ Add First Supervisor Wallet'),
-                      ),
-                    ],
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.account_balance_wallet_outlined,
+                            size: 48.sp, color: const Color(0xFF94A3B8)),
+                        SizedBox(height: 12.h),
+                        Text('No supervisor wallets registered.',
+                            style: TextStyle(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF64748B))),
+                        SizedBox(height: 8.h),
+                        FilledButton.tonal(
+                          onPressed: () =>
+                              context.go('/petty-cash/wallets/new'),
+                          child: const Text('+ Add First Supervisor Wallet'),
+                        ),
+                        SizedBox(height: 16.h),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 640),
+                          child: Container(
+                            padding: EdgeInsets.all(14.r),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF0F9FF),
+                              borderRadius: BorderRadius.circular(12.r),
+                              border:
+                                  Border.all(color: const Color(0xFFBAE6FD)),
+                            ),
+                            child: const _PettyCashGuideBody(),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               }
@@ -416,11 +474,12 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                 ],
                 rows: wallets.map((w) {
                   final wallet = w.wallet;
-                  final balanceColor = w.currentUnspentCashBalance > wallet.maxFloatLimit
-                      ? const Color(0xFFDC2626)
-                      : (w.currentUnspentCashBalance > 0
-                          ? const Color(0xFF059669)
-                          : const Color(0xFF64748B));
+                  final balanceColor =
+                      w.currentUnspentCashBalance > wallet.maxFloatLimit
+                          ? const Color(0xFFDC2626)
+                          : (w.currentUnspentCashBalance > 0
+                              ? const Color(0xFF059669)
+                              : const Color(0xFF64748B));
 
                   return DataRow(
                     cells: [
@@ -430,9 +489,13 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(wallet.supervisorName,
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp)),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13.sp)),
                             Text(wallet.phone,
-                                style: TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B))),
+                                style: TextStyle(
+                                    fontSize: 11.sp,
+                                    color: const Color(0xFF64748B))),
                           ],
                         ),
                       ),
@@ -444,23 +507,38 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                           style: TextStyle(fontSize: 11.sp),
                         ),
                       ),
-                      DataCell(Text(CurrencyFormatter.format(wallet.maxFloatLimit),
-                          style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w500))),
-                      DataCell(Text(CurrencyFormatter.format(w.totalAdvancesReceived),
-                          style: TextStyle(fontSize: 12.sp, color: const Color(0xFF2563EB), fontWeight: FontWeight.w600))),
-                      DataCell(Text(CurrencyFormatter.format(w.totalExpensesClaimed),
-                          style: TextStyle(fontSize: 12.sp, color: const Color(0xFF059669), fontWeight: FontWeight.w600))),
-                      DataCell(Text(CurrencyFormatter.format(w.totalCashReturned),
-                          style: TextStyle(fontSize: 12.sp, color: const Color(0xFF64748B)))),
+                      DataCell(Text(
+                          CurrencyFormatter.format(wallet.maxFloatLimit),
+                          style: TextStyle(
+                              fontSize: 12.sp, fontWeight: FontWeight.w500))),
+                      DataCell(Text(
+                          CurrencyFormatter.format(w.totalAdvancesReceived),
+                          style: TextStyle(
+                              fontSize: 12.sp,
+                              color: const Color(0xFF2563EB),
+                              fontWeight: FontWeight.w600))),
+                      DataCell(Text(
+                          CurrencyFormatter.format(w.totalExpensesClaimed),
+                          style: TextStyle(
+                              fontSize: 12.sp,
+                              color: const Color(0xFF059669),
+                              fontWeight: FontWeight.w600))),
+                      DataCell(Text(
+                          CurrencyFormatter.format(w.totalCashReturned),
+                          style: TextStyle(
+                              fontSize: 12.sp,
+                              color: const Color(0xFF64748B)))),
                       DataCell(
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 10.w, vertical: 4.h),
                           decoration: BoxDecoration(
                             color: balanceColor.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Text(
-                            CurrencyFormatter.format(w.currentUnspentCashBalance),
+                            CurrencyFormatter.format(
+                                w.currentUnspentCashBalance),
                             style: TextStyle(
                               fontSize: 13.sp,
                               fontWeight: FontWeight.bold,
@@ -474,24 +552,32 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: Icon(Icons.payments_outlined, size: 16.sp, color: const Color(0xFF2563EB)),
+                              icon: Icon(Icons.payments_outlined,
+                                  size: 16.sp, color: const Color(0xFF2563EB)),
                               tooltip: 'Disburse Advance Float',
-                              onPressed: () => _openDisburseDialog(walletId: wallet.id, isReturn: false),
+                              onPressed: () => _openDisburseDialog(
+                                  walletId: wallet.id, isReturn: false),
                             ),
                             IconButton(
-                              icon: Icon(Icons.receipt_long_outlined, size: 16.sp, color: const Color(0xFF059669)),
+                              icon: Icon(Icons.receipt_long_outlined,
+                                  size: 16.sp, color: const Color(0xFF059669)),
                               tooltip: 'Record Site Voucher',
-                              onPressed: () => context.go('/petty-cash/vouchers/new?walletId=${wallet.id}&projectId=${wallet.assignedProjectId ?? ''}'),
+                              onPressed: () => context.go(
+                                  '/petty-cash/vouchers/new?walletId=${wallet.id}&projectId=${wallet.assignedProjectId ?? ''}'),
                             ),
                             IconButton(
-                              icon: Icon(Icons.arrow_back_rounded, size: 16.sp, color: const Color(0xFFD97706)),
+                              icon: Icon(Icons.arrow_back_rounded,
+                                  size: 16.sp, color: const Color(0xFFD97706)),
                               tooltip: 'Return Unspent Cash',
-                              onPressed: () => _openDisburseDialog(walletId: wallet.id, isReturn: true),
+                              onPressed: () => _openDisburseDialog(
+                                  walletId: wallet.id, isReturn: true),
                             ),
                             IconButton(
-                              icon: Icon(Icons.edit_outlined, size: 16.sp, color: const Color(0xFF64748B)),
+                              icon: Icon(Icons.edit_outlined,
+                                  size: 16.sp, color: const Color(0xFF64748B)),
                               tooltip: 'Edit Wallet',
-                              onPressed: () => context.go('/petty-cash/wallets/${wallet.id}/edit'),
+                              onPressed: () => context
+                                  .go('/petty-cash/wallets/${wallet.id}/edit'),
                             ),
                           ],
                         ),
@@ -514,7 +600,8 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
     final projectsAsync = ref.watch(projectListProvider);
     final walletsAsync = ref.watch(allWalletsProvider);
     final selectedFilterProject = ref.watch(pettyCashFilterProjectProvider);
-    final selectedFilterSupervisor = ref.watch(pettyCashFilterSupervisorProvider);
+    final selectedFilterSupervisor =
+        ref.watch(pettyCashFilterSupervisorProvider);
     final selectedFilterType = ref.watch(pettyCashFilterTypeProvider);
 
     return Column(
@@ -541,10 +628,12 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                       hintText: 'Search narration, voucher #...',
                       prefixIcon: Icon(Icons.search, size: 18.sp),
                       isDense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                     ),
-                    onChanged: (v) =>
-                        ref.read(pettyCashSearchQueryProvider.notifier).state = v,
+                    onChanged: (v) => ref
+                        .read(pettyCashSearchQueryProvider.notifier)
+                        .state = v,
                   ),
                 ),
                 walletsAsync.when(
@@ -558,19 +647,25 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                       decoration: InputDecoration(
                         labelText: 'Filter Supervisor',
                         isDense: true,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                        contentPadding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 8.h),
                       ),
                       items: [
-                        const DropdownMenuItem(value: null, child: Text('All Supervisors', overflow: TextOverflow.ellipsis)),
+                        const DropdownMenuItem(
+                            value: null,
+                            child: Text('All Supervisors',
+                                overflow: TextOverflow.ellipsis)),
                         ...wallets.map(
                           (w) => DropdownMenuItem(
                             value: w.wallet.id,
-                            child: Text(w.wallet.supervisorName, overflow: TextOverflow.ellipsis),
+                            child: Text(w.wallet.supervisorName,
+                                overflow: TextOverflow.ellipsis),
                           ),
                         ),
                       ],
-                      onChanged: (v) =>
-                          ref.read(pettyCashFilterSupervisorProvider.notifier).state = v,
+                      onChanged: (v) => ref
+                          .read(pettyCashFilterSupervisorProvider.notifier)
+                          .state = v,
                     ),
                   ),
                 ),
@@ -585,19 +680,25 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                       decoration: InputDecoration(
                         labelText: 'Filter Project',
                         isDense: true,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                        contentPadding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 8.h),
                       ),
                       items: [
-                        const DropdownMenuItem(value: null, child: Text('All Projects', overflow: TextOverflow.ellipsis)),
+                        const DropdownMenuItem(
+                            value: null,
+                            child: Text('All Projects',
+                                overflow: TextOverflow.ellipsis)),
                         ...projects.map(
                           (p) => DropdownMenuItem(
                             value: p.id,
-                            child: Text('${p.code} — ${p.name}', overflow: TextOverflow.ellipsis),
+                            child: Text('${p.code} — ${p.name}',
+                                overflow: TextOverflow.ellipsis),
                           ),
                         ),
                       ],
-                      onChanged: (v) =>
-                          ref.read(pettyCashFilterProjectProvider.notifier).state = v,
+                      onChanged: (v) => ref
+                          .read(pettyCashFilterProjectProvider.notifier)
+                          .state = v,
                     ),
                   ),
                 ),
@@ -609,16 +710,24 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                     decoration: InputDecoration(
                       labelText: 'Entry Type',
                       isDense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
                     ),
                     items: [
-                      const DropdownMenuItem(value: null, child: Text('All Types', overflow: TextOverflow.ellipsis)),
+                      const DropdownMenuItem(
+                          value: null,
+                          child: Text('All Types',
+                              overflow: TextOverflow.ellipsis)),
                       ...PettyCashTxnType.values.map(
-                        (t) => DropdownMenuItem(value: t, child: Text(t.displayName, overflow: TextOverflow.ellipsis)),
+                        (t) => DropdownMenuItem(
+                            value: t,
+                            child: Text(t.displayName,
+                                overflow: TextOverflow.ellipsis)),
                       ),
                     ],
-                    onChanged: (v) =>
-                        ref.read(pettyCashFilterTypeProvider.notifier).state = v,
+                    onChanged: (v) => ref
+                        .read(pettyCashFilterTypeProvider.notifier)
+                        .state = v,
                   ),
                 ),
               ],
@@ -638,10 +747,14 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.receipt_long_outlined, size: 48.sp, color: const Color(0xFF94A3B8)),
+                      Icon(Icons.receipt_long_outlined,
+                          size: 48.sp, color: const Color(0xFF94A3B8)),
                       SizedBox(height: 12.h),
                       Text('No petty cash transactions recorded.',
-                          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: const Color(0xFF64748B))),
+                          style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF64748B))),
                       SizedBox(height: 8.h),
                       FilledButton.tonal(
                         onPressed: () => context.go('/petty-cash/vouchers/new'),
@@ -668,7 +781,9 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                 rows: list.map((item) {
                   final v = item.voucher;
                   final typeColor = switch (v.type) {
-                    PettyCashTxnType.advanceDisbursed || PettyCashTxnType.floatReplenished => const Color(0xFF2563EB),
+                    PettyCashTxnType.advanceDisbursed ||
+                    PettyCashTxnType.floatReplenished =>
+                      const Color(0xFF2563EB),
                     PettyCashTxnType.voucherExpense => const Color(0xFF059669),
                     PettyCashTxnType.cashReturned => const Color(0xFFD97706),
                   };
@@ -683,28 +798,39 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(DateFormatter.format(v.date),
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.sp)),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12.sp)),
                             if (v.voucherNumber != null)
                               Text(v.voucherNumber!,
-                                  style: TextStyle(fontSize: 10.sp, color: const Color(0xFF64748B), fontFamily: 'monospace')),
+                                  style: TextStyle(
+                                      fontSize: 10.sp,
+                                      color: const Color(0xFF64748B),
+                                      fontFamily: 'monospace')),
                           ],
                         ),
                       ),
                       DataCell(
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.w, vertical: 3.h),
                           decoration: BoxDecoration(
                             color: typeColor.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           child: Text(
                             switch (v.type) {
-                              PettyCashTxnType.advanceDisbursed => 'Advance Float',
+                              PettyCashTxnType.advanceDisbursed =>
+                                'Advance Float',
                               PettyCashTxnType.voucherExpense => 'Site Voucher',
                               PettyCashTxnType.cashReturned => 'Cash Return',
-                              PettyCashTxnType.floatReplenished => 'Replenished',
+                              PettyCashTxnType.floatReplenished =>
+                                'Replenished',
                             },
-                            style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.bold, color: typeColor),
+                            style: TextStyle(
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.bold,
+                                color: typeColor),
                           ),
                         ),
                       ),
@@ -714,9 +840,13 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(item.wallet.supervisorName,
-                                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12.sp)),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12.sp)),
                             Text('${item.project.code}',
-                                style: TextStyle(fontSize: 10.sp, color: const Color(0xFF2563EB))),
+                                style: TextStyle(
+                                    fontSize: 10.sp,
+                                    color: const Color(0xFF2563EB))),
                           ],
                         ),
                       ),
@@ -725,16 +855,24 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(v.category, style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w500)),
+                            Text(v.category,
+                                style: TextStyle(
+                                    fontSize: 11.sp,
+                                    fontWeight: FontWeight.w500)),
                             if (v.type == PettyCashTxnType.voucherExpense)
                               Text(v.costHead.displayName,
-                                  style: TextStyle(fontSize: 10.sp, color: const Color(0xFF64748B))),
+                                  style: TextStyle(
+                                      fontSize: 10.sp,
+                                      color: const Color(0xFF64748B))),
                           ],
                         ),
                       ),
                       DataCell(Text(
                         CurrencyFormatter.format(v.amount),
-                        style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: typeColor),
+                        style: TextStyle(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.bold,
+                            color: typeColor),
                       )),
                       DataCell(
                         Text(
@@ -746,17 +884,24 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                       ),
                       DataCell(
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 2.h),
                           decoration: BoxDecoration(
-                            color: isPnlHit ? const Color(0xFFECFDF5) : const Color(0xFFF1F5F9),
+                            color: isPnlHit
+                                ? const Color(0xFFECFDF5)
+                                : const Color(0xFFF1F5F9),
                             borderRadius: BorderRadius.circular(6.r),
                           ),
                           child: Text(
-                            isPnlHit ? 'Project Expense (P&L)' : '₹0 (Float Transfer)',
+                            isPnlHit
+                                ? 'Project Expense (P&L)'
+                                : '₹0 (Float Transfer)',
                             style: TextStyle(
                               fontSize: 10.sp,
                               fontWeight: FontWeight.bold,
-                              color: isPnlHit ? const Color(0xFF059669) : const Color(0xFF64748B),
+                              color: isPnlHit
+                                  ? const Color(0xFF059669)
+                                  : const Color(0xFF64748B),
                             ),
                           ),
                         ),
@@ -777,27 +922,32 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: Icon(Icons.print_outlined, size: 16.sp, color: const Color(0xFF2563EB)),
+                              icon: Icon(Icons.print_outlined,
+                                  size: 16.sp, color: const Color(0xFF2563EB)),
                               tooltip: 'Print Voucher (PDF)',
                               onPressed: () {
                                 PdfPreviewDialog.show(
                                   context: context,
-                                  title: 'Petty Cash Voucher — #${v.voucherNumber ?? v.id}',
-                                  pdfBuilder: (format) =>
-                                      PdfReceiptService.generatePettyCashVoucher(
+                                  title:
+                                      'Petty Cash Voucher — #${v.voucherNumber ?? v.id}',
+                                  pdfBuilder: (format) => PdfReceiptService
+                                      .generatePettyCashVoucher(
                                     voucher: v,
                                     supervisorName: item.wallet.supervisorName,
                                     projectCode: item.project.code,
                                     projectName: item.project.name,
-                                    bankAccountName: item.bankAccount?.accountName,
+                                    bankAccountName:
+                                        item.bankAccount?.accountName,
                                   ),
                                 );
                               },
                             ),
                             IconButton(
-                              icon: Icon(Icons.delete_outline, size: 16.sp, color: const Color(0xFFEF4444)),
+                              icon: Icon(Icons.delete_outline,
+                                  size: 16.sp, color: const Color(0xFFEF4444)),
                               tooltip: 'Delete Entry',
-                              onPressed: () => _confirmDeleteVoucher(context, v.id),
+                              onPressed: () =>
+                                  _confirmDeleteVoucher(context, v.id),
                             ),
                           ],
                         ),
@@ -818,19 +968,105 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete Petty Cash Entry?'),
-        content: const Text('This will delete the voucher and reconcile the supervisor cash balance.'),
+        content: const Text(
+            'This will delete the voucher and reconcile the supervisor cash balance.'),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel')),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFEF4444)),
+            style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFEF4444)),
             onPressed: () async {
               Navigator.of(ctx).pop();
-              await ref.read(pettyCashRepositoryProvider).deleteVoucher(voucherId);
+              await ref
+                  .read(pettyCashRepositoryProvider)
+                  .deleteVoucher(voucherId);
             },
             child: const Text('Delete'),
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Plain-language explanation of the petty cash flow. Shown in the
+/// "How it works" dialog and in the empty state of the supervisor tab.
+class _PettyCashGuideBody extends StatelessWidget {
+  const _PettyCashGuideBody();
+
+  static const _steps = [
+    (
+      Icons.person_add_alt_1_outlined,
+      '1. Add Supervisor',
+      'Create a wallet for each site engineer who keeps cash for small daily spending. Set the maximum cash they may hold.',
+    ),
+    (
+      Icons.payments_outlined,
+      '2. Disburse Advance',
+      'Give them cash from your Cash Drawer or Bank. Your cash balance goes down now, but it is not an expense yet.',
+    ),
+    (
+      Icons.receipt_long_outlined,
+      '3. Record Site Voucher',
+      'Each time they spend (tea, auto, hardware...), enter a voucher. Now it counts as a project expense. Office cash does not change again.',
+    ),
+    (
+      Icons.arrow_back_rounded,
+      '4. Return Cash',
+      'If money is left over, record it as returned. It goes back into your Cash Drawer or Bank.',
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final s in _steps) ...[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(s.$1, size: 20, color: const Color(0xFF0369A1)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(s.$2,
+                        style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF0C4A6E))),
+                    Text(s.$3,
+                        style: const TextStyle(
+                            fontSize: 12, color: Color(0xFF334155))),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+        ],
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE0F2FE),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Text(
+            'Cash in Pocket (Balance) = Advances given − Vouchers spent − Cash returned. '
+            'When it reaches ₹0, the supervisor needs a new advance.',
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF0C4A6E)),
+          ),
+        ),
+      ],
     );
   }
 }

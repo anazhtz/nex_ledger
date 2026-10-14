@@ -990,7 +990,10 @@ class _CategoryGroupTileState extends State<_CategoryGroupTile> {
           ),
         ),
         if (_expanded)
-          ...widget.categories.map(
+          ...([...widget.categories]..sort((a, b) => a.subCategory
+                  .toLowerCase()
+                  .compareTo(b.subCategory.toLowerCase())))
+              .map(
             (cat) => Padding(
               padding: const EdgeInsets.only(left: 28, bottom: 4),
               child: Row(

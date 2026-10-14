@@ -9,6 +9,7 @@ mixin _$DepositDaoMixin on DatabaseAccessor<AppDatabase> {
   $ExpenseCategoriesTable get expenseCategories =>
       attachedDatabase.expenseCategories;
   $BankAccountsTable get bankAccounts => attachedDatabase.bankAccounts;
+  $InvestorsTable get investors => attachedDatabase.investors;
   $TransactionsTable get transactions => attachedDatabase.transactions;
   $DepositsTable get deposits => attachedDatabase.deposits;
 }

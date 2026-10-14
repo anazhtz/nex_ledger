@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/database_provider.dart';
+import 'package:nex_ledger/core/utils/wage_calculator.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
 import 'package:nex_ledger/core/utils/pdf_receipt_service.dart';
@@ -104,7 +105,7 @@ class WorkerDetailScreen extends ConsumerWidget {
                             return _AttendanceTable(
                               records: records,
                               projectMap: projectMap,
-                              dailyRate: summary.worker.dailyRate,
+                              worker: summary.worker,
                             );
                           },
                         ),
@@ -161,7 +162,9 @@ class _SummaryStrip extends StatelessWidget {
       children: [
         _SummaryTile(
           label: 'Days Worked',
-          value: summary.totalDaysWorked.toStringAsFixed(1),
+          value: summary.totalOvertimeHours > 0
+              ? '${summary.totalDaysWorked.toStringAsFixed(1)} (+${formatHours(summary.totalOvertimeHours)}h OT)'
+              : summary.totalDaysWorked.toStringAsFixed(1),
           icon: Icons.calendar_today_rounded,
           color: Colors.blue.shade700,
           bg: Colors.blue.shade50,
@@ -271,11 +274,11 @@ class _SummaryTile extends StatelessWidget {
 class _AttendanceTable extends StatelessWidget {
   final List<AttendanceWithWorker> records;
   final Map<int, String> projectMap;
-  final double dailyRate;
+  final Worker worker;
   const _AttendanceTable(
       {required this.records,
       required this.projectMap,
-      required this.dailyRate});
+      required this.worker});
 
   @override
   Widget build(BuildContext context) {
@@ -287,11 +290,13 @@ class _AttendanceTable extends StatelessWidget {
         DataColumn(label: Text('Project')),
         DataColumn(label: Text('Status')),
         DataColumn(label: Text('Eff. Days'), numeric: true),
+        DataColumn(label: Text('OT (hrs)'), numeric: true),
         DataColumn(label: Text('Day Earnings'), numeric: true),
       ],
       rows: records.map((r) {
         final fraction = r.attendance.status.payFraction;
-        final earning = fraction * dailyRate;
+        final otHours = r.attendance.overtimeHours;
+        final earning = dayWage(worker, r.attendance.status, otHours);
         return DataRow(cells: [
           DataCell(Text(DateFormatter.format(r.attendance.date))),
           DataCell(Text(
@@ -300,6 +305,7 @@ class _AttendanceTable extends StatelessWidget {
           )),
           DataCell(_AttendanceBadge(r.attendance.status)),
           DataCell(Text(fraction.toStringAsFixed(1))),
+          DataCell(Text(otHours > 0 ? formatHours(otHours) : '—')),
           DataCell(Text(
             CurrencyFormatter.format(earning),
             style: TextStyle(
@@ -454,6 +460,7 @@ class _PaymentHistoryTable extends ConsumerWidget {
         narration: t.narration,
         voucherNumber: t.referenceNo,
         totalEffectiveDaysWorked: summary.totalDaysWorked,
+        totalOvertimeHours: summary.totalOvertimeHours,
         totalGrossWagesEarned: summary.totalEarned,
         totalPaymentsIssued: summary.totalPaid,
         netBalanceDueRemaining: summary.balanceDue,

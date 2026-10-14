@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/database_provider.dart';
+import 'package:nex_ledger/core/utils/wage_calculator.dart';
 import 'package:nex_ledger/features/labour/data/labour_repository.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 
@@ -58,12 +59,18 @@ class WorkerLedgerSummary {
   final double totalPaid;
   final double balanceDue;
 
+  /// Overtime included in [totalEarned].
+  final double totalOvertimeHours;
+  final double totalOvertimeWages;
+
   const WorkerLedgerSummary({
     required this.worker,
     required this.totalDaysWorked,
     required this.totalEarned,
     required this.totalPaid,
     required this.balanceDue,
+    this.totalOvertimeHours = 0.0,
+    this.totalOvertimeWages = 0.0,
   });
 }
 
@@ -84,8 +91,9 @@ final workerLedgerSummaryProvider =
     ),
     (worker, pair) {
       if (worker == null) throw StateError('Worker $workerId not found');
-      final (days, paid) = pair;
-      final earned = days * worker.dailyRate;
+      final (days, otHours, paid) = pair;
+      final otWages = overtimePay(worker, otHours);
+      final earned = days * worker.dailyRate + otWages;
       final due = (earned - paid) > 0 ? earned - paid : 0.0;
       return WorkerLedgerSummary(
         worker: worker,
@@ -93,13 +101,16 @@ final workerLedgerSummaryProvider =
         totalEarned: earned,
         totalPaid: paid,
         balanceDue: due,
+        totalOvertimeHours: otHours,
+        totalOvertimeWages: otWages,
       );
     },
   );
 });
 
-/// Combines attendance + payment streams into a (totalDays, totalPaid) tuple.
-Stream<(double, double)> _combineAttendanceAndPayments(
+/// Combines attendance + payment streams into a
+/// (totalDays, totalOvertimeHours, totalPaid) tuple.
+Stream<(double, double, double)> _combineAttendanceAndPayments(
   Stream<List<AttendanceWithWorker>> attendanceStream,
   Stream<List<Transaction>> paymentsStream,
 ) =>
@@ -109,9 +120,11 @@ Stream<(double, double)> _combineAttendanceAndPayments(
       (attendance, payments) {
         final days = attendance.fold<double>(
             0.0, (s, a) => s + a.attendance.status.payFraction);
+        final otHours = attendance.fold<double>(
+            0.0, (s, a) => s + a.attendance.overtimeHours);
         final paid =
             payments.fold<double>(0.0, (s, t) => s + t.amount);
-        return (days, paid);
+        return (days, otHours, paid);
       },
     );
 

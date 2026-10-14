@@ -88,8 +88,9 @@ class PettyCashRepository {
           bankAccountId: Value(bankAccountId),
           narration: Value(narration),
           referenceNo: Value(voucherNumber),
-          affectsPnl: const Value(false),  // Float advance does NOT hit PnL!
-          affectsCash: const Value(true),  // Physical cash left bank/office drawer
+          affectsPnl: const Value(false), // Float advance does NOT hit PnL!
+          affectsCash:
+              const Value(true), // Physical cash left bank/office drawer
         ),
       );
 
@@ -138,8 +139,10 @@ class PettyCashRepository {
           paymentMode: const Value(PaymentMode.cash),
           narration: Value('Petty Cash Voucher: $narration ($category)'),
           referenceNo: Value(voucherNumber),
-          affectsPnl: const Value(true),   // Expense NOW recognized in Project P&L!
-          affectsCash: const Value(false), // Cash was already deducted at advance time
+          affectsPnl:
+              const Value(true), // Expense NOW recognized in Project P&L!
+          affectsCash:
+              const Value(false), // Cash was already deducted at advance time
         ),
       );
 
@@ -189,8 +192,8 @@ class PettyCashRepository {
           bankAccountId: Value(bankAccountId),
           narration: Value('Unspent Petty Cash Returned: $narration'),
           referenceNo: Value(voucherNumber),
-          affectsPnl: const Value(false),  // Return of capital is NOT income!
-          affectsCash: const Value(true),  // Physical cash re-enters office/bank
+          affectsPnl: const Value(false), // Return of capital is NOT income!
+          affectsCash: const Value(true), // Physical cash re-enters office/bank
         ),
       );
 
@@ -219,11 +222,15 @@ class PettyCashRepository {
 
   Future<void> deleteVoucher(int voucherId) async {
     return _db.transaction(() async {
-      final vList = await (_db.select(_db.pettyCashVouchers)..where((v) => v.id.equals(voucherId))).get();
+      final vList = await (_db.select(_db.pettyCashVouchers)
+            ..where((v) => v.id.equals(voucherId)))
+          .get();
       if (vList.isNotEmpty) {
         final v = vList.first;
         if (v.transactionId != null) {
-          await (_db.delete(_db.transactions)..where((t) => t.id.equals(v.transactionId!))).go();
+          await (_db.delete(_db.transactions)
+                ..where((t) => t.id.equals(v.transactionId!)))
+              .go();
         }
       }
       await _pettyCashDao.deleteVoucher(voucherId);

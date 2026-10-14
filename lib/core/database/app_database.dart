@@ -26,6 +26,7 @@ import 'tables/equipments_table.dart';
 import 'tables/equipment_logs_table.dart';
 import 'tables/petty_cash_wallets_table.dart';
 import 'tables/petty_cash_vouchers_table.dart';
+import 'tables/investors_table.dart';
 import 'daos/project_dao.dart';
 import 'daos/transaction_dao.dart';
 import 'daos/purchase_dao.dart';
@@ -59,6 +60,7 @@ export 'tables/equipments_table.dart';
 export 'tables/equipment_logs_table.dart';
 export 'tables/petty_cash_wallets_table.dart';
 export 'tables/petty_cash_vouchers_table.dart';
+export 'tables/investors_table.dart';
 export 'daos/project_dao.dart';
 export 'daos/transaction_dao.dart';
 export 'daos/purchase_dao.dart';
@@ -101,6 +103,7 @@ part 'app_database.g.dart';
     EquipmentLogs,
     PettyCashWallets,
     PettyCashVouchers,
+    Investors,
   ],
   daos: [
     ProjectDao,
@@ -121,7 +124,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -223,6 +226,13 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(pettyCashWallets);
             await m.createTable(pettyCashVouchers);
           }
+          if (from < 18) {
+            // Labour overtime + named investors.
+            await m.addColumn(workers, workers.overtimeRate);
+            await m.addColumn(attendance, attendance.overtimeHours);
+            await m.createTable(investors);
+            await m.addColumn(transactions, transactions.investorId);
+          }
         },
       );
 
@@ -310,6 +320,7 @@ class AppDatabase extends _$AppDatabase {
   Future<void> wipeAndResetData() async {
     await transaction(() async {
       await delete(transactions).go();
+      await delete(investors).go();
       await delete(purchases).go();
       await delete(attendance).go();
       await delete(deposits).go();

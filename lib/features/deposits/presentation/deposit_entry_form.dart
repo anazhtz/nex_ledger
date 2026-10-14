@@ -263,7 +263,7 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
                           items: [
                             const DropdownMenuItem(
                                 value: null, child: Text('— Select —', overflow: TextOverflow.ellipsis)),
-                            ...PaymentMode.values.map(
+                            ...kSelectablePaymentModes.map(
                               (m) => DropdownMenuItem(
                                 value: m,
                                 child: Text(m.displayName, overflow: TextOverflow.ellipsis),

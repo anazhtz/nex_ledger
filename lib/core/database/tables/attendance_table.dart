@@ -13,6 +13,9 @@ class Attendance extends Table {
   DateTimeColumn get date => dateTime()();
   TextColumn get status => textEnum<AttendanceStatus>()();
 
+  /// Overtime hours worked that day (0 = none).
+  RealColumn get overtimeHours => real().withDefault(const Constant(0.0))();
+
   /// Each worker can only have one attendance record per project per day.
   @override
   List<Set<Column>> get uniqueKeys => [

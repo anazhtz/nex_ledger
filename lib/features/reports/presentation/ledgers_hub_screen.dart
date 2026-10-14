@@ -133,7 +133,8 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                     PopupMenuButton<String>(
                       tooltip: 'Filter Period',
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 12.w, vertical: 8.h),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(8.r),
@@ -185,28 +186,38 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                         }
                       },
                       itemBuilder: (context) => [
-                        const PopupMenuItem(value: 'all', child: Text('All Time (Full Ledger)')),
-                        const PopupMenuItem(value: 'this_month', child: Text('This Month')),
-                        const PopupMenuItem(value: 'last_month', child: Text('Last Month')),
-                        const PopupMenuItem(value: 'this_year', child: Text('This Financial Year')),
+                        const PopupMenuItem(
+                            value: 'all',
+                            child: Text('All Time (Full Ledger)')),
+                        const PopupMenuItem(
+                            value: 'this_month', child: Text('This Month')),
+                        const PopupMenuItem(
+                            value: 'last_month', child: Text('Last Month')),
+                        const PopupMenuItem(
+                            value: 'this_year',
+                            child: Text('This Financial Year')),
                         const PopupMenuDivider(),
-                        const PopupMenuItem(value: 'custom', child: Text('Custom Date Range...')),
+                        const PopupMenuItem(
+                            value: 'custom',
+                            child: Text('Custom Date Range...')),
                       ],
                     ),
 
                     if (activeTab == LedgerType.personal) ...[
                       FilledButton.icon(
-                        onPressed: () => _showOwnerTransactionDialog(context, isCapital: true),
+                        onPressed: () => _showOwnerTransactionDialog(context,
+                            isCapital: true),
                         icon: const Icon(Icons.add_rounded, size: 16),
-                        label: const Text('+ Inject Capital'),
+                        label: const Text('+ Add Investment'),
                         style: FilledButton.styleFrom(
                           backgroundColor: const Color(0xFF059669),
                         ),
                       ),
                       OutlinedButton.icon(
-                        onPressed: () => _showOwnerTransactionDialog(context, isCapital: false),
+                        onPressed: () => _showOwnerTransactionDialog(context,
+                            isCapital: false),
                         icon: const Icon(Icons.remove_rounded, size: 16),
-                        label: const Text('- Owner Drawings'),
+                        label: const Text('- Withdrawal / Drawings'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFFDC2626),
                           side: const BorderSide(color: Color(0xFFFCA5A5)),
@@ -277,7 +288,8 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                 selected: {activeTab},
                 onSelectionChanged: (set) {
                   if (set.isNotEmpty) {
-                    ref.read(activeLedgerTabProvider.notifier).state = set.first;
+                    ref.read(activeLedgerTabProvider.notifier).state =
+                        set.first;
                   }
                 },
               ),
@@ -288,7 +300,8 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
             switch (activeTab) {
               LedgerType.client => _buildClientLedger(context, theme),
               LedgerType.supplier => _buildSupplierLedger(context, theme),
-              LedgerType.subcontractor => _buildSubcontractorLedger(context, theme),
+              LedgerType.subcontractor =>
+                _buildSubcontractorLedger(context, theme),
               LedgerType.labour => _buildLabourLedger(context, theme),
               LedgerType.bankCash => _buildBankCashLedger(context, theme),
               LedgerType.personal => _buildPersonalLedger(context, theme),
@@ -311,19 +324,18 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Text('Error loading projects: $e'),
       data: (projects) {
-        final clientProjects = projects
-            .where((p) => p.type == ProjectType.project)
-            .toList();
+        final clientProjects =
+            projects.where((p) => p.type == ProjectType.project).toList();
 
         if (clientProjects.isEmpty) {
           return const _EmptyLedgerCard(
             title: 'No Client Projects Found',
-            subtitle: 'Create projects and configure client contracts to view statement of accounts.',
+            subtitle:
+                'Create projects and configure client contracts to view statement of accounts.',
           );
         }
 
-        final effectiveProjectId =
-            selectedProjectId ?? clientProjects.first.id;
+        final effectiveProjectId = selectedProjectId ?? clientProjects.first.id;
         final ledgerDataAsync =
             ref.watch(clientLedgerProvider(effectiveProjectId));
 
@@ -351,8 +363,10 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                         isExpanded: true,
                         decoration: const InputDecoration(
                           labelText: 'Select Project & Client Contract',
-                          prefixIcon: Icon(Icons.business_center_outlined, size: 20),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          prefixIcon:
+                              Icon(Icons.business_center_outlined, size: 20),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
                         ),
                         items: clientProjects
                             .map((p) => DropdownMenuItem<int>(
@@ -365,7 +379,10 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                             .toList(),
                         onChanged: (id) {
                           if (id != null) {
-                            ref.read(selectedLedgerClientProjectIdProvider.notifier).state = id;
+                            ref
+                                .read(selectedLedgerClientProjectIdProvider
+                                    .notifier)
+                                .state = id;
                           }
                         },
                       ),
@@ -411,13 +428,15 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
         if (vendors.isEmpty) {
           return const _EmptyLedgerCard(
             title: 'No Suppliers / Vendors Found',
-            subtitle: 'Add vendors while recording material purchases to see their running ledgers.',
+            subtitle:
+                'Add vendors while recording material purchases to see their running ledgers.',
           );
         }
 
         // Auto-select first vendor if none selected
         final effectiveVendorId = selectedVendorId ?? vendors.first.id;
-        final ledgerDataAsync = ref.watch(vendorLedgerProvider(effectiveVendorId));
+        final ledgerDataAsync =
+            ref.watch(vendorLedgerProvider(effectiveVendorId));
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -445,7 +464,8 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                         decoration: const InputDecoration(
                           labelText: 'Select Supplier / Vendor',
                           prefixIcon: Icon(Icons.business_outlined, size: 20),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
                         ),
                         items: vendors
                             .map((v) => DropdownMenuItem<int>(
@@ -458,7 +478,9 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                             .toList(),
                         onChanged: (id) {
                           if (id != null) {
-                            ref.read(selectedLedgerVendorIdProvider.notifier).state = id;
+                            ref
+                                .read(selectedLedgerVendorIdProvider.notifier)
+                                .state = id;
                           }
                         },
                       ),
@@ -474,20 +496,25 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                           decoration: const InputDecoration(
                             labelText: 'Filter by Project',
                             prefixIcon: Icon(Icons.folder_outlined, size: 20),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
                           ),
                           items: [
                             const DropdownMenuItem<int?>(
                               value: null,
-                              child: Text('All Projects', overflow: TextOverflow.ellipsis),
+                              child: Text('All Projects',
+                                  overflow: TextOverflow.ellipsis),
                             ),
                             ...projects.map((p) => DropdownMenuItem<int?>(
                                   value: p.id,
-                                  child: Text('${p.code} — ${p.name}', overflow: TextOverflow.ellipsis),
+                                  child: Text('${p.code} — ${p.name}',
+                                      overflow: TextOverflow.ellipsis),
                                 )),
                           ],
                           onChanged: (pId) {
-                            ref.read(ledgerProjectFilterProvider.notifier).state = pId;
+                            ref
+                                .read(ledgerProjectFilterProvider.notifier)
+                                .state = pId;
                           },
                         ),
                       ),
@@ -533,12 +560,14 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
         if (subs.isEmpty) {
           return const _EmptyLedgerCard(
             title: 'No Subcontractors Found',
-            subtitle: 'Add subcontractors and piece-rate work orders to see their running measurement & payment ledgers.',
+            subtitle:
+                'Add subcontractors and piece-rate work orders to see their running measurement & payment ledgers.',
           );
         }
 
         final effectiveSubId = selectedSubId ?? subs.first.id;
-        final ledgerDataAsync = ref.watch(subcontractorLedgerProvider(effectiveSubId));
+        final ledgerDataAsync =
+            ref.watch(subcontractorLedgerProvider(effectiveSubId));
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -566,7 +595,8 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                         decoration: const InputDecoration(
                           labelText: 'Select Subcontractor / Gang',
                           prefixIcon: Icon(Icons.handshake_outlined, size: 20),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
                         ),
                         items: subs
                             .map((s) => DropdownMenuItem<int>(
@@ -579,7 +609,10 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                             .toList(),
                         onChanged: (id) {
                           if (id != null) {
-                            ref.read(selectedLedgerSubcontractorIdProvider.notifier).state = id;
+                            ref
+                                .read(selectedLedgerSubcontractorIdProvider
+                                    .notifier)
+                                .state = id;
                           }
                         },
                       ),
@@ -595,20 +628,25 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                           decoration: const InputDecoration(
                             labelText: 'Filter by Project',
                             prefixIcon: Icon(Icons.folder_outlined, size: 20),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
                           ),
                           items: [
                             const DropdownMenuItem<int?>(
                               value: null,
-                              child: Text('All Projects', overflow: TextOverflow.ellipsis),
+                              child: Text('All Projects',
+                                  overflow: TextOverflow.ellipsis),
                             ),
                             ...projects.map((p) => DropdownMenuItem<int?>(
                                   value: p.id,
-                                  child: Text('${p.code} — ${p.name}', overflow: TextOverflow.ellipsis),
+                                  child: Text('${p.code} — ${p.name}',
+                                      overflow: TextOverflow.ellipsis),
                                 )),
                           ],
                           onChanged: (pId) {
-                            ref.read(ledgerProjectFilterProvider.notifier).state = pId;
+                            ref
+                                .read(ledgerProjectFilterProvider.notifier)
+                                .state = pId;
                           },
                         ),
                       ),
@@ -655,12 +693,14 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
         if (workers.isEmpty) {
           return const _EmptyLedgerCard(
             title: 'No Workers Found',
-            subtitle: 'Add workers in Labour Master to view individual attendance and running wage statements.',
+            subtitle:
+                'Add workers in Labour Master to view individual attendance and running wage statements.',
           );
         }
 
         final effectiveWorkerId = selectedWorkerId ?? workers.first.id;
-        final ledgerDataAsync = ref.watch(workerLedgerProvider(effectiveWorkerId));
+        final ledgerDataAsync =
+            ref.watch(workerLedgerProvider(effectiveWorkerId));
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -687,8 +727,10 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                         isExpanded: true,
                         decoration: const InputDecoration(
                           labelText: 'Select Labour / Worker',
-                          prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          prefixIcon:
+                              Icon(Icons.person_outline_rounded, size: 20),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
                         ),
                         items: workers
                             .map((w) => DropdownMenuItem<int>(
@@ -701,7 +743,9 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                             .toList(),
                         onChanged: (id) {
                           if (id != null) {
-                            ref.read(selectedLedgerWorkerIdProvider.notifier).state = id;
+                            ref
+                                .read(selectedLedgerWorkerIdProvider.notifier)
+                                .state = id;
                           }
                         },
                       ),
@@ -717,20 +761,25 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                           decoration: const InputDecoration(
                             labelText: 'Filter by Project',
                             prefixIcon: Icon(Icons.folder_outlined, size: 20),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
                           ),
                           items: [
                             const DropdownMenuItem<int?>(
                               value: null,
-                              child: Text('All Projects', overflow: TextOverflow.ellipsis),
+                              child: Text('All Projects',
+                                  overflow: TextOverflow.ellipsis),
                             ),
                             ...projects.map((p) => DropdownMenuItem<int?>(
                                   value: p.id,
-                                  child: Text('${p.code} — ${p.name}', overflow: TextOverflow.ellipsis),
+                                  child: Text('${p.code} — ${p.name}',
+                                      overflow: TextOverflow.ellipsis),
                                 )),
                           ],
                           onChanged: (pId) {
-                            ref.read(ledgerProjectFilterProvider.notifier).state = pId;
+                            ref
+                                .read(ledgerProjectFilterProvider.notifier)
+                                .state = pId;
                           },
                         ),
                       ),
@@ -766,8 +815,10 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
 
   Widget _buildBankCashLedger(BuildContext context, ThemeData theme) {
     final accountsAsync = ref.watch(bankAccountsWithBalancesProvider);
-    final selectedBankAccountId = ref.watch(selectedLedgerBankAccountIdProvider);
-    final ledgerDataAsync = ref.watch(accountLedgerProvider(selectedBankAccountId));
+    final selectedBankAccountId =
+        ref.watch(selectedLedgerBankAccountIdProvider);
+    final ledgerDataAsync =
+        ref.watch(accountLedgerProvider(selectedBankAccountId));
 
     return accountsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -797,13 +848,18 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                         isExpanded: true,
                         decoration: const InputDecoration(
                           labelText: 'Select Account / Drawer',
-                          prefixIcon: Icon(Icons.account_balance_wallet_outlined, size: 20),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          prefixIcon: Icon(
+                              Icons.account_balance_wallet_outlined,
+                              size: 20),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
                         ),
                         items: [
                           const DropdownMenuItem<int?>(
                             value: null,
-                            child: Text('💵 Physical Cash Drawer / Cash in Hand', overflow: TextOverflow.ellipsis),
+                            child: Text(
+                                '💵 Physical Cash Drawer / Cash in Hand',
+                                overflow: TextOverflow.ellipsis),
                           ),
                           ...accounts.map((acc) => DropdownMenuItem<int?>(
                                 value: acc.account.id,
@@ -814,7 +870,10 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                               )),
                         ],
                         onChanged: (id) {
-                          ref.read(selectedLedgerBankAccountIdProvider.notifier).state = id;
+                          ref
+                              .read(
+                                  selectedLedgerBankAccountIdProvider.notifier)
+                              .state = id;
                         },
                       ),
                     ),
@@ -849,16 +908,104 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
   Widget _buildPersonalLedger(BuildContext context, ThemeData theme) {
     final ledgerDataAsync = ref.watch(personalLedgerProvider);
 
-    return ledgerDataAsync.when(
+    final investorsAsync = ref.watch(investorListProvider);
+    final summariesAsync = ref.watch(investorSummariesProvider);
+    final selectedInvestor = ref.watch(selectedLedgerInvestorIdProvider);
+    final investors = investorsAsync.asData?.value ?? const <Investor>[];
+    // Guard: a selected investor that no longer exists falls back to "All".
+    final filterValue = investors.any((i) => i.id == selectedInvestor)
+        ? selectedInvestor
+        : null;
+
+    final statement = ledgerDataAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Text('Error loading personal ledger: $e'),
       data: (data) => _buildStatementContent(
         context: context,
         theme: theme,
-        title: 'Owner Personal Equity Statement',
+        title: 'Investor / Owner Equity Statement',
         summary: data.summary,
         entries: data.entries,
       ),
+    );
+
+    final summaries = summariesAsync.asData?.value ?? const <InvestorSummary>[];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (summaries.isNotEmpty) ...[
+          DataTableCard(
+            title: 'Capital by Investor',
+            emptyMessage: 'No investors yet.',
+            columns: const [
+              DataColumn(label: Text('Investor / Partner')),
+              DataColumn(label: Text('Invested (₹ In)'), numeric: true),
+              DataColumn(label: Text('Withdrawn (₹ Out)'), numeric: true),
+              DataColumn(label: Text('Net In Business'), numeric: true),
+            ],
+            rows: summaries
+                .map((s) => DataRow(
+                      cells: [
+                        DataCell(
+                          Text(
+                            s.name,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: s.investorId == null
+                                  ? null
+                                  : const Color(0xFF1F5FBF),
+                            ),
+                          ),
+                          // Click an investor to see only their statement.
+                          onTap: s.investorId == null
+                              ? null
+                              : () => ref
+                                  .read(selectedLedgerInvestorIdProvider.notifier)
+                                  .state = s.investorId,
+                        ),
+                        DataCell(Text(CurrencyFormatter.format(s.invested),
+                            style: const TextStyle(color: Color(0xFF059669)))),
+                        DataCell(Text(CurrencyFormatter.format(s.withdrawn),
+                            style: const TextStyle(color: Color(0xFFDC2626)))),
+                        DataCell(Text(
+                          CurrencyFormatter.format(s.net),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: s.net >= 0
+                                ? const Color(0xFF0F172A)
+                                : const Color(0xFFDC2626),
+                          ),
+                        )),
+                      ],
+                    ))
+                .toList(),
+          ),
+          SizedBox(height: 16.h),
+        ],
+        SizedBox(
+          width: 360.w,
+          child: DropdownButtonFormField<int?>(
+            value: filterValue,
+            isExpanded: true,
+            decoration: const InputDecoration(
+              labelText: 'Show statement for',
+              prefixIcon: Icon(Icons.groups_rounded, size: 18),
+              isDense: true,
+            ),
+            items: [
+              const DropdownMenuItem<int?>(
+                  value: null, child: Text('All Investors / Owner')),
+              ...investors.map((i) =>
+                  DropdownMenuItem<int?>(value: i.id, child: Text(i.name))),
+            ],
+            onChanged: (v) =>
+                ref.read(selectedLedgerInvestorIdProvider.notifier).state = v,
+          ),
+        ),
+        SizedBox(height: 16.h),
+        statement,
+      ],
     );
   }
 
@@ -909,8 +1056,12 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                   : Icons.warning_amber_rounded,
               iconColor: isPayableNegative
                   ? const Color(0xFFEA580C)
-                  : (isCreditBalance ? const Color(0xFF1F5FBF) : const Color(0xFFDC2626)),
-              subtitle: summary.closingBalance >= 0 ? 'Balance (Credit)' : 'Overdrawn (Debit)',
+                  : (isCreditBalance
+                      ? const Color(0xFF1F5FBF)
+                      : const Color(0xFFDC2626)),
+              subtitle: summary.closingBalance >= 0
+                  ? 'Balance (Credit)'
+                  : 'Overdrawn (Debit)',
             );
 
             if (isNarrow) {
@@ -964,8 +1115,12 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
             DataColumn(label: Text('Ref / Bill No')),
             DataColumn(label: Text('Particulars / Narration')),
             DataColumn(label: Text('Project')),
-            DataColumn(label: Text('Debit (₹ Out)', style: TextStyle(color: Color(0xFFDC2626)))),
-            DataColumn(label: Text('Credit (₹ In)', style: TextStyle(color: Color(0xFF059669)))),
+            DataColumn(
+                label: Text('Debit (₹ Out)',
+                    style: TextStyle(color: Color(0xFFDC2626)))),
+            DataColumn(
+                label: Text('Credit (₹ In)',
+                    style: TextStyle(color: Color(0xFF059669)))),
             DataColumn(label: Text('Running Balance (₹)')),
           ],
           rows: entries.asMap().entries.map((item) {
@@ -974,18 +1129,22 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
 
             return DataRow(
               cells: [
-                DataCell(Text(idx.toString(), style: const TextStyle(color: Color(0xFF94A3B8)))),
+                DataCell(Text(idx.toString(),
+                    style: const TextStyle(color: Color(0xFF94A3B8)))),
                 DataCell(Text(DateFormatter.format(e.date))),
-                DataCell(Text(e.referenceNo ?? '—', style: const TextStyle(fontWeight: FontWeight.w500))),
+                DataCell(Text(e.referenceNo ?? '—',
+                    style: const TextStyle(fontWeight: FontWeight.w500))),
                 DataCell(Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(e.title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    Text(e.title,
+                        style: const TextStyle(fontWeight: FontWeight.w600)),
                     if (e.subtitle != null)
                       Text(
                         e.subtitle!,
-                        style: TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B)),
+                        style: TextStyle(
+                            fontSize: 11.sp, color: const Color(0xFF64748B)),
                         overflow: TextOverflow.ellipsis,
                       ),
                   ],
@@ -993,22 +1152,30 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                 DataCell(Text(
                   e.projectCode != null ? '${e.projectCode}' : '—',
                   style: TextStyle(
-                    color: e.projectCode != null ? const Color(0xFF1F5FBF) : const Color(0xFF94A3B8),
+                    color: e.projectCode != null
+                        ? const Color(0xFF1F5FBF)
+                        : const Color(0xFF94A3B8),
                     fontWeight: FontWeight.w600,
                   ),
                 )),
                 DataCell(Text(
                   e.debit > 0 ? CurrencyFormatter.format(e.debit) : '—',
                   style: TextStyle(
-                    color: e.debit > 0 ? const Color(0xFFDC2626) : const Color(0xFF94A3B8),
-                    fontWeight: e.debit > 0 ? FontWeight.w600 : FontWeight.normal,
+                    color: e.debit > 0
+                        ? const Color(0xFFDC2626)
+                        : const Color(0xFF94A3B8),
+                    fontWeight:
+                        e.debit > 0 ? FontWeight.w600 : FontWeight.normal,
                   ),
                 )),
                 DataCell(Text(
                   e.credit > 0 ? CurrencyFormatter.format(e.credit) : '—',
                   style: TextStyle(
-                    color: e.credit > 0 ? const Color(0xFF059669) : const Color(0xFF94A3B8),
-                    fontWeight: e.credit > 0 ? FontWeight.w600 : FontWeight.normal,
+                    color: e.credit > 0
+                        ? const Color(0xFF059669)
+                        : const Color(0xFF94A3B8),
+                    fontWeight:
+                        e.credit > 0 ? FontWeight.w600 : FontWeight.normal,
                   ),
                 )),
                 DataCell(Row(
@@ -1018,14 +1185,19 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                       CurrencyFormatter.format(e.runningBalance.abs()),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: e.runningBalance >= 0 ? const Color(0xFF0F172A) : const Color(0xFFDC2626),
+                        color: e.runningBalance >= 0
+                            ? const Color(0xFF0F172A)
+                            : const Color(0xFFDC2626),
                       ),
                     ),
                     SizedBox(width: 4.w),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.h),
                       decoration: BoxDecoration(
-                        color: e.runningBalance >= 0 ? const Color(0xFFEAF1FB) : const Color(0xFFFEF2F2),
+                        color: e.runningBalance >= 0
+                            ? const Color(0xFFEAF1FB)
+                            : const Color(0xFFFEF2F2),
                         borderRadius: BorderRadius.circular(4.r),
                       ),
                       child: Text(
@@ -1033,7 +1205,9 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                         style: TextStyle(
                           fontSize: 9.sp,
                           fontWeight: FontWeight.w700,
-                          color: e.runningBalance >= 0 ? const Color(0xFF1F5FBF) : const Color(0xFFDC2626),
+                          color: e.runningBalance >= 0
+                              ? const Color(0xFF1F5FBF)
+                              : const Color(0xFFDC2626),
                         ),
                       ),
                     ),
@@ -1051,7 +1225,8 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
   // OWNER CAPITAL / DRAWINGS QUICK ENTRY DIALOG
   // ─────────────────────────────────────────────────────────────────────────────
 
-  void _showOwnerTransactionDialog(BuildContext context, {required bool isCapital}) {
+  void _showOwnerTransactionDialog(BuildContext context,
+      {required bool isCapital}) {
     final formKey = GlobalKey<FormState>();
     final amountCtrl = TextEditingController();
     final narrationCtrl = TextEditingController();
@@ -1059,6 +1234,9 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
     DateTime date = DateTime.now();
     PaymentMode paymentMode = isCapital ? PaymentMode.bank : PaymentMode.cash;
     int? selectedBankAccountId;
+    int? selectedInvestorId; // null = Owner (General), -1 = add a new investor
+    const addNewInvestor = -1;
+    final newInvestorCtrl = TextEditingController();
 
     showDialog(
       context: context,
@@ -1069,11 +1247,17 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
               title: Row(
                 children: [
                   Icon(
-                    isCapital ? Icons.add_circle_outline_rounded : Icons.remove_circle_outline_rounded,
-                    color: isCapital ? const Color(0xFF059669) : const Color(0xFFDC2626),
+                    isCapital
+                        ? Icons.add_circle_outline_rounded
+                        : Icons.remove_circle_outline_rounded,
+                    color: isCapital
+                        ? const Color(0xFF059669)
+                        : const Color(0xFFDC2626),
                   ),
                   SizedBox(width: 10.w),
-                  Text(isCapital ? 'Inject Owner Capital' : 'Record Owner Drawings'),
+                  Text(isCapital
+                      ? 'Add Investment / Capital'
+                      : 'Record Withdrawal / Drawings'),
                 ],
               ),
               content: SizedBox(
@@ -1088,9 +1272,70 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                           isCapital
                               ? 'Record personal funds injected into business accounts. This increases business cash without affecting P&L revenue.'
                               : 'Record money withdrawn from business funds for personal use. This decreases business cash without affecting P&L expenses.',
-                          style: TextStyle(fontSize: 12.sp, color: const Color(0xFF64748B)),
+                          style: TextStyle(
+                              fontSize: 12.sp, color: const Color(0xFF64748B)),
                         ),
                         SizedBox(height: 16.h),
+
+                        // Investor / Partner
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final investors =
+                                ref.watch(investorListProvider).asData?.value ??
+                                    const <Investor>[];
+                            final value = (selectedInvestorId == null ||
+                                    selectedInvestorId == addNewInvestor ||
+                                    investors
+                                        .any((i) => i.id == selectedInvestorId))
+                                ? selectedInvestorId
+                                : null;
+                            return Column(
+                              children: [
+                                DropdownButtonFormField<int?>(
+                                  value: value,
+                                  isExpanded: true,
+                                  decoration: InputDecoration(
+                                    labelText: isCapital
+                                        ? 'Invested By (Investor / Partner)'
+                                        : 'Withdrawn By (Investor / Partner)',
+                                    prefixIcon: const Icon(
+                                        Icons.person_outline_rounded,
+                                        size: 18),
+                                  ),
+                                  items: [
+                                    const DropdownMenuItem<int?>(
+                                        value: null,
+                                        child: Text('Owner (General)')),
+                                    ...investors.map((i) =>
+                                        DropdownMenuItem<int?>(
+                                            value: i.id, child: Text(i.name))),
+                                    const DropdownMenuItem<int?>(
+                                        value: addNewInvestor,
+                                        child: Text('+ Add new investor...')),
+                                  ],
+                                  onChanged: (v) => setDialogState(
+                                      () => selectedInvestorId = v),
+                                ),
+                                if (selectedInvestorId == addNewInvestor) ...[
+                                  SizedBox(height: 10.h),
+                                  TextFormField(
+                                    controller: newInvestorCtrl,
+                                    autofocus: true,
+                                    decoration: const InputDecoration(
+                                      labelText: 'New Investor Name *',
+                                    ),
+                                    validator: (v) =>
+                                        (selectedInvestorId == addNewInvestor &&
+                                                (v == null || v.trim().isEmpty))
+                                            ? 'Enter the investor name'
+                                            : null,
+                                  ),
+                                ],
+                              ],
+                            );
+                          },
+                        ),
+                        SizedBox(height: 14.h),
 
                         // Amount & Date Row
                         Row(
@@ -1098,15 +1343,19 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                             Expanded(
                               child: TextFormField(
                                 controller: amountCtrl,
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
                                 decoration: const InputDecoration(
                                   labelText: 'Amount (₹) *',
                                   prefixText: '₹ ',
                                 ),
                                 validator: (v) {
-                                  if (v == null || v.trim().isEmpty) return 'Required';
+                                  if (v == null || v.trim().isEmpty)
+                                    return 'Required';
                                   final n = double.tryParse(v);
-                                  if (n == null || n <= 0) return 'Enter positive amount';
+                                  if (n == null || n <= 0)
+                                    return 'Enter positive amount';
                                   return null;
                                 },
                               ),
@@ -1128,7 +1377,8 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                                 child: InputDecorator(
                                   decoration: const InputDecoration(
                                     labelText: 'Date',
-                                    suffixIcon: Icon(Icons.calendar_today, size: 16),
+                                    suffixIcon:
+                                        Icon(Icons.calendar_today, size: 16),
                                   ),
                                   child: Text(DateFormatter.format(date)),
                                 ),
@@ -1141,27 +1391,35 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                         // Target Bank Account / Cash Drawer
                         Consumer(
                           builder: (context, ref, _) {
-                            final accountsAsync = ref.watch(bankAccountsWithBalancesProvider);
+                            final accountsAsync =
+                                ref.watch(bankAccountsWithBalancesProvider);
                             return accountsAsync.maybeWhen(
                               data: (accounts) => DropdownButtonFormField<int?>(
                                 value: selectedBankAccountId,
                                 isExpanded: true,
                                 decoration: InputDecoration(
-                                  labelText: isCapital ? 'Deposit Into Account' : 'Withdraw From Account',
-                                  prefixIcon: const Icon(Icons.account_balance_rounded, size: 18),
+                                  labelText: isCapital
+                                      ? 'Deposit Into Account'
+                                      : 'Withdraw From Account',
+                                  prefixIcon: const Icon(
+                                      Icons.account_balance_rounded,
+                                      size: 18),
                                 ),
                                 items: [
                                   const DropdownMenuItem<int?>(
                                     value: null,
-                                    child: Text('💵 Physical Cash Drawer / Cash in Hand'),
+                                    child: Text(
+                                        '💵 Physical Cash Drawer / Cash in Hand'),
                                   ),
-                                  ...accounts.map((acc) => DropdownMenuItem<int?>(
-                                        value: acc.account.id,
-                                        child: Text(
-                                            '${acc.account.accountName}${acc.account.accountNumber != null ? ' (${acc.account.accountNumber})' : ''}'),
-                                      )),
+                                  ...accounts
+                                      .map((acc) => DropdownMenuItem<int?>(
+                                            value: acc.account.id,
+                                            child: Text(
+                                                '${acc.account.accountName}${acc.account.accountNumber != null ? ' (${acc.account.accountNumber})' : ''}'),
+                                          )),
                                 ],
-                                onChanged: (id) => setDialogState(() => selectedBankAccountId = id),
+                                onChanged: (id) => setDialogState(
+                                    () => selectedBankAccountId = id),
                               ),
                               orElse: () => const SizedBox.shrink(),
                             );
@@ -1176,15 +1434,17 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                               child: DropdownButtonFormField<PaymentMode>(
                                 value: paymentMode,
                                 isExpanded: true,
-                                decoration: const InputDecoration(labelText: 'Mode'),
-                                items: PaymentMode.values
+                                decoration:
+                                    const InputDecoration(labelText: 'Mode'),
+                                items: kSelectablePaymentModes
                                     .map((m) => DropdownMenuItem(
                                           value: m,
                                           child: Text(m.displayName),
                                         ))
                                     .toList(),
                                 onChanged: (m) {
-                                  if (m != null) setDialogState(() => paymentMode = m);
+                                  if (m != null)
+                                    setDialogState(() => paymentMode = m);
                                 },
                               ),
                             ),
@@ -1205,7 +1465,9 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                           controller: narrationCtrl,
                           decoration: InputDecoration(
                             labelText: 'Narration / Reason',
-                            hintText: isCapital ? 'e.g. Added working capital' : 'e.g. Household drawings',
+                            hintText: isCapital
+                                ? 'e.g. Added working capital'
+                                : 'e.g. Household drawings',
                           ),
                         ),
                       ],
@@ -1223,11 +1485,17 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                     if (!formKey.currentState!.validate()) return;
                     final amt = double.parse(amountCtrl.text.trim());
                     final repo = ref.read(ledgerRepositoryProvider);
+                    int? investorId = selectedInvestorId;
+                    if (investorId == addNewInvestor) {
+                      investorId =
+                          await repo.addInvestor(name: newInvestorCtrl.text);
+                    }
 
                     if (isCapital) {
                       await repo.recordOwnerCapital(
                         amount: amt,
                         date: date,
+                        investorId: investorId,
                         bankAccountId: selectedBankAccountId,
                         paymentMode: paymentMode,
                         narration: narrationCtrl.text,
@@ -1237,6 +1505,7 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                       await repo.recordOwnerDrawings(
                         amount: amt,
                         date: date,
+                        investorId: investorId,
                         bankAccountId: selectedBankAccountId,
                         paymentMode: paymentMode,
                         narration: narrationCtrl.text,
@@ -1257,7 +1526,9 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                     }
                   },
                   style: FilledButton.styleFrom(
-                    backgroundColor: isCapital ? const Color(0xFF059669) : const Color(0xFFDC2626),
+                    backgroundColor: isCapital
+                        ? const Color(0xFF059669)
+                        : const Color(0xFFDC2626),
                   ),
                   child: Text(isCapital ? 'Save Capital' : 'Save Drawings'),
                 ),
@@ -1293,7 +1564,8 @@ class _EmptyLedgerCard extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.receipt_long_rounded, size: 54.sp, color: const Color(0xFF94A3B8)),
+              Icon(Icons.receipt_long_rounded,
+                  size: 54.sp, color: const Color(0xFF94A3B8)),
               SizedBox(height: 16.h),
               Text(
                 title,
@@ -1306,7 +1578,8 @@ class _EmptyLedgerCard extends StatelessWidget {
               SizedBox(height: 6.h),
               Text(
                 subtitle,
-                style: TextStyle(fontSize: 12.sp, color: const Color(0xFF64748B)),
+                style:
+                    TextStyle(fontSize: 12.sp, color: const Color(0xFF64748B)),
                 textAlign: TextAlign.center,
               ),
             ],

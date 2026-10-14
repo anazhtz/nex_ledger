@@ -4,6 +4,7 @@ import 'projects_table.dart';
 import 'workers_table.dart';
 import 'expense_categories_table.dart';
 import 'bank_accounts_table.dart';
+import 'investors_table.dart';
 
 /// Unified transaction ledger — every money movement goes here.
 ///
@@ -24,6 +25,11 @@ class Transactions extends Table {
   /// Optional Bank Account reference — indicates which bank account or cash drawer held this money.
   IntColumn get bankAccountId =>
       integer().nullable().references(BankAccounts, #id, onDelete: KeyAction.setNull)();
+
+  /// Optional investor / partner — set on ownerCapital and drawings entries.
+  /// setNull on delete so history survives if an investor row is removed.
+  IntColumn get investorId =>
+      integer().nullable().references(Investors, #id, onDelete: KeyAction.setNull)();
 
   DateTimeColumn get date => dateTime()();
   TextColumn get type => textEnum<TransactionType>()();

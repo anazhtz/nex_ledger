@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
+import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/database_provider.dart';
 import 'package:nex_ledger/features/reports/data/ledger_repository.dart';
 import 'package:nex_ledger/features/reports/models/ledger_models.dart';
@@ -32,34 +33,37 @@ final ledgerDateRangeProvider = StateProvider<DateTimeRange?>((ref) => null);
 // ─── STREAM PROVIDERS ────────────────────────────────────────────────────────
 
 /// Supplier / Vendor Ledger Stream
-final vendorLedgerProvider =
-    StreamProvider.family<({LedgerSummary summary, List<LedgerEntry> entries}), int>(
+final vendorLedgerProvider = StreamProvider.family<
+    ({LedgerSummary summary, List<LedgerEntry> entries}), int>(
   (ref, vendorId) {
     final repo = ref.watch(ledgerRepositoryProvider);
     final projectId = ref.watch(ledgerProjectFilterProvider);
     final dateRange = ref.watch(ledgerDateRangeProvider);
-    return repo.watchVendorLedger(vendorId, projectId: projectId, dateRange: dateRange);
+    return repo.watchVendorLedger(vendorId,
+        projectId: projectId, dateRange: dateRange);
   },
 );
 
 /// Labour / Worker Ledger Stream
-final workerLedgerProvider =
-    StreamProvider.family<({LedgerSummary summary, List<LedgerEntry> entries}), int>(
+final workerLedgerProvider = StreamProvider.family<
+    ({LedgerSummary summary, List<LedgerEntry> entries}), int>(
   (ref, workerId) {
     final repo = ref.watch(ledgerRepositoryProvider);
     final projectId = ref.watch(ledgerProjectFilterProvider);
     final dateRange = ref.watch(ledgerDateRangeProvider);
-    return repo.watchWorkerLedger(workerId, projectId: projectId, dateRange: dateRange);
+    return repo.watchWorkerLedger(workerId,
+        projectId: projectId, dateRange: dateRange);
   },
 );
 
 /// Bank Account / Cash in Hand Ledger Stream
-final accountLedgerProvider =
-    StreamProvider.family<({LedgerSummary summary, List<LedgerEntry> entries}), int?>(
+final accountLedgerProvider = StreamProvider.family<
+    ({LedgerSummary summary, List<LedgerEntry> entries}), int?>(
   (ref, bankAccountId) {
     final repo = ref.watch(ledgerRepositoryProvider);
     final dateRange = ref.watch(ledgerDateRangeProvider);
-    return repo.watchAccountLedger(bankAccountId: bankAccountId, dateRange: dateRange);
+    return repo.watchAccountLedger(
+        bankAccountId: bankAccountId, dateRange: dateRange);
   },
 );
 
@@ -69,30 +73,48 @@ final personalLedgerProvider =
   (ref) {
     final repo = ref.watch(ledgerRepositoryProvider);
     final dateRange = ref.watch(ledgerDateRangeProvider);
-    return repo.watchPersonalLedger(dateRange: dateRange);
+    final investorId = ref.watch(selectedLedgerInvestorIdProvider);
+    return repo.watchPersonalLedger(
+        dateRange: dateRange, investorId: investorId);
   },
 );
 
+/// Investor chosen in the Personal ledger filter (null = all investors).
+final selectedLedgerInvestorIdProvider = StateProvider<int?>((ref) => null);
+
+/// Active investors / partners, A–Z.
+final investorListProvider = StreamProvider<List<Investor>>((ref) {
+  return ref.watch(ledgerRepositoryProvider).watchInvestors();
+});
+
+/// Invested / withdrawn / net per investor.
+final investorSummariesProvider = StreamProvider<List<InvestorSummary>>((ref) {
+  return ref.watch(ledgerRepositoryProvider).watchInvestorSummaries();
+});
+
 /// Selected Subcontractor ID in the Subcontractor ledger view.
-final selectedLedgerSubcontractorIdProvider = StateProvider<int?>((ref) => null);
+final selectedLedgerSubcontractorIdProvider =
+    StateProvider<int?>((ref) => null);
 
 /// Subcontractor / Piece-Rate Ledger Stream
-final subcontractorLedgerProvider =
-    StreamProvider.family<({LedgerSummary summary, List<LedgerEntry> entries}), int>(
+final subcontractorLedgerProvider = StreamProvider.family<
+    ({LedgerSummary summary, List<LedgerEntry> entries}), int>(
   (ref, subcontractorId) {
     final repo = ref.watch(ledgerRepositoryProvider);
     final projectId = ref.watch(ledgerProjectFilterProvider);
     final dateRange = ref.watch(ledgerDateRangeProvider);
-    return repo.watchSubcontractorLedger(subcontractorId, projectId: projectId, dateRange: dateRange);
+    return repo.watchSubcontractorLedger(subcontractorId,
+        projectId: projectId, dateRange: dateRange);
   },
 );
 
 /// Selected Project ID in the Client Contract ledger view.
-final selectedLedgerClientProjectIdProvider = StateProvider<int?>((ref) => null);
+final selectedLedgerClientProjectIdProvider =
+    StateProvider<int?>((ref) => null);
 
 /// Client / Customer Contract Ledger Stream
-final clientLedgerProvider =
-    StreamProvider.family<({LedgerSummary summary, List<LedgerEntry> entries}), int>(
+final clientLedgerProvider = StreamProvider.family<
+    ({LedgerSummary summary, List<LedgerEntry> entries}), int>(
   (ref, projectId) {
     final repo = ref.watch(ledgerRepositoryProvider);
     final dateRange = ref.watch(ledgerDateRangeProvider);

@@ -19,7 +19,8 @@ class DayBookScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final selectedDate = ref.watch(selectedDayBookDateProvider);
-    final selectedBankAccountId = ref.watch(selectedDayBookBankAccountIdProvider);
+    final selectedBankAccountId =
+        ref.watch(selectedDayBookBankAccountIdProvider);
     final dayBookAsync = ref.watch(dayBookReportProvider);
     final accountsAsync = ref.watch(bankAccountsWithBalancesProvider);
     final selectedProjectId = ref.watch(selectedProjectIdProvider);
@@ -36,7 +37,8 @@ class DayBookScreen extends ConsumerWidget {
             SizedBox(height: 16.h),
 
             // ─── Filter Bar (Account & Quick Dates) ───
-            _buildFilterBar(context, ref, selectedDate, selectedBankAccountId, accountsAsync, theme),
+            _buildFilterBar(context, ref, selectedDate, selectedBankAccountId,
+                accountsAsync, theme),
             SizedBox(height: 20.h),
 
             // ─── Main Content (Stats & Transactions Table) ───
@@ -50,7 +52,8 @@ class DayBookScreen extends ConsumerWidget {
               error: (err, st) => Center(
                 child: Padding(
                   padding: const EdgeInsets.all(32),
-                  child: Text('Error loading day-book: $err', style: TextStyle(color: Colors.red.shade700)),
+                  child: Text('Error loading day-book: $err',
+                      style: TextStyle(color: Colors.red.shade700)),
                 ),
               ),
               data: (report) => Column(
@@ -61,7 +64,8 @@ class DayBookScreen extends ConsumerWidget {
                   SizedBox(height: 24.h),
 
                   // Transactions Table Card
-                  _buildTransactionsCard(context, ref, report, selectedProjectId, theme),
+                  _buildTransactionsCard(
+                      context, ref, report, selectedProjectId, theme),
                 ],
               ),
             ),
@@ -71,7 +75,8 @@ class DayBookScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, WidgetRef ref, DateTime selectedDate, ThemeData theme) {
+  Widget _buildHeader(BuildContext context, WidgetRef ref,
+      DateTime selectedDate, ThemeData theme) {
     final isToday = _isSameDay(selectedDate, DateTime.now());
 
     return Row(
@@ -83,7 +88,8 @@ class DayBookScreen extends ConsumerWidget {
             color: const Color(0xFF1F5FBF).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12.r),
           ),
-          child: Icon(Icons.today_rounded, color: const Color(0xFF1F5FBF), size: 28.sp),
+          child: Icon(Icons.today_rounded,
+              color: const Color(0xFF1F5FBF), size: 28.sp),
         ),
         SizedBox(width: 14.w),
         Expanded(
@@ -146,15 +152,18 @@ class DayBookScreen extends ConsumerWidget {
                     lastDate: DateTime(2100),
                   );
                   if (picked != null) {
-                    ref.read(selectedDayBookDateProvider.notifier).state = picked;
+                    ref.read(selectedDayBookDateProvider.notifier).state =
+                        picked;
                   }
                 },
                 borderRadius: BorderRadius.circular(8.r),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                   child: Row(
                     children: [
-                      Icon(Icons.calendar_month_rounded, size: 18.sp, color: const Color(0xFF1F5FBF)),
+                      Icon(Icons.calendar_month_rounded,
+                          size: 18.sp, color: const Color(0xFF1F5FBF)),
                       SizedBox(width: 8.w),
                       Text(
                         isToday
@@ -207,7 +216,8 @@ class DayBookScreen extends ConsumerWidget {
             // Quick preset pills: Today, Yesterday
             OutlinedButton.icon(
               onPressed: () {
-                ref.read(selectedDayBookDateProvider.notifier).state = DateTime.now();
+                ref.read(selectedDayBookDateProvider.notifier).state =
+                    DateTime.now();
               },
               icon: const Icon(Icons.today_rounded, size: 16),
               label: const Text('Today'),
@@ -234,14 +244,17 @@ class DayBookScreen extends ConsumerWidget {
               icon: const Icon(Icons.history_rounded, size: 16),
               label: const Text('Yesterday'),
               style: OutlinedButton.styleFrom(
-                backgroundColor: _isSameDay(selectedDate, DateTime.now().subtract(const Duration(days: 1)))
+                backgroundColor: _isSameDay(selectedDate,
+                        DateTime.now().subtract(const Duration(days: 1)))
                     ? const Color(0xFFEAF1FB)
                     : null,
-                foregroundColor: _isSameDay(selectedDate, DateTime.now().subtract(const Duration(days: 1)))
+                foregroundColor: _isSameDay(selectedDate,
+                        DateTime.now().subtract(const Duration(days: 1)))
                     ? const Color(0xFF1F5FBF)
                     : const Color(0xFF475569),
                 side: BorderSide(
-                  color: _isSameDay(selectedDate, DateTime.now().subtract(const Duration(days: 1)))
+                  color: _isSameDay(selectedDate,
+                          DateTime.now().subtract(const Duration(days: 1)))
                       ? const Color(0xFF6366F1)
                       : const Color(0xFFCBD5E1),
                 ),
@@ -262,10 +275,13 @@ class DayBookScreen extends ConsumerWidget {
                     isExpanded: true,
                     isDense: true,
                     decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                       labelText: 'Account / Drawer Filter',
-                      prefixIcon: const Icon(Icons.account_balance_outlined, size: 18),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.r)),
+                      prefixIcon:
+                          const Icon(Icons.account_balance_outlined, size: 18),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.r)),
                     ),
                     items: [
                       const DropdownMenuItem(
@@ -283,7 +299,9 @@ class DayBookScreen extends ConsumerWidget {
                       ),
                     ],
                     onChanged: (v) {
-                      ref.read(selectedDayBookBankAccountIdProvider.notifier).state = v;
+                      ref
+                          .read(selectedDayBookBankAccountIdProvider.notifier)
+                          .state = v;
                     },
                   ),
                 );
@@ -305,7 +323,9 @@ class DayBookScreen extends ConsumerWidget {
           value: CurrencyFormatter.format(report.openingBalance),
           icon: Icons.account_balance_wallet_outlined,
           iconColor: const Color(0xFF64748B),
-          valueColor: report.openingBalance < 0 ? const Color(0xFFDC2626) : const Color(0xFF1E293B),
+          valueColor: report.openingBalance < 0
+              ? const Color(0xFFDC2626)
+              : const Color(0xFF1E293B),
           subtitle: 'Funds at start of day',
         ),
         StatCard(
@@ -326,10 +346,15 @@ class DayBookScreen extends ConsumerWidget {
         ),
         StatCard(
           label: 'Net Day Movement',
-          value: (report.netMovement >= 0 ? '+' : '') + CurrencyFormatter.format(report.netMovement),
+          value: (report.netMovement >= 0 ? '+' : '') +
+              CurrencyFormatter.format(report.netMovement),
           icon: Icons.swap_vert_rounded,
-          iconColor: report.netMovement >= 0 ? const Color(0xFF2563EB) : const Color(0xFFDC2626),
-          valueColor: report.netMovement >= 0 ? const Color(0xFF2563EB) : const Color(0xFFDC2626),
+          iconColor: report.netMovement >= 0
+              ? const Color(0xFF2563EB)
+              : const Color(0xFFDC2626),
+          valueColor: report.netMovement >= 0
+              ? const Color(0xFF2563EB)
+              : const Color(0xFFDC2626),
           subtitle: 'Cash in minus cash out today',
         ),
         StatCard(
@@ -337,7 +362,9 @@ class DayBookScreen extends ConsumerWidget {
           value: CurrencyFormatter.format(report.closingBalance),
           icon: Icons.lock_clock_outlined,
           iconColor: const Color(0xFF1F5FBF),
-          valueColor: report.closingBalance < 0 ? const Color(0xFFDC2626) : const Color(0xFF1F5FBF),
+          valueColor: report.closingBalance < 0
+              ? const Color(0xFFDC2626)
+              : const Color(0xFF1F5FBF),
           subtitle: 'Funds at close of day',
         ),
       ];
@@ -346,12 +373,19 @@ class DayBookScreen extends ConsumerWidget {
         return Wrap(
           spacing: 12.w,
           runSpacing: 12.h,
-          children: cards.map((c) => SizedBox(width: (constraints.maxWidth - 24.w) / 2, child: c)).toList(),
+          children: cards
+              .map((c) =>
+                  SizedBox(width: (constraints.maxWidth - 24.w) / 2, child: c))
+              .toList(),
         );
       }
 
       return Row(
-        children: cards.map((c) => Expanded(child: Padding(padding: EdgeInsets.symmetric(horizontal: 4.w), child: c))).toList(),
+        children: cards
+            .map((c) => Expanded(
+                child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4.w), child: c)))
+            .toList(),
       );
     });
   }
@@ -377,7 +411,8 @@ class DayBookScreen extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.event_note_outlined, size: 54.sp, color: const Color(0xFF94A3B8)),
+                Icon(Icons.event_note_outlined,
+                    size: 54.sp, color: const Color(0xFF94A3B8)),
                 SizedBox(height: 14.h),
                 Text(
                   'No Transactions on ${DateFormatter.format(report.date)}',
@@ -389,7 +424,8 @@ class DayBookScreen extends ConsumerWidget {
                 SizedBox(height: 6.h),
                 Text(
                   'Opening balance (${CurrencyFormatter.format(report.openingBalance)}) carried forward seamlessly as closing balance.',
-                  style: TextStyle(fontSize: 13.sp, color: const Color(0xFF64748B)),
+                  style: TextStyle(
+                      fontSize: 13.sp, color: const Color(0xFF64748B)),
                 ),
                 SizedBox(height: 20.h),
                 Row(
@@ -416,11 +452,14 @@ class DayBookScreen extends ConsumerWidget {
     }
 
     return DataTableCard(
-      title: 'Transactions Log (${report.entries.length} Entries) — ${DateFormatter.format(report.date)}',
+      title:
+          'Transactions Log (${report.entries.length} Entries) — ${DateFormatter.format(report.date)}',
       action: Container(
         padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
         decoration: BoxDecoration(
-          color: report.netPnl >= 0 ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+          color: report.netPnl >= 0
+              ? const Color(0xFFDCFCE7)
+              : const Color(0xFFFEE2E2),
           borderRadius: BorderRadius.circular(8.r),
         ),
         child: Text(
@@ -428,7 +467,9 @@ class DayBookScreen extends ConsumerWidget {
           style: TextStyle(
             fontSize: 12.sp,
             fontWeight: FontWeight.w700,
-            color: report.netPnl >= 0 ? const Color(0xFF166534) : const Color(0xFF991B1B),
+            color: report.netPnl >= 0
+                ? const Color(0xFF166534)
+                : const Color(0xFF991B1B),
           ),
         ),
       ),
@@ -449,14 +490,20 @@ class DayBookScreen extends ConsumerWidget {
 
         return DataRow(
           cells: [
-            DataCell(Text(t.referenceNo ?? '—', style: const TextStyle(fontWeight: FontWeight.w600))),
+            DataCell(Text(t.referenceNo ?? '—',
+                style: const TextStyle(fontWeight: FontWeight.w600))),
             DataCell(
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(e.project.code, style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF1F5FBF))),
-                  Text(e.project.name, style: TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B))),
+                  Text(e.project.code,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1F5FBF))),
+                  Text(e.project.name,
+                      style: TextStyle(
+                          fontSize: 11.sp, color: const Color(0xFF64748B))),
                 ],
               ),
             ),
@@ -473,7 +520,9 @@ class DayBookScreen extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    t.paymentMode == PaymentMode.cash ? Icons.payments_outlined : Icons.account_balance_outlined,
+                    t.paymentMode == PaymentMode.cash
+                        ? Icons.payments_outlined
+                        : Icons.account_balance_outlined,
                     size: 14.sp,
                     color: const Color(0xFF64748B),
                   ),
@@ -486,7 +535,9 @@ class DayBookScreen extends ConsumerWidget {
               isCashIn
                   ? Text(
                       '+${CurrencyFormatter.format(t.amount)}',
-                      style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF059669)),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF059669)),
                     )
                   : const Text('—', style: TextStyle(color: Color(0xFF94A3B8))),
             ),
@@ -494,7 +545,9 @@ class DayBookScreen extends ConsumerWidget {
               isCashOut
                   ? Text(
                       '-${CurrencyFormatter.format(t.amount)}',
-                      style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFFDC2626)),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFFDC2626)),
                     )
                   : const Text('—', style: TextStyle(color: Color(0xFF94A3B8))),
             ),
@@ -502,7 +555,9 @@ class DayBookScreen extends ConsumerWidget {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                 decoration: BoxDecoration(
-                  color: t.affectsPnl ? const Color(0xFFF1F5F9) : const Color(0xFFFEF3C7),
+                  color: t.affectsPnl
+                      ? const Color(0xFFF1F5F9)
+                      : const Color(0xFFFEF3C7),
                   borderRadius: BorderRadius.circular(6.r),
                 ),
                 child: Text(
@@ -510,7 +565,9 @@ class DayBookScreen extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 10.sp,
                     fontWeight: FontWeight.w600,
-                    color: t.affectsPnl ? const Color(0xFF475569) : const Color(0xFF92400E),
+                    color: t.affectsPnl
+                        ? const Color(0xFF475569)
+                        : const Color(0xFF92400E),
                   ),
                 ),
               ),
@@ -541,7 +598,9 @@ class DayBookScreen extends ConsumerWidget {
       case TransactionType.purchasePayment:
         bg = const Color(0xFFFEF3C7);
         fg = const Color(0xFF92400E);
-        label = type == TransactionType.purchase ? 'Purchase Bill' : 'Vendor Payment';
+        label = type == TransactionType.purchase
+            ? 'Purchase Bill'
+            : 'Vendor Payment';
         break;
       case TransactionType.labourPayment:
         bg = const Color(0xFFE0E7FF);
@@ -618,7 +677,8 @@ class DayBookScreen extends ConsumerWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w700, color: fg),
+        style:
+            TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w700, color: fg),
       ),
     );
   }

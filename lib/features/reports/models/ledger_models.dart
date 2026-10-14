@@ -42,16 +42,23 @@ class LedgerEntry {
 /// Summary metrics for the active ledger header.
 class LedgerSummary {
   final double openingBalance;
-  final double totalDebit; // e.g. Total Payments Made / Total Outflows / Drawings
-  final double totalCredit; // e.g. Total Billed / Total Inflows / Total Wages / Capital
-  final double closingBalance; // Net Balance (e.g. Net Due, Bank Balance, Owner Capital)
+  final double
+      totalDebit; // e.g. Total Payments Made / Total Outflows / Drawings
+  final double
+      totalCredit; // e.g. Total Billed / Total Inflows / Total Wages / Capital
+  final double
+      closingBalance; // Net Balance (e.g. Net Due, Bank Balance, Owner Capital)
   final int totalEntries;
   final String entityName;
   final String? entitySubtitle;
-  final String debitLabel; // e.g. "Total Paid", "Total Outflow", "Personal Drawings"
-  final String creditLabel; // e.g. "Total Billed", "Total Wages", "Capital Injected"
-  final String balanceLabel; // e.g. "Net Payable Due", "Net Wage Due", "Available Balance", "Net Owner Balance"
-  final bool isPayable; // True if positive balance means we owe money (Payable liability)
+  final String
+      debitLabel; // e.g. "Total Paid", "Total Outflow", "Personal Drawings"
+  final String
+      creditLabel; // e.g. "Total Billed", "Total Wages", "Capital Injected"
+  final String
+      balanceLabel; // e.g. "Net Payable Due", "Net Wage Due", "Available Balance", "Net Owner Balance"
+  final bool
+      isPayable; // True if positive balance means we owe money (Payable liability)
 
   LedgerSummary({
     this.openingBalance = 0.0,
@@ -66,4 +73,23 @@ class LedgerSummary {
     required this.balanceLabel,
     this.isPayable = false,
   });
+}
+
+/// One row of the "Capital by Investor" summary.
+/// [investorId] is null for entries that were never assigned to a person.
+class InvestorSummary {
+  final int? investorId;
+  final String name;
+  final double invested;
+  final double withdrawn;
+
+  const InvestorSummary({
+    required this.investorId,
+    required this.name,
+    required this.invested,
+    required this.withdrawn,
+  });
+
+  /// Money of this investor still in the business.
+  double get net => invested - withdrawn;
 }

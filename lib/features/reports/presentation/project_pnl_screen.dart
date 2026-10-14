@@ -14,7 +14,8 @@ class ProjectPnlScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final projectsAsync = ref.watch(projectListProvider);
     final globalProject = ref.watch(selectedProjectIdProvider);
-    final selectedProjectId = ref.watch(reportProjectFilterProvider) ?? globalProject;
+    final selectedProjectId =
+        ref.watch(reportProjectFilterProvider) ?? globalProject;
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -37,8 +38,8 @@ class ProjectPnlScreen extends ConsumerWidget {
                       ),
                       Text(
                         'Income − Expenses − Purchases − Labour = Net P&L',
-                        style: theme.textTheme.bodyMedium
-                            ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
@@ -48,7 +49,8 @@ class ProjectPnlScreen extends ConsumerWidget {
                 if (selectedProjectId != null)
                   FilledButton.icon(
                     onPressed: () async {
-                      final pnl = await ref.read(projectPnlProvider(selectedProjectId).future);
+                      final pnl = await ref
+                          .read(projectPnlProvider(selectedProjectId).future);
                       final path = await ExcelExportService.exportPnlReport(
                         projectPnls: [pnl],
                         singleProjectTitle: pnl.project.name,
@@ -56,7 +58,8 @@ class ProjectPnlScreen extends ConsumerWidget {
                       if (path != null && context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('P&L Report exported to Excel: $path'),
+                            content:
+                                Text('P&L Report exported to Excel: $path'),
                             backgroundColor: const Color(0xFF059669),
                           ),
                         );
@@ -94,9 +97,8 @@ class ProjectPnlScreen extends ConsumerWidget {
                       ),
                     ),
                   ],
-                  onChanged: (v) => ref
-                      .read(reportProjectFilterProvider.notifier)
-                      .state = v,
+                  onChanged: (v) =>
+                      ref.read(reportProjectFilterProvider.notifier).state = v,
                 ),
               ),
             ),
@@ -107,8 +109,8 @@ class ProjectPnlScreen extends ConsumerWidget {
                 child: Center(
                   child: Text(
                     'Select a project to view its P&L.',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant),
+                    style: theme.textTheme.bodyLarge
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),
                 ),
               )
@@ -118,8 +120,8 @@ class ProjectPnlScreen extends ConsumerWidget {
                   final pnlAsync =
                       ref.watch(projectPnlProvider(selectedProjectId));
                   return pnlAsync.when(
-                    loading: () => const Center(
-                        child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (e, _) => Center(child: Text('Error: $e')),
                     data: (pnl) => Expanded(
                       child: SingleChildScrollView(
@@ -148,14 +150,16 @@ class ProjectPnlScreen extends ConsumerWidget {
                                 );
                                 final c3 = StatCard(
                                   label: 'Purchases',
-                                  value: CurrencyFormatter.format(pnl.purchases),
+                                  value:
+                                      CurrencyFormatter.format(pnl.purchases),
                                   icon: Icons.shopping_cart_outlined,
                                   iconColor: Colors.orange.shade700,
                                   valueColor: Colors.orange.shade700,
                                 );
                                 final c4 = StatCard(
                                   label: 'Labour',
-                                  value: CurrencyFormatter.format(pnl.labourCosts),
+                                  value:
+                                      CurrencyFormatter.format(pnl.labourCosts),
                                   icon: Icons.people_outline,
                                   iconColor: Colors.purple.shade700,
                                   valueColor: Colors.purple.shade700,
@@ -177,7 +181,8 @@ class ProjectPnlScreen extends ConsumerWidget {
                                 );
                                 final c6 = StatCard(
                                   label: 'Accounts Payable',
-                                  value: CurrencyFormatter.format(pnl.accountsPayable),
+                                  value: CurrencyFormatter.format(
+                                      pnl.accountsPayable),
                                   icon: Icons.account_balance_wallet_outlined,
                                   iconColor: Colors.red.shade700,
                                   valueColor: Colors.red.shade700,
@@ -234,8 +239,7 @@ class ProjectPnlScreen extends ConsumerWidget {
                               child: Padding(
                                 padding: const EdgeInsets.all(20),
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       'P&L Breakdown — ${pnl.project.name}',
@@ -246,12 +250,14 @@ class ProjectPnlScreen extends ConsumerWidget {
                                     const SizedBox(height: 16),
                                     _BreakdownRow('Income (affects P&L)',
                                         pnl.income, Colors.green.shade700),
-                                    _BreakdownRow('Expenses',
-                                        -pnl.expenses, Colors.red.shade700),
-                                    _BreakdownRow('Purchases',
-                                        -pnl.purchases, Colors.orange.shade700),
-                                    _BreakdownRow('Labour Payments',
-                                        -pnl.labourCosts, Colors.purple.shade700),
+                                    _BreakdownRow('Expenses', -pnl.expenses,
+                                        Colors.red.shade700),
+                                    _BreakdownRow('Purchases', -pnl.purchases,
+                                        Colors.orange.shade700),
+                                    _BreakdownRow(
+                                        'Labour Payments',
+                                        -pnl.labourCosts,
+                                        Colors.purple.shade700),
                                     const Divider(height: 24),
                                     _BreakdownRow(
                                       'Net P&L',
@@ -269,15 +275,14 @@ class ProjectPnlScreen extends ConsumerWidget {
                                       pnl.depositsHeld,
                                       Colors.orange.shade700,
                                     ),
-                                    if (pnl.accountsPayable > 0) ...
-                                      [
-                                        const SizedBox(height: 6),
-                                        _BreakdownRow(
-                                          'Accounts Payable (Vendor Dues — not double-counted)',
-                                          pnl.accountsPayable,
-                                          Colors.red.shade700,
-                                        ),
-                                      ],
+                                    if (pnl.accountsPayable > 0) ...[
+                                      const SizedBox(height: 6),
+                                      _BreakdownRow(
+                                        'Accounts Payable (Vendor Dues — not double-counted)',
+                                        pnl.accountsPayable,
+                                        Colors.red.shade700,
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ),
@@ -288,7 +293,8 @@ class ProjectPnlScreen extends ConsumerWidget {
                             Consumer(
                               builder: (context, ref, _) {
                                 final breakdownAsync = ref.watch(
-                                    expenseCategoryBreakdownProvider(selectedProjectId));
+                                    expenseCategoryBreakdownProvider(
+                                        selectedProjectId));
                                 return breakdownAsync.when(
                                   loading: () => const SizedBox.shrink(),
                                   error: (_, __) => const SizedBox.shrink(),
@@ -321,8 +327,7 @@ class _BreakdownRow extends StatelessWidget {
   final double value;
   final Color color;
   final bool bold;
-  const _BreakdownRow(this.label, this.value, this.color,
-      {this.bold = false});
+  const _BreakdownRow(this.label, this.value, this.color, {this.bold = false});
 
   @override
   Widget build(BuildContext context) {
@@ -333,16 +338,16 @@ class _BreakdownRow extends StatelessWidget {
           Text(
             label,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: bold ? FontWeight.w700 : FontWeight.normal,
-            ),
+                  fontWeight: bold ? FontWeight.w700 : FontWeight.normal,
+                ),
           ),
           const Spacer(),
           Text(
             CurrencyFormatter.format(value.abs()),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: color,
-              fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
-            ),
+                  color: color,
+                  fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
+                ),
           ),
         ],
       ),
@@ -430,20 +435,18 @@ class _ExpenseCategoryBreakdownCardState
             SizedBox(height: 16.h),
             const Divider(height: 1),
             SizedBox(height: 12.h),
-
             ...groups.map((group) {
               final subs = widget.breakdown[group]!;
-              final groupTotal =
-                  subs.values.fold(0.0, (a, b) => a + b);
-              final groupPercent = grandTotal > 0 ? (groupTotal / grandTotal) : 0.0;
+              final groupTotal = subs.values.fold(0.0, (a, b) => a + b);
+              final groupPercent =
+                  grandTotal > 0 ? (groupTotal / grandTotal) : 0.0;
               final isOpen = _expanded[group] ?? true;
 
               return Column(
                 children: [
                   // Group row (tappable to expand/collapse)
                   InkWell(
-                    onTap: () =>
-                        setState(() => _expanded[group] = !isOpen),
+                    onTap: () => setState(() => _expanded[group] = !isOpen),
                     borderRadius: BorderRadius.circular(8.r),
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 8.h),
@@ -493,13 +496,16 @@ class _ExpenseCategoryBreakdownCardState
                   if (isOpen)
                     ...subs.entries.map((entry) {
                       return Padding(
-                        padding: EdgeInsets.only(left: 28.w, bottom: 6.h, top: 2.h),
+                        padding:
+                            EdgeInsets.only(left: 28.w, bottom: 6.h, top: 2.h),
                         child: Column(
                           children: [
                             Row(
                               children: [
-                                const Icon(Icons.subdirectory_arrow_right_rounded,
-                                    size: 14, color: Color(0xFF94A3B8)),
+                                const Icon(
+                                    Icons.subdirectory_arrow_right_rounded,
+                                    size: 14,
+                                    color: Color(0xFF94A3B8)),
                                 SizedBox(width: 6.w),
                                 Text(
                                   entry.key,

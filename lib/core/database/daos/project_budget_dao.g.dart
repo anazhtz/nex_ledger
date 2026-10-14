@@ -10,5 +10,6 @@ mixin _$ProjectBudgetDaoMixin on DatabaseAccessor<AppDatabase> {
   $ExpenseCategoriesTable get expenseCategories =>
       attachedDatabase.expenseCategories;
   $BankAccountsTable get bankAccounts => attachedDatabase.bankAccounts;
+  $InvestorsTable get investors => attachedDatabase.investors;
   $TransactionsTable get transactions => attachedDatabase.transactions;
 }

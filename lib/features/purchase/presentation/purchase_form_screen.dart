@@ -99,7 +99,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
             ? pd.purchase.paidAmount.toInt().toString()
             : pd.purchase.paidAmount.toStringAsFixed(2);
         _paymentStatus = pd.purchase.paymentStatus;
-        _paymentMode = pd.transaction.paymentMode;
+        _paymentMode = pd.transaction.paymentMode?.normalized;
         _selectedBankAccountId = pd.transaction.bankAccountId;
         _narrationCtrl.text = pd.transaction.narration ?? '';
         _refCtrl.text = pd.transaction.referenceNo ?? '';
@@ -133,7 +133,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) {
           return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.r)),
             title: Row(
               children: [
                 Container(
@@ -142,7 +143,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                     color: const Color(0xFFEAF1FB),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
-                  child: Icon(Icons.category_rounded, color: const Color(0xFF1F5FBF), size: 20.sp),
+                  child: Icon(Icons.category_rounded,
+                      color: const Color(0xFF1F5FBF), size: 20.sp),
                 ),
                 SizedBox(width: 10.w),
                 const Text('Add Custom Material Category'),
@@ -156,7 +158,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                 children: [
                   Text(
                     'Define a custom material or service category with a default unit of measurement.',
-                    style: TextStyle(fontSize: 12.sp, color: const Color(0xFF64748B)),
+                    style: TextStyle(
+                        fontSize: 12.sp, color: const Color(0xFF64748B)),
                   ),
                   SizedBox(height: 16.h),
                   TextField(
@@ -176,7 +179,9 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                       labelText: 'Default Unit of Measurement *',
                       prefixIcon: Icon(Icons.straighten_rounded),
                     ),
-                    items: _commonUnits.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
+                    items: _commonUnits
+                        .map((u) => DropdownMenuItem(value: u, child: Text(u)))
+                        .toList(),
                     onChanged: (u) {
                       if (u != null) setDialogState(() => selectedUnit = u);
                     },
@@ -185,7 +190,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                   TextField(
                     controller: itemsCtrl,
                     decoration: const InputDecoration(
-                      labelText: 'Quick Item Presets (comma separated, optional)',
+                      labelText:
+                          'Quick Item Presets (comma separated, optional)',
                       hintText: 'e.g. 540W Solar Panel, 5kW Hybrid Inverter',
                       prefixIcon: Icon(Icons.format_list_bulleted_rounded),
                     ),
@@ -230,7 +236,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
 
                   Navigator.pop(ctx);
                 },
-                style: FilledButton.styleFrom(backgroundColor: const Color(0xFF1F5FBF)),
+                style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF1F5FBF)),
                 child: const Text('Add & Select Category'),
               ),
             ],
@@ -257,11 +264,14 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
   }
 
   void _onQtyOrRateChanged() {
-    final qty = double.tryParse(_qtyCtrl.text.replaceAll(',', '').trim()) ?? 0.0;
-    final rate = double.tryParse(_rateCtrl.text.replaceAll(',', '').trim()) ?? 0.0;
+    final qty =
+        double.tryParse(_qtyCtrl.text.replaceAll(',', '').trim()) ?? 0.0;
+    final rate =
+        double.tryParse(_rateCtrl.text.replaceAll(',', '').trim()) ?? 0.0;
     if (qty > 0 && rate > 0) {
       final total = qty * rate;
-      _amountCtrl.text = total % 1 == 0 ? total.toInt().toString() : total.toStringAsFixed(2);
+      _amountCtrl.text =
+          total % 1 == 0 ? total.toInt().toString() : total.toStringAsFixed(2);
       if (_paymentStatus == PaymentStatus.paid) {
         _paidAmountCtrl.text = _amountCtrl.text;
       }
@@ -304,7 +314,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
       return;
     }
 
-    final cleanAmountStr = _amountCtrl.text.replaceAll(',', '').replaceAll(' ', '').trim();
+    final cleanAmountStr =
+        _amountCtrl.text.replaceAll(',', '').replaceAll(' ', '').trim();
     final amount = double.tryParse(cleanAmountStr);
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -313,15 +324,19 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
       return;
     }
 
-    final qty = double.tryParse(_qtyCtrl.text.replaceAll(',', '').trim()) ?? 1.0;
-    final unitRate = double.tryParse(_rateCtrl.text.replaceAll(',', '').trim()) ?? 0.0;
-    final unit = _unitCtrl.text.trim().isNotEmpty ? _unitCtrl.text.trim() : null;
+    final qty =
+        double.tryParse(_qtyCtrl.text.replaceAll(',', '').trim()) ?? 1.0;
+    final unitRate =
+        double.tryParse(_rateCtrl.text.replaceAll(',', '').trim()) ?? 0.0;
+    final unit =
+        _unitCtrl.text.trim().isNotEmpty ? _unitCtrl.text.trim() : null;
 
     double paidAmount = 0.0;
     if (_paymentStatus == PaymentStatus.paid) {
       paidAmount = amount;
     } else if (_paymentStatus == PaymentStatus.partial) {
-      final cleanPaidStr = _paidAmountCtrl.text.replaceAll(',', '').replaceAll(' ', '').trim();
+      final cleanPaidStr =
+          _paidAmountCtrl.text.replaceAll(',', '').replaceAll(' ', '').trim();
       paidAmount = double.tryParse(cleanPaidStr) ?? 0.0;
       if (paidAmount < 0 || paidAmount >= amount) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -342,15 +357,18 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
       final accountsWithBalances =
           ref.read(bankAccountsWithBalancesProvider).asData?.value;
       if (accountsWithBalances != null && accountsWithBalances.isNotEmpty) {
-        final targetAcc = accountsWithBalances
-            .cast<BankAccountWithBalance?>()
-            .firstWhere(
-              (a) => a?.account.id == _selectedBankAccountId,
-              orElse: () => null,
-            );
+        final targetAcc =
+            accountsWithBalances.cast<BankAccountWithBalance?>().firstWhere(
+                  (a) => a?.account.id == _selectedBankAccountId,
+                  orElse: () => null,
+                );
         final currentBal = targetAcc != null
             ? targetAcc.currentBalance
-            : (ref.read(liquiditySummaryProvider).asData?.value.totalLiquidity ??
+            : (ref
+                    .read(liquiditySummaryProvider)
+                    .asData
+                    ?.value
+                    .totalLiquidity ??
                 0.0);
 
         if (currentBal - paidAmount < 0) {
@@ -440,7 +458,9 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
             paymentStatus: _paymentStatus,
             paymentMode: _paymentMode,
             bankAccountId: _selectedBankAccountId,
-            narration: _narrationCtrl.text.isNotEmpty ? _narrationCtrl.text.trim() : null,
+            narration: _narrationCtrl.text.isNotEmpty
+                ? _narrationCtrl.text.trim()
+                : null,
             referenceNo: _refCtrl.text.isNotEmpty ? _refCtrl.text.trim() : null,
             isAdvanceStock: _isAdvanceStock,
           );
@@ -578,7 +598,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                   label: 'Bill / Challan No.',
                                   child: TextFormField(
                                     controller: _refCtrl,
-                                    decoration: _dec(hint: 'Invoice or challan number'),
+                                    decoration:
+                                        _dec(hint: 'Invoice or challan number'),
                                   ),
                                 ),
                                 ErpField(
@@ -600,7 +621,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                   label: 'Project / Site',
                                   required: true,
                                   child: projectsAsync.when(
-                                    loading: () => const LinearProgressIndicator(),
+                                    loading: () =>
+                                        const LinearProgressIndicator(),
                                     error: (e, _) => Text('Error: $e'),
                                     data: _buildProjectDropdown,
                                   ),
@@ -609,7 +631,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                   label: 'Supplier / Vendor',
                                   required: true,
                                   child: vendorsAsync.when(
-                                    loading: () => const LinearProgressIndicator(),
+                                    loading: () =>
+                                        const LinearProgressIndicator(),
                                     error: (e, _) => Text('Error: $e'),
                                     data: _buildVendorField,
                                   ),
@@ -659,7 +682,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                       setState(() {
                                         _paymentStatus = v;
                                         if (v == PaymentStatus.paid) {
-                                          _paidAmountCtrl.text = _amountCtrl.text;
+                                          _paidAmountCtrl.text =
+                                              _amountCtrl.text;
                                         } else if (v == PaymentStatus.pending) {
                                           _paidAmountCtrl.text = '0';
                                         }
@@ -667,10 +691,12 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                     },
                                   ),
                                 ),
-                                if (_paymentStatus != PaymentStatus.pending) ...[
+                                if (_paymentStatus !=
+                                    PaymentStatus.pending) ...[
                                   ErpField(
                                     label: 'Payment Mode',
-                                    child: DropdownButtonFormField<PaymentMode?>(
+                                    child:
+                                        DropdownButtonFormField<PaymentMode?>(
                                       value: _paymentMode,
                                       isExpanded: true,
                                       decoration: _dec(),
@@ -678,7 +704,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                         const DropdownMenuItem(
                                             value: null,
                                             child: Text('— Select Mode —')),
-                                        ...PaymentMode.values.map(
+                                        ...kSelectablePaymentModes.map(
                                           (m) => DropdownMenuItem(
                                               value: m,
                                               child: Text(m.displayName)),
@@ -740,10 +766,12 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                               controller: _narrationCtrl,
                               minLines: 4,
                               maxLines: 4,
-                              decoration: _dec(hint: 'Remarks / narration (optional)'),
+                              decoration:
+                                  _dec(hint: 'Remarks / narration (optional)'),
                             ),
                           );
-                          final totals = _buildTotalsPanel(total, paid, balance);
+                          final totals =
+                              _buildTotalsPanel(total, paid, balance);
                           if (c.maxWidth < 900) {
                             return Column(children: [
                               options,
@@ -772,8 +800,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
               ErpActionBar(
                 onCancel: goBack,
                 loading: _loading,
-                onSaveAndNew:
-                    _isEditing ? null : () => _submit(addNew: true),
+                onSaveAndNew: _isEditing ? null : () => _submit(addNew: true),
                 onSaveAndClose: _submit,
                 saveLabel: _isEditing ? 'Update & Close' : 'Save & Close',
               ),
@@ -842,7 +869,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
         isExpanded: true,
         decoration: _dec(),
         items: [
-          const DropdownMenuItem(value: null, child: Text('— Auto (Default) —')),
+          const DropdownMenuItem(
+              value: null, child: Text('— Auto (Default) —')),
           ...accounts.map(
             (a) => DropdownMenuItem(
               value: a.account.id,
@@ -867,7 +895,16 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
             ),
           ),
         ],
-        onChanged: (v) => setState(() => _selectedBankAccountId = v),
+        onChanged: (v) => setState(() {
+          _selectedBankAccountId = v;
+          // Keep Payment Mode in step with the chosen account.
+          final picked = accounts.where((a) => a.account.id == v).firstOrNull;
+          if (picked != null) {
+            _paymentMode = picked.account.isCashAccount
+                ? PaymentMode.cash
+                : PaymentMode.bank;
+          }
+        }),
       ),
     );
   }
@@ -888,11 +925,9 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
             child: Row(children: [
               Icon(c.icon, size: 16.sp, color: c.color),
               SizedBox(width: 8.w),
-              Expanded(
-                  child: Text(c.name, overflow: TextOverflow.ellipsis)),
+              Expanded(child: Text(c.name, overflow: TextOverflow.ellipsis)),
               Text(c.defaultUnit,
-                  style: TextStyle(
-                      fontSize: 11.sp, color: AppTheme.textMuted)),
+                  style: TextStyle(fontSize: 11.sp, color: AppTheme.textMuted)),
             ]),
           ),
         ),
@@ -1052,9 +1087,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
               selectedColor: AppTheme.primaryBlue,
               backgroundColor: Colors.white,
               side: BorderSide(
-                  color: selected
-                      ? AppTheme.primaryBlue
-                      : AppTheme.borderColor),
+                  color:
+                      selected ? AppTheme.primaryBlue : AppTheme.borderColor),
               labelStyle: TextStyle(
                 fontSize: 12.sp,
                 color: selected ? Colors.white : AppTheme.textMain,
@@ -1080,7 +1114,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: _isAdvanceStock ? const Color(0xFFFEF3C7) : AppTheme.surfaceBg,
+            color:
+                _isAdvanceStock ? const Color(0xFFFEF3C7) : AppTheme.surfaceBg,
             borderRadius: BorderRadius.circular(4),
             border: Border.all(
               color: _isAdvanceStock
@@ -1095,8 +1130,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
               dense: true,
               value: _isAdvanceStock,
               title: Text('Hold as Advance Stock / Asset',
-                  style: TextStyle(
-                      fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                  style:
+                      TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600)),
               subtitle: Text(
                 _isAdvanceStock
                     ? 'Bulk stock for future allocation. Does not hit P&L now.'
@@ -1134,8 +1169,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
       child: Column(children: [
         ErpTotalLine(
             label: 'Total Bill Amount', value: CurrencyFormatter.format(total)),
-        ErpTotalLine(
-            label: 'Paid Now', value: CurrencyFormatter.format(paid)),
+        ErpTotalLine(label: 'Paid Now', value: CurrencyFormatter.format(paid)),
         Divider(color: AppTheme.totalsBorder, height: 16.h),
         ErpTotalLine(
           label: 'Balance Payable (Credit)',
@@ -1184,12 +1218,14 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline_rounded, size: 16.sp, color: const Color(0xFF64748B)),
+                    Icon(Icons.info_outline_rounded,
+                        size: 16.sp, color: const Color(0xFF64748B)),
                     SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
                         'First entry for $_selectedCategory under this project. No previous bills.',
-                        style: TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B)),
+                        style: TextStyle(
+                            fontSize: 11.sp, color: const Color(0xFF64748B)),
                       ),
                     ),
                   ],
@@ -1217,7 +1253,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                       color: const Color(0xFFDBEAFE),
                       borderRadius: BorderRadius.circular(6.r),
                     ),
-                    child: Icon(Icons.analytics_outlined, size: 18.sp, color: const Color(0xFF2563EB)),
+                    child: Icon(Icons.analytics_outlined,
+                        size: 18.sp, color: const Color(0xFF2563EB)),
                   ),
                   SizedBox(width: 12.w),
                   Expanded(

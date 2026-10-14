@@ -109,7 +109,8 @@ class _PettyCashDisburseOrReturnDialogState
           Navigator.of(context).pop(true);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('✓ Unspent cash returned & credited to office drawer/bank!'),
+              content: Text(
+                  '✓ Unspent cash returned & credited to office drawer/bank!'),
               backgroundColor: Color(0xFF059669),
             ),
           );
@@ -147,7 +148,8 @@ class _PettyCashDisburseOrReturnDialogState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
+          SnackBar(
+              content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
         );
       }
     } finally {
@@ -225,15 +227,18 @@ class _PettyCashDisburseOrReturnDialogState
                         prefixIcon: Icon(Icons.person_pin_outlined),
                       ),
                       selectedItemBuilder: (context) => [
-                        const Text('— Select Supervisor —', overflow: TextOverflow.ellipsis),
+                        const Text('— Select Supervisor —',
+                            overflow: TextOverflow.ellipsis),
                         ...wallets.map(
-                          (w) => Text(w.wallet.supervisorName, overflow: TextOverflow.ellipsis),
+                          (w) => Text(w.wallet.supervisorName,
+                              overflow: TextOverflow.ellipsis),
                         ),
                       ],
                       items: [
                         const DropdownMenuItem(
                           value: null,
-                          child: Text('— Select Supervisor —', overflow: TextOverflow.ellipsis),
+                          child: Text('— Select Supervisor —',
+                              overflow: TextOverflow.ellipsis),
                         ),
                         ...wallets.map(
                           (w) => DropdownMenuItem(
@@ -249,7 +254,8 @@ class _PettyCashDisburseOrReturnDialogState
                         setState(() {
                           _selectedWalletId = id;
                           if (id != null && _selectedProjectId == null) {
-                            final match = wallets.firstWhere((item) => item.wallet.id == id);
+                            final match = wallets
+                                .firstWhere((item) => item.wallet.id == id);
                             _selectedProjectId = match.wallet.assignedProjectId;
                           }
                         });
@@ -264,8 +270,9 @@ class _PettyCashDisburseOrReturnDialogState
                     loading: () => const LinearProgressIndicator(),
                     error: (e, _) => Text('Error: $e'),
                     data: (projects) {
-                      final validProjects =
-                          projects.where((p) => p.type == ProjectType.project).toList();
+                      final validProjects = projects
+                          .where((p) => p.type == ProjectType.project)
+                          .toList();
                       return DropdownButtonFormField<int?>(
                         value: _selectedProjectId,
                         isExpanded: true,
@@ -274,24 +281,29 @@ class _PettyCashDisburseOrReturnDialogState
                           prefixIcon: Icon(Icons.folder_outlined),
                         ),
                         selectedItemBuilder: (context) => [
-                          const Text('— Select Project —', overflow: TextOverflow.ellipsis),
+                          const Text('— Select Project —',
+                              overflow: TextOverflow.ellipsis),
                           ...validProjects.map(
-                            (p) => Text('${p.code} — ${p.name}', overflow: TextOverflow.ellipsis),
+                            (p) => Text('${p.code} — ${p.name}',
+                                overflow: TextOverflow.ellipsis),
                           ),
                         ],
                         items: [
                           const DropdownMenuItem(
                             value: null,
-                            child: Text('— Select Project —', overflow: TextOverflow.ellipsis),
+                            child: Text('— Select Project —',
+                                overflow: TextOverflow.ellipsis),
                           ),
                           ...validProjects.map(
                             (p) => DropdownMenuItem(
                               value: p.id,
-                              child: Text('${p.code} — ${p.name}', overflow: TextOverflow.ellipsis),
+                              child: Text('${p.code} — ${p.name}',
+                                  overflow: TextOverflow.ellipsis),
                             ),
                           ),
                         ],
-                        onChanged: (v) => setState(() => _selectedProjectId = v),
+                        onChanged: (v) =>
+                            setState(() => _selectedProjectId = v),
                         validator: (v) => v == null ? 'Required' : null,
                       );
                     },
@@ -308,7 +320,8 @@ class _PettyCashDisburseOrReturnDialogState
                       ),
                       child: Text(
                         '${_date.day.toString().padLeft(2, '0')}/${_date.month.toString().padLeft(2, '0')}/${_date.year}',
-                        style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                            fontSize: 13.sp, fontWeight: FontWeight.w500),
                       ),
                     ),
                   ),
@@ -318,15 +331,20 @@ class _PettyCashDisburseOrReturnDialogState
                   TextFormField(
                     controller: _amountCtrl,
                     decoration: InputDecoration(
-                      labelText: _isReturn ? 'Cash Returned Amount (₹) *' : 'Cash Advance Amount (₹) *',
+                      labelText: _isReturn
+                          ? 'Cash Returned Amount (₹) *'
+                          : 'Cash Advance Amount (₹) *',
                       hintText: '20000',
                       prefixText: '₹ ',
                     ),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) return 'Required';
-                      final parsed = double.tryParse(v.trim().replaceAll(',', ''));
-                      if (parsed == null || parsed <= 0) return 'Enter valid amount';
+                      final parsed =
+                          double.tryParse(v.trim().replaceAll(',', ''));
+                      if (parsed == null || parsed <= 0)
+                        return 'Enter valid amount';
                       return null;
                     },
                   ),
@@ -342,15 +360,16 @@ class _PettyCashDisburseOrReturnDialogState
                     ),
                     selectedItemBuilder: (context) => const [
                       Text('Cash Drawer', overflow: TextOverflow.ellipsis),
-                      Text('Bank Transfer / NEFT', overflow: TextOverflow.ellipsis),
-                      Text('UPI / GPay / Online', overflow: TextOverflow.ellipsis),
-                      Text('Cheque', overflow: TextOverflow.ellipsis),
+                      Text('Bank', overflow: TextOverflow.ellipsis),
                     ],
                     items: const [
-                      DropdownMenuItem(value: PaymentMode.cash, child: Text('Cash Drawer', overflow: TextOverflow.ellipsis)),
-                      DropdownMenuItem(value: PaymentMode.bank, child: Text('Bank Transfer / NEFT', overflow: TextOverflow.ellipsis)),
-                      DropdownMenuItem(value: PaymentMode.online, child: Text('UPI / GPay / Online', overflow: TextOverflow.ellipsis)),
-                      DropdownMenuItem(value: PaymentMode.cheque, child: Text('Cheque', overflow: TextOverflow.ellipsis)),
+                      DropdownMenuItem(
+                          value: PaymentMode.cash,
+                          child: Text('Cash Drawer',
+                              overflow: TextOverflow.ellipsis)),
+                      DropdownMenuItem(
+                          value: PaymentMode.bank,
+                          child: Text('Bank', overflow: TextOverflow.ellipsis)),
                     ],
                     onChanged: (m) {
                       if (m != null) setState(() => _paymentMode = m);
@@ -370,15 +389,18 @@ class _PettyCashDisburseOrReturnDialogState
                         prefixIcon: Icon(Icons.account_balance_outlined),
                       ),
                       selectedItemBuilder: (context) => [
-                        const Text('— Main Cash Drawer —', overflow: TextOverflow.ellipsis),
+                        const Text('— Main Cash Drawer —',
+                            overflow: TextOverflow.ellipsis),
                         ...accounts.map(
-                          (a) => Text(a.accountName, overflow: TextOverflow.ellipsis),
+                          (a) => Text(a.accountName,
+                              overflow: TextOverflow.ellipsis),
                         ),
                       ],
                       items: [
                         const DropdownMenuItem(
                           value: null,
-                          child: Text('— Main Cash Drawer —', overflow: TextOverflow.ellipsis),
+                          child: Text('— Main Cash Drawer —',
+                              overflow: TextOverflow.ellipsis),
                         ),
                         ...accounts.map(
                           (a) => DropdownMenuItem(
@@ -390,7 +412,8 @@ class _PettyCashDisburseOrReturnDialogState
                           ),
                         ),
                       ],
-                      onChanged: (v) => setState(() => _selectedBankAccountId = v),
+                      onChanged: (v) =>
+                          setState(() => _selectedBankAccountId = v),
                     ),
                   ),
                   SizedBox(height: 14.h),
@@ -447,8 +470,11 @@ class _PettyCashDisburseOrReturnDialogState
                                 child: const CircularProgressIndicator(
                                     strokeWidth: 2, color: Colors.white),
                               )
-                            : Icon(_isReturn ? Icons.check : Icons.send_rounded, size: 16),
-                        label: Text(_isReturn ? 'Save Cash Return' : 'Disburse Float Advance'),
+                            : Icon(_isReturn ? Icons.check : Icons.send_rounded,
+                                size: 16),
+                        label: Text(_isReturn
+                            ? 'Save Cash Return'
+                            : 'Disburse Float Advance'),
                       ),
                     ],
                   ),

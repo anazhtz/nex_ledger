@@ -18,13 +18,13 @@ final pettyCashRepositoryProvider = Provider<PettyCashRepository>((ref) {
 
 final pettyCashFilterSupervisorProvider = StateProvider<int?>((ref) => null);
 final pettyCashFilterProjectProvider = StateProvider<int?>((ref) => null);
-final pettyCashFilterTypeProvider = StateProvider<PettyCashTxnType?>((ref) => null);
+final pettyCashFilterTypeProvider =
+    StateProvider<PettyCashTxnType?>((ref) => null);
 final pettyCashSearchQueryProvider = StateProvider<String>((ref) => '');
 
 // ─── Streams ────────────────────────────────────────────────────────────────
 
-final allWalletsProvider =
-    StreamProvider<List<PettyCashWalletSummary>>((ref) {
+final allWalletsProvider = StreamProvider<List<PettyCashWalletSummary>>((ref) {
   final repo = ref.watch(pettyCashRepositoryProvider);
   return repo.watchAllWalletsWithBalances();
 });
@@ -65,9 +65,11 @@ final filteredWalletsProvider =
   return allAsync.whenData((list) {
     if (search.isEmpty) return list;
     return list.where((item) {
-      final matchesName = item.wallet.supervisorName.toLowerCase().contains(search);
+      final matchesName =
+          item.wallet.supervisorName.toLowerCase().contains(search);
       final matchesPhone = item.wallet.phone.toLowerCase().contains(search);
-      final matchesProj = (item.assignedProject?.name ?? '').toLowerCase().contains(search);
+      final matchesProj =
+          (item.assignedProject?.name ?? '').toLowerCase().contains(search);
       return matchesName || matchesPhone || matchesProj;
     }).toList();
   });
@@ -83,11 +85,17 @@ final filteredPettyCashVouchersProvider =
     return list.where((item) {
       final v = item.voucher;
       final matchesNarration = v.narration.toLowerCase().contains(search);
-      final matchesVoucher = (v.voucherNumber ?? '').toLowerCase().contains(search);
+      final matchesVoucher =
+          (v.voucherNumber ?? '').toLowerCase().contains(search);
       final matchesCat = v.category.toLowerCase().contains(search);
-      final matchesSupervisor = item.wallet.supervisorName.toLowerCase().contains(search);
+      final matchesSupervisor =
+          item.wallet.supervisorName.toLowerCase().contains(search);
       final matchesProj = item.project.name.toLowerCase().contains(search);
-      return matchesNarration || matchesVoucher || matchesCat || matchesSupervisor || matchesProj;
+      return matchesNarration ||
+          matchesVoucher ||
+          matchesCat ||
+          matchesSupervisor ||
+          matchesProj;
     }).toList();
   });
 });

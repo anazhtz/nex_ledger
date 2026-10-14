@@ -108,7 +108,8 @@ class _PettyCashVoucherFormScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('✓ Site expense voucher recorded & booked into Project P&L!'),
+            content: Text(
+                '✓ Site expense voucher recorded & booked into Project P&L!'),
             backgroundColor: Color(0xFF059669),
           ),
         );
@@ -117,7 +118,8 @@ class _PettyCashVoucherFormScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
+          SnackBar(
+              content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
         );
       }
     } finally {
@@ -202,11 +204,14 @@ class _PettyCashVoucherFormScreenState
                                 child: InputDecorator(
                                   decoration: const InputDecoration(
                                     labelText: 'Voucher Date *',
-                                    prefixIcon: Icon(Icons.calendar_today_outlined),
+                                    prefixIcon:
+                                        Icon(Icons.calendar_today_outlined),
                                   ),
                                   child: Text(
                                     '${_date.day.toString().padLeft(2, '0')}/${_date.month.toString().padLeft(2, '0')}/${_date.year}',
-                                    style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w500),
+                                    style: TextStyle(
+                                        fontSize: 12.sp,
+                                        fontWeight: FontWeight.w500),
                                   ),
                                 ),
                               ),
@@ -217,7 +222,8 @@ class _PettyCashVoucherFormScreenState
                               child: walletsAsync.when(
                                 loading: () => const LinearProgressIndicator(),
                                 error: (e, _) => Text('Error: $e'),
-                                data: (wallets) => DropdownButtonFormField<int?>(
+                                data: (wallets) =>
+                                    DropdownButtonFormField<int?>(
                                   value: _selectedWalletId,
                                   isExpanded: true,
                                   decoration: const InputDecoration(
@@ -225,15 +231,18 @@ class _PettyCashVoucherFormScreenState
                                     prefixIcon: Icon(Icons.person_pin_outlined),
                                   ),
                                   selectedItemBuilder: (context) => [
-                                    const Text('— Select Supervisor —', overflow: TextOverflow.ellipsis),
+                                    const Text('— Select Supervisor —',
+                                        overflow: TextOverflow.ellipsis),
                                     ...wallets.map(
-                                      (w) => Text(w.wallet.supervisorName, overflow: TextOverflow.ellipsis),
+                                      (w) => Text(w.wallet.supervisorName,
+                                          overflow: TextOverflow.ellipsis),
                                     ),
                                   ],
                                   items: [
                                     const DropdownMenuItem(
                                       value: null,
-                                      child: Text('— Select Supervisor —', overflow: TextOverflow.ellipsis),
+                                      child: Text('— Select Supervisor —',
+                                          overflow: TextOverflow.ellipsis),
                                     ),
                                     ...wallets.map(
                                       (w) => DropdownMenuItem(
@@ -248,13 +257,17 @@ class _PettyCashVoucherFormScreenState
                                   onChanged: (id) {
                                     setState(() {
                                       _selectedWalletId = id;
-                                      if (id != null && _selectedProjectId == null) {
-                                        final match = wallets.firstWhere((item) => item.wallet.id == id);
-                                        _selectedProjectId = match.wallet.assignedProjectId;
+                                      if (id != null &&
+                                          _selectedProjectId == null) {
+                                        final match = wallets.firstWhere(
+                                            (item) => item.wallet.id == id);
+                                        _selectedProjectId =
+                                            match.wallet.assignedProjectId;
                                       }
                                     });
                                   },
-                                  validator: (v) => v == null ? 'Required' : null,
+                                  validator: (v) =>
+                                      v == null ? 'Required' : null,
                                 ),
                               ),
                             ),
@@ -267,8 +280,9 @@ class _PettyCashVoucherFormScreenState
                           loading: () => const LinearProgressIndicator(),
                           error: (e, _) => Text('Error: $e'),
                           data: (projects) {
-                            final validProjects =
-                                projects.where((p) => p.type == ProjectType.project).toList();
+                            final validProjects = projects
+                                .where((p) => p.type == ProjectType.project)
+                                .toList();
                             return DropdownButtonFormField<int?>(
                               value: _selectedProjectId,
                               isExpanded: true,
@@ -277,24 +291,29 @@ class _PettyCashVoucherFormScreenState
                                 prefixIcon: Icon(Icons.folder_outlined),
                               ),
                               selectedItemBuilder: (context) => [
-                                const Text('— Select Project Site —', overflow: TextOverflow.ellipsis),
+                                const Text('— Select Project Site —',
+                                    overflow: TextOverflow.ellipsis),
                                 ...validProjects.map(
-                                  (p) => Text('${p.code} — ${p.name}', overflow: TextOverflow.ellipsis),
+                                  (p) => Text('${p.code} — ${p.name}',
+                                      overflow: TextOverflow.ellipsis),
                                 ),
                               ],
                               items: [
                                 const DropdownMenuItem(
                                   value: null,
-                                  child: Text('— Select Project Site —', overflow: TextOverflow.ellipsis),
+                                  child: Text('— Select Project Site —',
+                                      overflow: TextOverflow.ellipsis),
                                 ),
                                 ...validProjects.map(
                                   (p) => DropdownMenuItem(
                                     value: p.id,
-                                    child: Text('${p.code} — ${p.name}', overflow: TextOverflow.ellipsis),
+                                    child: Text('${p.code} — ${p.name}',
+                                        overflow: TextOverflow.ellipsis),
                                   ),
                                 ),
                               ],
-                              onChanged: (v) => setState(() => _selectedProjectId = v),
+                              onChanged: (v) =>
+                                  setState(() => _selectedProjectId = v),
                               validator: (v) => v == null ? 'Required' : null,
                             );
                           },
@@ -324,8 +343,12 @@ class _PettyCashVoucherFormScreenState
                                   selectedColor: const Color(0xFF2563EB),
                                   labelStyle: TextStyle(
                                     fontSize: 11.sp,
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                    color: isSelected ? Colors.white : const Color(0xFF334155),
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : const Color(0xFF334155),
                                   ),
                                   onSelected: (selected) {
                                     if (selected) {
@@ -357,14 +380,17 @@ class _PettyCashVoucherFormScreenState
                                   labelText: 'Budget Cost Head *',
                                   prefixIcon: Icon(Icons.pie_chart_outline),
                                 ),
-                                selectedItemBuilder: (context) => BudgetCostHead.values
-                                    .map((h) => Text(h.displayName, overflow: TextOverflow.ellipsis))
+                                selectedItemBuilder: (context) => BudgetCostHead
+                                    .values
+                                    .map((h) => Text(h.displayName,
+                                        overflow: TextOverflow.ellipsis))
                                     .toList(),
                                 items: BudgetCostHead.values
                                     .map(
                                       (h) => DropdownMenuItem(
                                         value: h,
-                                        child: Text(h.displayName, overflow: TextOverflow.ellipsis),
+                                        child: Text(h.displayName,
+                                            overflow: TextOverflow.ellipsis),
                                       ),
                                     )
                                     .toList(),
@@ -383,12 +409,17 @@ class _PettyCashVoucherFormScreenState
                                   hintText: '2500',
                                   prefixText: '₹ ',
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
                                 onChanged: (_) => setState(() {}),
                                 validator: (v) {
-                                  if (v == null || v.trim().isEmpty) return 'Required';
-                                  final parsed = double.tryParse(v.trim().replaceAll(',', ''));
-                                  if (parsed == null || parsed <= 0) return 'Enter valid amount';
+                                  if (v == null || v.trim().isEmpty)
+                                    return 'Required';
+                                  final parsed = double.tryParse(
+                                      v.trim().replaceAll(',', ''));
+                                  if (parsed == null || parsed <= 0)
+                                    return 'Enter valid amount';
                                   return null;
                                 },
                               ),
@@ -424,10 +455,12 @@ class _PettyCashVoucherFormScreenState
                           controller: _narrationCtrl,
                           decoration: const InputDecoration(
                             labelText: 'Expense Narration / Description *',
-                            hintText: 'e.g. 50 packs tea and snacks for night slab casting overtime workers',
+                            hintText:
+                                'e.g. 50 packs tea and snacks for night slab casting overtime workers',
                             prefixIcon: Icon(Icons.description_outlined),
                           ),
-                          validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                          validator: (v) =>
+                              v == null || v.trim().isEmpty ? 'Required' : null,
                         ),
                         SizedBox(height: 14.h),
 
@@ -457,7 +490,8 @@ class _PettyCashVoucherFormScreenState
                                   ? SizedBox(
                                       width: 16.sp,
                                       height: 16.sp,
-                                      child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                      child: const CircularProgressIndicator(
+                                          strokeWidth: 2, color: Colors.white),
                                     )
                                   : const Icon(Icons.check, size: 18),
                               label: const Text('Save Expense Voucher'),
