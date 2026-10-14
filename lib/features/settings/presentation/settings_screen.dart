@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nex_ledger/core/services/security_service.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/database_provider.dart';
 import 'package:nex_ledger/core/services/backup_restore_service.dart';
@@ -91,7 +92,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Row(
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.red.shade700),
@@ -127,7 +129,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('✓ All ledger data wiped successfully! App is fresh and clean.'),
+            content: Text(
+                '✓ All ledger data wiped successfully! App is fresh and clean.'),
             backgroundColor: Color(0xFF059669),
             duration: Duration(seconds: 4),
           ),
@@ -154,7 +157,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: const Row(
           children: [
             Icon(Icons.shield_rounded, color: Color(0xFF1F5FBF)),
@@ -194,6 +198,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           FilledButton(
             onPressed: () async {
               if (oldPinCtrl.text.isEmpty || newPinCtrl.text.isEmpty) return;
+              final weak = SecurityService.validateNewPin(newPinCtrl.text);
+              if (weak != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(weak),
+                    backgroundColor: const Color(0xFFEF4444),
+                  ),
+                );
+                return;
+              }
               final success = await ref
                   .read(authProvider.notifier)
                   .changePin(oldPinCtrl.text, newPinCtrl.text);
@@ -285,7 +299,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 SizedBox(width: 14.w),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'App Security & Master PIN',
@@ -309,7 +324,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             );
 
                             final actionBtns = Row(
-                              mainAxisSize: isNarrow ? MainAxisSize.max : MainAxisSize.min,
+                              mainAxisSize: isNarrow
+                                  ? MainAxisSize.max
+                                  : MainAxisSize.min,
                               children: [
                                 OutlinedButton.icon(
                                   onPressed: _showChangePinDialog,
@@ -322,7 +339,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     ref.read(authProvider.notifier).lock();
                                     context.go('/login');
                                   },
-                                  icon: const Icon(Icons.lock_rounded, size: 16),
+                                  icon:
+                                      const Icon(Icons.lock_rounded, size: 16),
                                   label: const Text('Lock App'),
                                   style: FilledButton.styleFrom(
                                     backgroundColor: const Color(0xFF334155),
@@ -461,12 +479,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFFECFDF5),
                               borderRadius: BorderRadius.circular(8.r),
-                              border: Border.all(color: const Color(0xFFA7F3D0)),
+                              border:
+                                  Border.all(color: const Color(0xFFA7F3D0)),
                             ),
                             child: Row(
                               children: [
                                 Icon(Icons.check_circle_rounded,
-                                    color: const Color(0xFF059669), size: 18.sp),
+                                    color: const Color(0xFF059669),
+                                    size: 18.sp),
                                 SizedBox(width: 8.w),
                                 Expanded(
                                   child: Text(
@@ -491,7 +511,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           builder: (context, constraints) {
                             final isNarrow = constraints.maxWidth < 680;
                             final btn1 = FilledButton.icon(
-                              onPressed: _backing ? null : () => _backupDatabase(isQuick: false),
+                              onPressed: _backing
+                                  ? null
+                                  : () => _backupDatabase(isQuick: false),
                               icon: _backing
                                   ? SizedBox(
                                       width: 16.w,
@@ -501,8 +523,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                         color: Colors.white,
                                       ),
                                     )
-                                  : Icon(Icons.folder_open_rounded, size: 18.sp),
-                              label: Text(_backing ? 'Exporting...' : 'Export Backup Folder'),
+                                  : Icon(Icons.folder_open_rounded,
+                                      size: 18.sp),
+                              label: Text(_backing
+                                  ? 'Exporting...'
+                                  : 'Export Backup Folder'),
                               style: FilledButton.styleFrom(
                                 padding: EdgeInsets.symmetric(vertical: 14.h),
                                 shape: RoundedRectangleBorder(
@@ -512,8 +537,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             );
 
                             final btn2 = OutlinedButton.icon(
-                              onPressed: _backing ? null : () => _backupDatabase(isQuick: true),
-                              icon: Icon(Icons.download_for_offline_rounded, size: 18.sp),
+                              onPressed: _backing
+                                  ? null
+                                  : () => _backupDatabase(isQuick: true),
+                              icon: Icon(Icons.download_for_offline_rounded,
+                                  size: 18.sp),
                               label: const Text('Quick Export (Downloads)'),
                               style: OutlinedButton.styleFrom(
                                 padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -525,10 +553,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                             final btn3 = OutlinedButton.icon(
                               onPressed: _backing ? null : _restoreDatabase,
-                              icon: Icon(Icons.upload_file_rounded, size: 18.sp, color: const Color(0xFF1F5FBF)),
-                              label: const Text('Import (.db)', style: TextStyle(color: Color(0xFF1F5FBF))),
+                              icon: Icon(Icons.upload_file_rounded,
+                                  size: 18.sp, color: const Color(0xFF1F5FBF)),
+                              label: const Text('Import (.db)',
+                                  style: TextStyle(color: Color(0xFF1F5FBF))),
                               style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: Color(0xFF6366F1)),
+                                side:
+                                    const BorderSide(color: Color(0xFF6366F1)),
                                 padding: EdgeInsets.symmetric(vertical: 14.h),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10.r),
@@ -538,10 +569,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                             final btn4 = OutlinedButton.icon(
                               onPressed: _backing ? null : _resetDatabase,
-                              icon: Icon(Icons.delete_forever_rounded, size: 18.sp, color: const Color(0xFFDC2626)),
-                              label: const Text('Wipe & Start Fresh', style: TextStyle(color: Color(0xFFDC2626))),
+                              icon: Icon(Icons.delete_forever_rounded,
+                                  size: 18.sp, color: const Color(0xFFDC2626)),
+                              label: const Text('Wipe & Start Fresh',
+                                  style: TextStyle(color: Color(0xFFDC2626))),
                               style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: Color(0xFFFCA5A5)),
+                                side:
+                                    const BorderSide(color: Color(0xFFFCA5A5)),
                                 padding: EdgeInsets.symmetric(vertical: 14.h),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10.r),
@@ -552,9 +586,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             if (isNarrow) {
                               return Column(
                                 children: [
-                                  Row(children: [Expanded(child: btn1), SizedBox(width: 10.w), Expanded(child: btn2)]),
+                                  Row(children: [
+                                    Expanded(child: btn1),
+                                    SizedBox(width: 10.w),
+                                    Expanded(child: btn2)
+                                  ]),
                                   SizedBox(height: 10.h),
-                                  Row(children: [Expanded(child: btn3), SizedBox(width: 10.w), Expanded(child: btn4)]),
+                                  Row(children: [
+                                    Expanded(child: btn3),
+                                    SizedBox(width: 10.w),
+                                    Expanded(child: btn4)
+                                  ]),
                                 ],
                               );
                             }
@@ -670,7 +712,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 SizedBox(width: 14.w),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Expense Categories',
@@ -729,8 +772,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             final categoriesAsync =
                                 ref.watch(expenseCategoryListProvider);
                             return categoriesAsync.when(
-                              loading: () =>
-                                  const SizedBox.shrink(),
+                              loading: () => const SizedBox.shrink(),
                               error: (e, _) =>
                                   Text('Error loading categories: $e'),
                               data: (categories) => Wrap(
@@ -764,8 +806,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                           ),
                                     onDeleted: cat.isDefault
                                         ? null
-                                        : () => _deleteCategory(
-                                            context, ref, cat),
+                                        : () =>
+                                            _deleteCategory(context, ref, cat),
                                     visualDensity: VisualDensity.compact,
                                   );
                                 }).toList(),
@@ -851,8 +893,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (cat.isDefault) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content:
-              Text('Built-in categories cannot be deleted.'),
+          content: Text('Built-in categories cannot be deleted.'),
           backgroundColor: Color(0xFFEF4444),
         ),
       );
@@ -862,8 +903,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete Category?'),
-        content:
-            Text('Remove "${cat.subCategory}" from "${cat.groupName}"?'),
+        content: Text('Remove "${cat.subCategory}" from "${cat.groupName}"?'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
@@ -973,8 +1013,8 @@ class _CategoryGroupTileState extends State<_CategoryGroupTile> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: const Text('built-in',
-                          style: TextStyle(
-                              fontSize: 9, color: Color(0xFF64748B))),
+                          style:
+                              TextStyle(fontSize: 9, color: Color(0xFF64748B))),
                     ),
                   ],
                   const Spacer(),
@@ -1033,7 +1073,8 @@ class _SoftwareUpdateCardState extends State<_SoftwareUpdateCard> {
         _statusMessage = 'New version v${info.latestVersion} is available!';
         _hasUpdate = true;
       } else {
-        _statusMessage = 'You are on the latest version (v${info.currentVersion}).';
+        _statusMessage =
+            'You are on the latest version (v${info.currentVersion}).';
         _hasUpdate = false;
       }
     });
@@ -1193,4 +1234,3 @@ class _SoftwareUpdateCardState extends State<_SoftwareUpdateCard> {
     );
   }
 }
-

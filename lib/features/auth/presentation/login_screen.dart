@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nex_ledger/core/services/security_service.dart';
 import 'package:nex_ledger/features/auth/providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -17,6 +18,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _obscure = true;
   bool _loading = false;
 
+  /// First PIN typed during setup; non-null while the user is confirming it.
+  String? _firstPin;
+  String? _localError;
+
   @override
   void dispose() {
     _pinCtrl.dispose();
@@ -25,12 +30,55 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _submitPin() async {
     if (_pinCtrl.text.isEmpty) return;
+    final auth = ref.read(authProvider);
+    if (!auth.isReady) return;
+    if (!auth.isConfigured) {
+      await _submitSetup();
+      return;
+    }
     setState(() => _loading = true);
 
     try {
       final success =
           await ref.read(authProvider.notifier).unlock(_pinCtrl.text);
       if (success && mounted) {
+        context.go('/');
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  /// Two-step PIN creation: enter, then confirm.
+  Future<void> _submitSetup() async {
+    final entered = _pinCtrl.text;
+    if (_firstPin == null) {
+      final problem = SecurityService.validateNewPin(entered);
+      setState(() {
+        _localError = problem;
+        if (problem == null) _firstPin = entered;
+        _pinCtrl.clear();
+      });
+      return;
+    }
+    if (entered != _firstPin) {
+      setState(() {
+        _localError = 'PINs do not match. Start again.';
+        _firstPin = null;
+        _pinCtrl.clear();
+      });
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      final problem = await ref.read(authProvider.notifier).setupPin(entered);
+      if (problem != null) {
+        setState(() {
+          _localError = problem;
+          _firstPin = null;
+          _pinCtrl.clear();
+        });
+      } else if (mounted) {
         context.go('/');
       }
     } finally {
@@ -57,6 +105,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final isSetup = authState.isReady && !authState.isConfigured;
+    final errorText = _localError ?? authState.error;
 
     return CallbackShortcuts(
       bindings: {
@@ -149,8 +199,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
-                          'Financial Ledger Security Lock',
+                        Text(
+                          isSetup
+                              ? 'Create a Security PIN to protect your data'
+                              : 'Financial Ledger Security Lock',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
@@ -174,7 +227,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             color: Colors.white,
                           ),
                           decoration: InputDecoration(
-                            labelText: 'Enter Security PIN',
+                            labelText: !isSetup
+                                ? 'Enter Security PIN'
+                                : (_firstPin == null
+                                    ? 'Create new PIN (min 4 digits)'
+                                    : 'Confirm new PIN'),
                             labelStyle:
                                 const TextStyle(color: Color(0xFF94A3B8)),
                             fillColor: const Color(0xFF0F172A),
@@ -207,7 +264,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(height: 12),
 
                         // Error Message Display
-                        if (authState.error != null)
+                        if (errorText != null)
                           Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 8),
@@ -224,7 +281,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    authState.error!,
+                                    errorText,
                                     style: const TextStyle(
                                       fontSize: 12,
                                       color: Color(0xFFFCA5A5),
@@ -290,7 +347,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   )
                                 : const Icon(Icons.lock_open_rounded, size: 20),
                             label: Text(
-                              _loading ? 'Verifying...' : 'Unlock NexLedger',
+                              _loading
+                                  ? 'Please wait...'
+                                  : (isSetup
+                                      ? (_firstPin == null
+                                          ? 'Continue'
+                                          : 'Save PIN & Open')
+                                      : 'Unlock NexLedger'),
                               style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
@@ -302,35 +365,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Default PIN Help Pill Banner
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0F172A),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFF334155)),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.info_outline_rounded,
-                                  size: 15, color: Color(0xFF818CF8)),
-                              const SizedBox(width: 8),
-                              const Expanded(
-                                child: Text(
-                                  'Default PIN: 1234 (Changeable in Settings)',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Color(0xFF94A3B8),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
                           ),
                         ),
                       ],

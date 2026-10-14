@@ -25,27 +25,37 @@ class SecurityService {
     return sha256.convert(bytes).toString();
   }
 
-  /// Check if custom passcode has been set, initialize default '1234' if fresh.
+  /// Minimum PIN length accepted when creating or changing the PIN.
+  static const int minPinLength = 4;
+
+  /// True once the user has chosen their own PIN. A missing file, or a file
+  /// still holding the legacy default '1234', counts as NOT configured.
   static Future<bool> isPasscodeConfigured() async {
     final file = await _getSecurityFile();
-    return file.existsSync();
+    if (!await file.exists()) return false;
+    final saved = (await file.readAsString()).trim();
+    return saved.isNotEmpty && saved != _hashPin(_defaultPin);
   }
 
-  /// Initialize default PIN '1234' if no PIN file exists yet.
-  static Future<void> ensureInitialized() async {
-    final file = await _getSecurityFile();
-    if (!await file.exists()) {
-      await file.writeAsString(_hashPin(_defaultPin));
+  /// Returns an error message if [pin] is not acceptable, otherwise null.
+  static String? validateNewPin(String pin) {
+    final p = pin.trim();
+    if (p.length < minPinLength) {
+      return 'PIN must be at least $minPinLength digits.';
     }
+    if (p == _defaultPin) {
+      return 'Please choose a PIN other than 1234.';
+    }
+    return null;
   }
 
   /// Verify user input PIN against stored SHA-256 hash.
+  /// Always false until the user has created their own PIN.
   static Future<bool> verifyPin(String inputPin) async {
-    await ensureInitialized();
+    if (!await isPasscodeConfigured()) return false;
     final file = await _getSecurityFile();
     final savedHash = (await file.readAsString()).trim();
-    final inputHash = _hashPin(inputPin.trim());
-    return savedHash == inputHash;
+    return savedHash == _hashPin(inputPin.trim());
   }
 
   /// Change/Set new master security PIN.

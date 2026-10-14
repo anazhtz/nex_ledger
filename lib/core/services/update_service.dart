@@ -68,12 +68,14 @@ class UpdateService {
         );
   }
 
-  Future<AppUpdateInfo?> _checkFirebaseRemoteConfig(String currentVersion) async {
+  Future<AppUpdateInfo?> _checkFirebaseRemoteConfig(
+      String currentVersion) async {
     try {
       await RemoteConfigService.instance.fetchAndActivate();
       final remoteVersion = RemoteConfigService.instance.latestVersion;
       final releaseNotes = RemoteConfigService.instance.releaseNotes;
-      final downloadUrl = RemoteConfigService.instance.currentPlatformDownloadUrl;
+      final downloadUrl =
+          RemoteConfigService.instance.currentPlatformDownloadUrl;
 
       final hasUpdate = isVersionHigher(remoteVersion, currentVersion);
 
@@ -82,7 +84,9 @@ class UpdateService {
         latestVersion: remoteVersion,
         hasUpdate: hasUpdate,
         releaseNotes: releaseNotes,
-        htmlUrl: downloadUrl.isNotEmpty ? downloadUrl : 'https://github.com/$repoOwner/$repoName/releases',
+        htmlUrl: downloadUrl.isNotEmpty
+            ? downloadUrl
+            : 'https://github.com/$repoOwner/$repoName/releases',
         downloadUrl: downloadUrl.isNotEmpty ? downloadUrl : null,
         publishedAt: DateTime.now(),
       );
@@ -107,16 +111,20 @@ class UpdateService {
       ).timeout(const Duration(seconds: 6));
 
       if (response.statusCode != 200) {
-        debugPrint('UpdateService: GitHub returned HTTP ${response.statusCode}');
+        debugPrint(
+            'UpdateService: GitHub returned HTTP ${response.statusCode}');
         return null;
       }
 
       final json = jsonDecode(response.body) as Map<String, dynamic>;
       final rawTag = (json['tag_name'] as String? ?? '').replaceFirst('v', '');
-      final releaseNotes = json['body'] as String? ?? 'Bug fixes and performance improvements.';
-      final htmlUrl = json['html_url'] as String? ?? 'https://github.com/$repoOwner/$repoName/releases';
+      final releaseNotes =
+          json['body'] as String? ?? 'Bug fixes and performance improvements.';
+      final htmlUrl = json['html_url'] as String? ??
+          'https://github.com/$repoOwner/$repoName/releases';
       final publishedAtStr = json['published_at'] as String?;
-      final publishedAt = publishedAtStr != null ? DateTime.tryParse(publishedAtStr) : null;
+      final publishedAt =
+          publishedAtStr != null ? DateTime.tryParse(publishedAtStr) : null;
 
       // Find appropriate asset for current OS
       String? downloadUrl;
@@ -125,10 +133,14 @@ class UpdateService {
         final name = (asset['name'] as String? ?? '').toLowerCase();
         final browserUrl = asset['browser_download_url'] as String?;
 
-        if (Platform.isWindows && (name.endsWith('.exe') || name.endsWith('.msix') || name.endsWith('.zip'))) {
+        if (Platform.isWindows &&
+            (name.endsWith('.exe') ||
+                name.endsWith('.msix') ||
+                name.endsWith('.zip'))) {
           downloadUrl = browserUrl;
           break;
-        } else if (Platform.isMacOS && (name.endsWith('.dmg') || name.endsWith('.zip'))) {
+        } else if (Platform.isMacOS &&
+            (name.endsWith('.dmg') || name.endsWith('.zip'))) {
           downloadUrl = browserUrl;
           break;
         }
@@ -167,8 +179,10 @@ class UpdateService {
     final remoteClean = remote.replaceFirst('v', '').split('+').first;
     final localClean = local.replaceFirst('v', '').split('+').first;
 
-    final remoteParts = remoteClean.split('.').map((e) => int.tryParse(e) ?? 0).toList();
-    final localParts = localClean.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    final remoteParts =
+        remoteClean.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    final localParts =
+        localClean.split('.').map((e) => int.tryParse(e) ?? 0).toList();
 
     while (remoteParts.length < 3) {
       remoteParts.add(0);

@@ -255,7 +255,8 @@ class RemoteConfigService {
   }
 
   // Debug helper to manually set local maintenance mode (for testing without Firebase Console)
-  void setLocalMaintenanceOverride(bool enabled, {String? title, String? message}) {
+  void setLocalMaintenanceOverride(bool enabled,
+      {String? title, String? message}) {
     _fallbackIsUnderMaintenance = enabled;
     if (title != null) _fallbackTitle = title;
     if (message != null) _fallbackMessage = message;
