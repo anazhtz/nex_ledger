@@ -127,12 +127,14 @@ class UpdatePromptDialog extends StatelessWidget {
           child: const Text('Remind Me Later'),
         ),
         FilledButton.icon(
-          onPressed: () {
-            Navigator.pop(context);
-            UpdateService.instance.openReleasePage(
-              updateInfo.downloadUrl ?? updateInfo.htmlUrl,
-            );
-          },
+          onPressed: (updateInfo.downloadUrl ?? updateInfo.htmlUrl).isEmpty
+              ? null
+              : () {
+                  Navigator.pop(context);
+                  UpdateService.instance.openReleasePage(
+                    updateInfo.downloadUrl ?? updateInfo.htmlUrl,
+                  );
+                },
           icon: const Icon(Icons.download_rounded, size: 18),
           label: const Text('Download & Update'),
           style: FilledButton.styleFrom(

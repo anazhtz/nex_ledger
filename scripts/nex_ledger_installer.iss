@@ -1,16 +1,17 @@
 ; ============================================================
 ; NexLedger — Inno Setup Installer Script
-; Version: 1.0.0
+; Version: read automatically from nex_ledger.exe (set in pubspec.yaml)
 ; Usage: Open this file in Inno Setup Compiler on Windows
 ;        AFTER extracting NexLedger_Windows_Release.zip
 ; ============================================================
 
 #define MyAppName      "NexLedger"
-#define MyAppVersion   "1.0.0"
 #define MyAppPublisher "Aldrich Energy"
 #define MyAppExeName   "nex_ledger.exe"
 ; Path to your extracted Release folder (edit this if needed)
 #define MySourceDir    "Release"
+; The version comes from the built exe, so it always matches pubspec.yaml
+#define MyAppVersion   GetVersionNumbersString(AddBackslash(MySourceDir) + MyAppExeName)
 
 [Setup]
 ; Unique App ID — do NOT change this after first release (used for upgrades)
@@ -29,7 +30,7 @@ DisableDirPage=no
 
 ; Output settings
 OutputDir=Output
-OutputBaseFilename=NexLedger_Setup_v1.0.0
+OutputBaseFilename=NexLedger_Setup_v{#MyAppVersion}
 
 ; Compression (maximum)
 Compression=lzma2/max
@@ -40,6 +41,10 @@ MinVersion=10.0
 
 ; No admin rights needed (runs as current user)
 PrivilegesRequired=lowest
+
+; Update over a running copy: close NexLedger first, reopen it after
+CloseApplications=yes
+RestartApplications=no
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -78,10 +83,9 @@ begin
   if CurStep = ssPostInstall then
   begin
     MsgBox(
-      'NexLedger v1.0.0 has been installed successfully!' + #13#10 + #13#10 +
-      'Your project data (database) is safely stored in:' + #13#10 +
-      ExpandConstant('{localappdata}') + '\NexLedger\nexledger.db' + #13#10 + #13#10 +
-      'This database file is NEVER deleted when you update or reinstall NexLedger.' + #13#10 +
+      'NexLedger v{#MyAppVersion} has been installed successfully!' + #13#10 + #13#10 +
+      'Your data is stored separately from the program, so it is never' + #13#10 +
+      'deleted when you update or reinstall NexLedger.' + #13#10 +
       'Your data is always safe!',
       mbInformation,
       MB_OK

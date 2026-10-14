@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/features/settings/presentation/widgets/company_gst_card.dart';
+import 'package:nex_ledger/features/settings/presentation/widgets/license_info_card.dart';
 import 'package:nex_ledger/features/auth/presentation/widgets/recovery_key_widgets.dart';
 import 'package:nex_ledger/core/services/security_service.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
@@ -690,6 +691,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 SizedBox(height: 20.h),
 
                 // Software Updates Card
+                const LicenseInfoCard(),
                 const _SoftwareUpdateCard(),
 
                 SizedBox(height: 20.h),

@@ -1,0 +1,44 @@
+rules_version = '2';
+
+// NexLedger license table.
+//   licenses/{KEY}   one document per client company (the document id is the license key)
+//   config/global    settings for everyone (maintenance switch, offline grace hours)
+//
+// Replace YOUR-ADMIN-EMAIL@gmail.com below with the Google account you use
+// to sign in to the admin page, then paste all of this into
+// Firebase console -> Firestore Database -> Rules -> Publish.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in ['YOUR-ADMIN-EMAIL@gmail.com'];
+    }
+
+    // The app reads these (it must know the document name, nobody can list them).
+    match /config/{docId} {
+      allow get: if true;
+      allow list, create, update, delete: if isAdmin();
+    }
+
+    match /licenses/{key} {
+      allow get: if true;
+      allow list, create, delete: if isAdmin();
+
+      // The app may only add or refresh its own computer under "devices":
+      // it cannot change status, messages or limits, cannot remove computers,
+      // and the list is capped at 10 entries.
+      allow update: if isAdmin() || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['devices'])
+        && request.resource.data.devices.size() <= 10
+        && resource.data.get('devices', {}).diff(request.resource.data.devices)
+             .removedKeys().size() == 0
+      );
+    }
+
+    match /{other=**} {
+      allow read, write: if false;
+    }
+  }
+}

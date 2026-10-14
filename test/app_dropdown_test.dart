@@ -8,8 +8,7 @@ Widget host(Widget child) => ScreenUtilInit(
       designSize: const Size(1440, 900),
       builder: (context, _) => MaterialApp(
         theme: AppTheme.light,
-        home: Scaffold(
-            body: Center(child: SizedBox(width: 300, child: child))),
+        home: Scaffold(body: Center(child: SizedBox(width: 300, child: child))),
       ),
     );
 

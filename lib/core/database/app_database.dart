@@ -1,3 +1,4 @@
+import 'package:nex_ledger/core/database/pre_upgrade_backup.dart';
 import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
@@ -135,8 +136,35 @@ part 'app_database.g.dart';
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
+  /// Bump this (and add a migration step) whenever a table changes.
+  static const int currentSchemaVersion = 20;
+
   @override
-  int get schemaVersion => 20;
+  int get schemaVersion => currentSchemaVersion;
+
+  /// Opens the database file at [file]. Before SQLite upgrades an older
+  /// database, a copy is saved next to it in `pre_update_backups/`.
+  static QueryExecutor openFile(File file) {
+    return NativeDatabase.createInBackground(
+      file,
+      setup: (rawDb) {
+        try {
+          final old = rawDb.select('PRAGMA user_version').first.values.first;
+          if (old is int) {
+            // fold any pending write-ahead data into the main file first
+            rawDb.execute('PRAGMA wal_checkpoint(TRUNCATE)');
+            backupBeforeUpgrade(
+              dbPath: file.path,
+              oldVersion: old,
+              newVersion: currentSchemaVersion,
+            );
+          }
+        } catch (_) {
+          // a failed safety copy must never stop the app from opening
+        }
+      },
+    );
+  }
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -424,6 +452,6 @@ QueryExecutor _openConnection() {
       await dbFolder.create(recursive: true);
     }
     final file = File(p.join(dbFolder.path, 'nex_ledger.sqlite'));
-    return NativeDatabase.createInBackground(file);
+    return AppDatabase.openFile(file);
   });
 }

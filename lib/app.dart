@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nex_ledger/core/services/license_service.dart';
 import 'package:nex_ledger/core/theme/app_theme.dart';
 import 'package:nex_ledger/features/auth/presentation/login_screen.dart';
 import 'package:nex_ledger/features/auth/providers/auth_provider.dart';
@@ -31,6 +32,8 @@ import 'package:nex_ledger/features/reports/presentation/input_gst_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/purchase_register_screen.dart';
 import 'package:nex_ledger/features/bank_accounts/presentation/bank_accounts_screen.dart';
 import 'package:nex_ledger/features/settings/presentation/settings_screen.dart';
+import 'package:nex_ledger/features/license/presentation/license_screen.dart';
+import 'package:nex_ledger/features/license/providers/license_provider.dart';
 import 'package:nex_ledger/features/maintenance/presentation/maintenance_screen.dart';
 import 'package:nex_ledger/features/maintenance/providers/maintenance_provider.dart';
 import 'package:nex_ledger/features/subcontract/presentation/subcontract_hub_screen.dart';
@@ -54,10 +57,18 @@ import 'package:nex_ledger/shared/widgets/app_shell.dart';
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
   final maintenanceState = ref.watch(maintenanceProvider);
+  // Only the gate matters here, so routine re-checks never reset the screen.
+  final licenseGate = ref.watch(licenseProvider.select((s) => s.gate));
 
   return GoRouter(
     initialLocation: '/',
     redirect: (context, state) {
+      final isLicenseRoute = state.matchedLocation == '/license';
+      if (licenseGate != LicenseGate.active) {
+        return isLicenseRoute ? null : '/license';
+      }
+      if (isLicenseRoute) return '/';
+
       final isMaintenanceRoute = state.matchedLocation == '/maintenance';
 
       if (maintenanceState.isUnderMaintenance) {
@@ -81,6 +92,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/license',
+        builder: (c, s) => const LicenseScreen(),
+      ),
       GoRoute(
         path: '/maintenance',
         builder: (c, s) => const MaintenanceScreen(),
