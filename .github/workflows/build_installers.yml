@@ -1,0 +1,81 @@
+name: Build installers (Windows Setup.exe + Mac dmg)
+
+# Manual only: GitHub -> Actions -> "Build installers" -> Run workflow.
+# Nothing is published. When it finishes, open the run and download the
+# files under "Artifacts" (kept 30 days), then upload them to Google Drive.
+on:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    name: Windows Setup.exe
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      CMAKE_POLICY_VERSION_MINIMUM: "3.5"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - run: flutter config --enable-windows-desktop
+      - run: flutter pub get
+      - run: flutter test
+      - run: flutter build windows --release
+
+      - name: Put the build where the installer script expects it
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path scripts\Release | Out-Null
+          Copy-Item -Path build\windows\x64\runner\Release\* -Destination scripts\Release -Recurse -Force
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup -y --no-progress
+
+      - name: Build the installer
+        shell: pwsh
+        working-directory: scripts
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" nex_ledger_installer.iss
+          Get-ChildItem Output
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NexLedger-Windows-Setup
+          path: scripts/Output/*.exe
+          retention-days: 30
+
+  macos:
+    name: Mac dmg
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - run: flutter config --enable-macos-desktop
+      - run: flutter pub get
+      - run: flutter test
+      - run: flutter build macos --release
+
+      - name: Make the dmg
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //; s/+.*//')
+          hdiutil create -volname NexLedger \
+            -srcfolder build/macos/Build/Products/Release/nex_ledger.app \
+            -ov -format UDZO "NexLedger_v${VERSION}.dmg"
+          ls -la *.dmg
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NexLedger-Mac-dmg
+          path: NexLedger_v*.dmg
+          retention-days: 30
