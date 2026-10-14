@@ -4,8 +4,8 @@ rules_version = '2';
 //   licenses/{KEY}   one document per client company (the document id is the license key)
 //   config/global    settings for everyone (maintenance switch, offline grace hours)
 //
-// Replace YOUR-ADMIN-EMAIL@gmail.com below with the Google account you use
-// to sign in to the admin page, then paste all of this into
+// Admin email: htzanaz@gmail.com (add more addresses inside the [ ] list if needed, comma separated).
+// To change it: edit the email list in isAdmin() below, then paste all of this into
 // Firebase console -> Firestore Database -> Rules -> Publish.
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -13,7 +13,7 @@ service cloud.firestore {
     function isAdmin() {
       return request.auth != null
         && request.auth.token.email_verified == true
-        && request.auth.token.email in ['YOUR-ADMIN-EMAIL@gmail.com'];
+        && request.auth.token.email in ['htzanaz@gmail.com'];
     }
 
     // The app reads these (it must know the document name, nobody can list them).
@@ -23,18 +23,23 @@ service cloud.firestore {
     }
 
     match /licenses/{key} {
+      // Only the "devices" field changes, it stays a map of at most 10
+      // computers, and no computer that is already listed disappears.
+      function isDeviceCheckIn() {
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['devices'])
+          && request.resource.data.devices is map
+          && request.resource.data.devices.size() <= 10
+          && (!('devices' in resource.data)
+              || request.resource.data.devices.keys().hasAll(resource.data.devices.keys()));
+      }
+
       allow get: if true;
       allow list, create, delete: if isAdmin();
 
       // The app may only add or refresh its own computer under "devices":
       // it cannot change status, messages or limits, cannot remove computers,
       // and the list is capped at 10 entries.
-      allow update: if isAdmin() || (
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['devices'])
-        && request.resource.data.devices.size() <= 10
-        && resource.data.get('devices', {}).diff(request.resource.data.devices)
-             .removedKeys().size() == 0
-      );
+      allow update: if isAdmin() || isDeviceCheckIn();
     }
 
     match /{other=**} {

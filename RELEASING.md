@@ -71,9 +71,9 @@ You manage everything from the **admin page** (works on your phone).
 1. **Firebase console** (`console.firebase.google.com`, project `nexledger-9762c`)
    → *Build → Firestore Database → Create database*. Choose **production mode** and a nearby
    location (e.g. `asia-south1`). The location cannot be changed later.
-2. *Firestore Database → Rules*: open `firestore.rules` from this project, replace
-   `YOUR-ADMIN-EMAIL@gmail.com` with the Google account you will sign in with, paste it all in,
-   click **Publish**.
+2. *Firestore Database → Rules*: open `firestore.rules` from this project (the admin email is the one in `isAdmin()`), paste it all in,
+   click **Publish**. You can test the rules on your computer first (needs Java):
+   `firebase emulators:exec --only firestore --project demo-nex "node scripts/test_firestore_rules.mjs"`.
 3. *Build → Authentication → Get started → Sign-in method → Google → Enable* (pick a support email).
    Under *Settings → Authorized domains* make sure `nexledger-9762c.web.app` is listed.
 4. **Put the admin page online** (needs Node.js once: `npm install -g firebase-tools`, then `firebase login`):
