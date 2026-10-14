@@ -160,18 +160,23 @@ void main() {
       expect(summary.totalActualCost, 3250000.0); // ₹13L + ₹7L + ₹10.5L + ₹2L
       expect(summary.netVariance, 250000.0); // ₹2.5L remaining
       expect(summary.overallUtilizationPercentage, closeTo(92.85, 0.1));
-      expect(summary.overallStatus, BudgetHealthStatus.warning); // Overall is 92.8% (Warning)
-      expect(summary.overBudgetCategoriesCount, 1); // Subcontract head is OVER BUDGET
-      expect(summary.warningCategoriesCount, 2); // Materials & Labour are in CAUTION zone
+      expect(summary.overallStatus,
+          BudgetHealthStatus.warning); // Overall is 92.8% (Warning)
+      expect(summary.overBudgetCategoriesCount,
+          1); // Subcontract head is OVER BUDGET
+      expect(summary.warningCategoriesCount,
+          2); // Materials & Labour are in CAUTION zone
 
       // Inspect individual cost heads
-      final matHead = summary.costHeads.firstWhere((h) => h.costHead == BudgetCostHead.materials);
+      final matHead = summary.costHeads
+          .firstWhere((h) => h.costHead == BudgetCostHead.materials);
       expect(matHead.allocatedBudget, 1500000.0);
       expect(matHead.actualSpent, 1300000.0);
       expect(matHead.variance, 200000.0);
       expect(matHead.status, BudgetHealthStatus.warning);
 
-      final subHead = summary.costHeads.firstWhere((h) => h.costHead == BudgetCostHead.subcontract);
+      final subHead = summary.costHeads
+          .firstWhere((h) => h.costHead == BudgetCostHead.subcontract);
       expect(subHead.allocatedBudget, 900000.0);
       expect(subHead.actualSpent, 1050000.0);
       expect(subHead.variance, -150000.0); // Negative = Deficit
@@ -179,7 +184,8 @@ void main() {
       expect(subHead.status, BudgetHealthStatus.overBudget);
       expect(subHead.isOverBudget, isTrue);
 
-      final ovhHead = summary.costHeads.firstWhere((h) => h.costHead == BudgetCostHead.equipmentOverhead);
+      final ovhHead = summary.costHeads
+          .firstWhere((h) => h.costHead == BudgetCostHead.equipmentOverhead);
       expect(ovhHead.allocatedBudget, 300000.0);
       expect(ovhHead.actualSpent, 200000.0);
       expect(ovhHead.variance, 100000.0);
@@ -191,10 +197,12 @@ void main() {
       expect(portfolio.totalPortfolioActualSpent, 3250000.0);
       expect(portfolio.netPortfolioVariance, 250000.0);
       expect(portfolio.budgetedProjectsCount, 1);
-      expect(portfolio.overBudgetProjectsCount, 1); // Has at least 1 overrun category
+      expect(portfolio.overBudgetProjectsCount,
+          1); // Has at least 1 overrun category
     });
 
-    testWidgets('2. Budget Screens & Warning Banner render cleanly with 0 overflows',
+    testWidgets(
+        '2. Budget Screens & Warning Banner render cleanly with 0 overflows',
         (tester) async {
       await tester.binding.setSurfaceSize(const Size(1440, 900));
 

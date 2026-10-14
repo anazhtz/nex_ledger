@@ -98,8 +98,8 @@ void main() {
         await db.transactionDao.watchAllRawTransactions().first;
     expect(txnsAfterAlloc.length, 2);
 
-    final allocTxn = txnsAfterAlloc.firstWhere(
-        (t) => t.type == TransactionType.stockAllocation);
+    final allocTxn = txnsAfterAlloc
+        .firstWhere((t) => t.type == TransactionType.stockAllocation);
     expect(allocTxn.projectId, villaId);
     expect(allocTxn.amount, 300000);
     expect(allocTxn.affectsPnl, isTrue); // Cost recognized for Villa!

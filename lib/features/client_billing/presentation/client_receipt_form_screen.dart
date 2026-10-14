@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/features/bank_accounts/providers/bank_account_providers.dart';
@@ -200,32 +201,21 @@ class _ClientReceiptFormScreenState
                                 .where((p) => p.type == ProjectType.project)
                                 .toList();
 
-                            return DropdownButtonFormField<int>(
-                              isExpanded: true,
+                            return ProjectPickerField(
+                              projects: validProjects,
                               value: validProjects
                                       .any((p) => p.id == _selectedProjectId)
                                   ? _selectedProjectId
                                   : null,
-                              decoration: const InputDecoration(
-                                labelText: 'Select Target Project & Client *',
-                                prefixIcon: Icon(Icons.folder_outlined),
-                              ),
-                              items: validProjects
-                                  .map((p) => DropdownMenuItem(
-                                        value: p.id,
-                                        child: Text(
-                                          '${p.code} — ${p.name} (Client: ${p.clientName ?? 'Direct Client'})',
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ))
-                                  .toList(),
+                              labelText: 'Select Target Project & Client *',
+                              prefixIcon: Icons.folder_outlined,
+                              validator: (v) => v == null ? 'Required' : null,
                               onChanged: (v) {
                                 setState(() {
                                   _selectedProjectId = v;
                                   _selectedRaBillId = null;
                                 });
                               },
-                              validator: (v) => v == null ? 'Required' : null,
                             );
                           },
                         ),

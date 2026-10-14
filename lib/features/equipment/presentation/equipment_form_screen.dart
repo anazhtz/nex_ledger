@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/features/equipment/providers/equipment_providers.dart';
@@ -405,28 +406,12 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                                       .where(
                                           (p) => p.type == ProjectType.project)
                                       .toList();
-                                  return DropdownButtonFormField<int?>(
+                                  return ProjectPickerField(
+                                    projects: validProjects,
                                     value: _selectedProjectId,
-                                    isExpanded: true,
-                                    decoration: const InputDecoration(
-                                      labelText:
-                                          'Current Assigned Project Site',
-                                      prefixIcon: Icon(Icons.folder_outlined),
-                                    ),
-                                    items: [
-                                      const DropdownMenuItem(
-                                        value: null,
-                                        child: Text('— Unassigned / In Yard —',
-                                            overflow: TextOverflow.ellipsis),
-                                      ),
-                                      ...validProjects.map(
-                                        (p) => DropdownMenuItem(
-                                          value: p.id,
-                                          child: Text('${p.code} — ${p.name}',
-                                              overflow: TextOverflow.ellipsis),
-                                        ),
-                                      ),
-                                    ],
+                                    labelText: 'Current Assigned Project Site',
+                                    hintText: 'Unassigned / In Yard',
+                                    prefixIcon: Icons.folder_outlined,
                                     onChanged: (v) =>
                                         setState(() => _selectedProjectId = v),
                                   );

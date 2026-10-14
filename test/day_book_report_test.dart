@@ -32,7 +32,8 @@ void main() {
 
   tearDown(() async => db.close());
 
-  test('Daily Transaction Day-Book Sheet — Day-by-Day Flow & Balances', () async {
+  test('Daily Transaction Day-Book Sheet — Day-by-Day Flow & Balances',
+      () async {
     // 1. Setup Project
     final pId = await projectRepo.createProject(
       code: 'PRJ-DAY-001',
@@ -71,12 +72,17 @@ void main() {
 
     // ─── VERIFY DAY 1 SHEET ───
     final reportDay1 = await reportRepo.watchDayBook(day1).first;
-    expect(reportDay1.openingBalance, 0.0, reason: 'No transactions prior to Day 1');
-    expect(reportDay1.totalInflow, 100000.0, reason: 'Deposit of ₹1,00,000 received');
+    expect(reportDay1.openingBalance, 0.0,
+        reason: 'No transactions prior to Day 1');
+    expect(reportDay1.totalInflow, 100000.0,
+        reason: 'Deposit of ₹1,00,000 received');
     expect(reportDay1.totalOutflow, 5000.0, reason: 'Expense of ₹5,000 paid');
-    expect(reportDay1.netMovement, 95000.0, reason: '₹1,00,000 - ₹5,000 = ₹95,000');
-    expect(reportDay1.closingBalance, 95000.0, reason: 'Closing balance at end of Day 1');
-    expect(reportDay1.pnlIncome, 0.0, reason: 'Deposit is liability, not P&L income');
+    expect(reportDay1.netMovement, 95000.0,
+        reason: '₹1,00,000 - ₹5,000 = ₹95,000');
+    expect(reportDay1.closingBalance, 95000.0,
+        reason: 'Closing balance at end of Day 1');
+    expect(reportDay1.pnlIncome, 0.0,
+        reason: 'Deposit is liability, not P&L income');
     expect(reportDay1.pnlExpense, 5000.0, reason: 'Expense hits P&L');
     expect(reportDay1.netPnl, -5000.0);
     expect(reportDay1.entries.length, 2);
@@ -107,19 +113,26 @@ void main() {
 
     // ─── VERIFY DAY 2 SHEET ───
     final reportDay2 = await reportRepo.watchDayBook(day2).first;
-    expect(reportDay2.openingBalance, 95000.0, reason: 'Opening balance carried forward from Day 1');
-    expect(reportDay2.totalInflow, 0.0, reason: 'Adjusting deposit does NOT move physical cash');
+    expect(reportDay2.openingBalance, 95000.0,
+        reason: 'Opening balance carried forward from Day 1');
+    expect(reportDay2.totalInflow, 0.0,
+        reason: 'Adjusting deposit does NOT move physical cash');
     expect(reportDay2.totalOutflow, 20000.0, reason: 'Purchase cash outflow');
     expect(reportDay2.netMovement, -20000.0);
-    expect(reportDay2.closingBalance, 75000.0, reason: '₹95,000 - ₹20,000 = ₹75,000');
-    expect(reportDay2.pnlIncome, 40000.0, reason: 'Adjusted deposit is now recognized income');
-    expect(reportDay2.pnlExpense, 20000.0, reason: 'Steel Rods purchase recognized');
-    expect(reportDay2.netPnl, 20000.0, reason: '₹40,000 - ₹20,000 = +₹20,000 Day Profit');
+    expect(reportDay2.closingBalance, 75000.0,
+        reason: '₹95,000 - ₹20,000 = ₹75,000');
+    expect(reportDay2.pnlIncome, 40000.0,
+        reason: 'Adjusted deposit is now recognized income');
+    expect(reportDay2.pnlExpense, 20000.0,
+        reason: 'Steel Rods purchase recognized');
+    expect(reportDay2.netPnl, 20000.0,
+        reason: '₹40,000 - ₹20,000 = +₹20,000 Day Profit');
     expect(reportDay2.entries.length, 2);
 
     // ─── VERIFY DAY 3 (IDLE DAY) ───
     final reportDay3 = await reportRepo.watchDayBook(day3).first;
-    expect(reportDay3.openingBalance, 75000.0, reason: 'Closing balance of Day 2 is opening of Day 3');
+    expect(reportDay3.openingBalance, 75000.0,
+        reason: 'Closing balance of Day 2 is opening of Day 3');
     expect(reportDay3.totalInflow, 0.0);
     expect(reportDay3.totalOutflow, 0.0);
     expect(reportDay3.netMovement, 0.0);

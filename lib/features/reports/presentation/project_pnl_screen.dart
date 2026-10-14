@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/core/utils/excel_export_service.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
+import 'package:nex_ledger/features/purchase/providers/purchase_invoice_providers.dart';
+import 'package:nex_ledger/features/reports/data/input_gst.dart';
 import 'package:nex_ledger/features/reports/providers/report_providers.dart';
 import 'package:nex_ledger/shared/widgets/stat_card.dart';
 
@@ -81,22 +84,11 @@ class ProjectPnlScreen extends ConsumerWidget {
               error: (_, __) => const SizedBox.shrink(),
               data: (projects) => SizedBox(
                 width: 340,
-                child: DropdownButtonFormField<int?>(
+                child: ProjectPickerField(
+                  projects: projects,
                   value: selectedProjectId,
-                  isExpanded: true,
-                  decoration:
-                      const InputDecoration(labelText: 'Select Target Project'),
-                  items: [
-                    const DropdownMenuItem(
-                        value: null, child: Text('— Select a project —')),
-                    ...projects.map(
-                      (p) => DropdownMenuItem(
-                        value: p.id,
-                        child: Text('${p.code}  —  ${p.name}',
-                            overflow: TextOverflow.ellipsis),
-                      ),
-                    ),
-                  ],
+                  labelText: 'Select Target Project',
+                  hintText: 'Select a project',
                   onChanged: (v) =>
                       ref.read(reportProjectFilterProvider.notifier).state = v,
                 ),
@@ -266,6 +258,32 @@ class ProjectPnlScreen extends ConsumerWidget {
                                           ? Colors.green.shade700
                                           : Colors.red.shade700,
                                       bold: true,
+                                    ),
+                                    // Information only: GST already inside the costs above.
+                                    Consumer(
+                                      builder: (context, ref, _) {
+                                        final gst = gstInProjectCosts(
+                                          ref
+                                                  .watch(
+                                                      inputGstEntriesProvider)
+                                                  .asData
+                                                  ?.value ??
+                                              const [],
+                                          projectId: pnl.project.id,
+                                        );
+                                        if (gst <= 0) {
+                                          return const SizedBox.shrink();
+                                        }
+                                        return Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 6),
+                                          child: _BreakdownRow(
+                                            'Input GST inside the costs above (information only)',
+                                            gst,
+                                            Colors.deepPurple.shade400,
+                                          ),
+                                        );
+                                      },
                                     ),
                                     const SizedBox(height: 12),
                                     const Divider(height: 1),

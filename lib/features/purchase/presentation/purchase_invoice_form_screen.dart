@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/constants/material_constants.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
@@ -925,21 +926,12 @@ class _PurchaseInvoiceFormScreenState
               child: projectsAsync.when(
                 loading: () => const LinearProgressIndicator(),
                 error: (e, _) => Text('Error: $e'),
-                data: (projects) => DropdownButtonFormField<int?>(
-                  key: ValueKey('project-$_projectId'),
+                data: (projects) => ProjectPickerField(
+                  projects: projects,
                   value: projects.any((p) => p.id == _projectId)
                       ? _projectId
                       : null,
-                  isExpanded: true,
-                  decoration: _dec(),
-                  items: [
-                    const DropdownMenuItem<int?>(
-                        value: null, child: Text('Select project')),
-                    ...projects.map((p) => DropdownMenuItem<int?>(
-                        value: p.id,
-                        child: Text('${p.code} — ${p.name}',
-                            overflow: TextOverflow.ellipsis))),
-                  ],
+                  hintText: 'Select project',
                   onChanged: (v) => setState(() => _projectId = v),
                 ),
               ),

@@ -106,9 +106,9 @@ void main() {
     await seed();
     await pump(tester, const PurchaseRegisterScreen());
 
-    await tester.tap(find.byKey(const ValueKey('project-null')));
+    await tester.tap(find.byKey(const Key('project_picker')));
     await tester.pumpAndSettle();
-    await tester.tap(find.textContaining('PRJ-B').last);
+    await tester.tap(find.text('Site PRJ-B').last);
     await tester.pumpAndSettle();
     expect(find.text('Purchase Bills (2)'), findsOneWidget);
 

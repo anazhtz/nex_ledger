@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
@@ -273,38 +274,15 @@ class _PettyCashDisburseOrReturnDialogState
                       final validProjects = projects
                           .where((p) => p.type == ProjectType.project)
                           .toList();
-                      return DropdownButtonFormField<int?>(
+                      return ProjectPickerField(
+                        projects: validProjects,
                         value: _selectedProjectId,
-                        isExpanded: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Assigned Project Site *',
-                          prefixIcon: Icon(Icons.folder_outlined),
-                        ),
-                        selectedItemBuilder: (context) => [
-                          const Text('— Select Project —',
-                              overflow: TextOverflow.ellipsis),
-                          ...validProjects.map(
-                            (p) => Text('${p.code} — ${p.name}',
-                                overflow: TextOverflow.ellipsis),
-                          ),
-                        ],
-                        items: [
-                          const DropdownMenuItem(
-                            value: null,
-                            child: Text('— Select Project —',
-                                overflow: TextOverflow.ellipsis),
-                          ),
-                          ...validProjects.map(
-                            (p) => DropdownMenuItem(
-                              value: p.id,
-                              child: Text('${p.code} — ${p.name}',
-                                  overflow: TextOverflow.ellipsis),
-                            ),
-                          ),
-                        ],
+                        labelText: 'Assigned Project Site *',
+                        hintText: 'Select Project',
+                        prefixIcon: Icons.folder_outlined,
+                        validator: (v) => v == null ? 'Required' : null,
                         onChanged: (v) =>
                             setState(() => _selectedProjectId = v),
-                        validator: (v) => v == null ? 'Required' : null,
                       );
                     },
                   ),

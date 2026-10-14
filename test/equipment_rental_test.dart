@@ -83,8 +83,16 @@ void main() {
       // Verify Fleet List
       final fleet = await equipmentRepo.watchAllEquipments().first;
       expect(fleet.length, 2);
-      expect(fleet.any((e) => e.equipment.id == jcbId && e.vendor?.name == 'Sree Balaji Earthmovers & Cranes'), isTrue);
-      expect(fleet.any((e) => e.equipment.id == craneId && e.equipment.ownership == EquipmentOwnership.owned), isTrue);
+      expect(
+          fleet.any((e) =>
+              e.equipment.id == jcbId &&
+              e.vendor?.name == 'Sree Balaji Earthmovers & Cranes'),
+          isTrue);
+      expect(
+          fleet.any((e) =>
+              e.equipment.id == craneId &&
+              e.equipment.ownership == EquipmentOwnership.owned),
+          isTrue);
 
       // 5. Record Daily Log Sheet for JCB:
       // Start Reading: 1200.0 hrs, End Reading: 1210.0 hrs (Total 10.0 hrs logged)
@@ -114,7 +122,8 @@ void main() {
       expect(logId, greaterThan(0));
 
       // Verify Logs Query
-      final logs = await equipmentRepo.watchEquipmentLogs(projectId: projId).first;
+      final logs =
+          await equipmentRepo.watchEquipmentLogs(projectId: projId).first;
       expect(logs.length, 1);
       final logDetail = logs.first;
       expect(logDetail.log.grossRentalCost, 10800.0);
@@ -140,7 +149,8 @@ void main() {
         paymentAmount: 7000.0,
         paymentDate: DateTime(2026, 1, 12),
         paymentMode: PaymentMode.bank,
-        narration: 'Settlement for JCB usage on 10th Jan after ₹3,800 diesel deduction',
+        narration:
+            'Settlement for JCB usage on 10th Jan after ₹3,800 diesel deduction',
       );
       expect(txnId, greaterThan(0));
 
@@ -153,7 +163,8 @@ void main() {
       expect(pnlTxn.affectsCash, isTrue);
     });
 
-    testWidgets('2. Equipment Screens render cleanly with 0 overflows', (tester) async {
+    testWidgets('2. Equipment Screens render cleanly with 0 overflows',
+        (tester) async {
       await tester.binding.setSurfaceSize(const Size(1440, 900));
 
       final container = ProviderContainer(
@@ -245,7 +256,8 @@ void main() {
               home: SizedBox(
                 width: 1280,
                 height: 800,
-                child: EquipmentLogFormScreen(initialEquipmentId: eqId, initialProjectId: projId),
+                child: EquipmentLogFormScreen(
+                    initialEquipmentId: eqId, initialProjectId: projId),
               ),
             ),
           ),

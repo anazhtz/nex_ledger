@@ -38,6 +38,11 @@ class InputGstEntry {
   final double sgst;
   final double igst;
 
+  /// False for GST on advance-stock purchases: that GST has been paid, but the
+  /// stock is not a project cost until it is allocated, so it is not part of
+  /// the project's costs yet.
+  final bool inProjectCost;
+
   const InputGstEntry({
     required this.date,
     required this.projectId,
@@ -52,6 +57,7 @@ class InputGstEntry {
     required this.cgst,
     required this.sgst,
     required this.igst,
+    this.inProjectCost = true,
   });
 
   double get gst => fromPaise(toPaise(cgst) + toPaise(sgst) + toPaise(igst));
@@ -101,6 +107,7 @@ class InputGstRepository {
       required double cgst,
       required double sgst,
       required double igst,
+      bool inProjectCost = true,
     }) {
       final p = projects[projectId];
       return InputGstEntry(
@@ -117,6 +124,7 @@ class InputGstRepository {
         cgst: cgst,
         sgst: sgst,
         igst: igst,
+        inProjectCost: inProjectCost,
       );
     }
 
@@ -159,6 +167,7 @@ class InputGstRepository {
         cgst: fromPaise(c),
         sgst: fromPaise(s),
         igst: fromPaise(i),
+        inProjectCost: !inv.isAdvanceStock,
       ));
     }
 
@@ -318,13 +327,43 @@ class ProjectGstSummary {
   final InputGstTotals totals;
   final Map<InputGstSource, double> gstBySource;
 
+  /// The part of the input GST that sits inside the project's costs
+  /// (everything except GST on advance stock not yet allocated).
+  final double gstInCosts;
+
   const ProjectGstSummary({
     required this.projectId,
     required this.projectCode,
     required this.projectName,
     required this.totals,
     required this.gstBySource,
+    this.gstInCosts = 0.0,
   });
+}
+
+/// A project's costs with and without the GST inside them.
+class ProjectCostView {
+  /// Everything the project has cost, GST included (as in the P&L).
+  final double totalCosts;
+
+  /// GST that is part of [totalCosts].
+  final double gstInCosts;
+
+  const ProjectCostView({required this.totalCosts, required this.gstInCosts});
+
+  double get costsWithoutGst =>
+      fromPaise(toPaise(totalCosts) - toPaise(gstInCosts));
+}
+
+/// GST that sits inside project costs, for one project (or all when null).
+double gstInProjectCosts(Iterable<InputGstEntry> rows, {int? projectId}) {
+  var p = 0;
+  for (final e in rows) {
+    if (!e.inProjectCost) continue;
+    if (projectId != null && e.projectId != projectId) continue;
+    p += toPaise(e.gst);
+  }
+  return fromPaise(p);
 }
 
 /// Input GST for each project, biggest GST first.
@@ -346,6 +385,7 @@ List<ProjectGstSummary> summarizeByProject(List<InputGstEntry> rows) {
       projectName: list.first.projectName,
       totals: inputGstTotals(list),
       gstBySource: bySource,
+      gstInCosts: gstInProjectCosts(list),
     ));
   });
   result.sort((a, b) {

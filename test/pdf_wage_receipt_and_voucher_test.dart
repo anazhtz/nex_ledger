@@ -13,17 +13,24 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('Printable PDF Wage Receipts & Payment Vouchers Test Suite', () {
-    test('1. NumberToWordsIndian formats numbers correctly in Indian numbering system', () {
+    test(
+        '1. NumberToWordsIndian formats numbers correctly in Indian numbering system',
+        () {
       expect(NumberToWordsIndian.convert(0), 'Zero Rupees Only');
       expect(NumberToWordsIndian.convert(500), 'Five Hundred Rupees Only');
       expect(NumberToWordsIndian.convert(1000), 'One Thousand Rupees Only');
-      expect(NumberToWordsIndian.convert(12500), 'Twelve Thousand Five Hundred Rupees Only');
-      expect(NumberToWordsIndian.convert(75000.50), 'Seventy Five Thousand Rupees and Fifty Paise Only');
-      expect(NumberToWordsIndian.convert(350000), 'Three Lakh Fifty Thousand Rupees Only');
-      expect(NumberToWordsIndian.convert(12500000), 'One Crore Twenty Five Lakh Rupees Only');
+      expect(NumberToWordsIndian.convert(12500),
+          'Twelve Thousand Five Hundred Rupees Only');
+      expect(NumberToWordsIndian.convert(75000.50),
+          'Seventy Five Thousand Rupees and Fifty Paise Only');
+      expect(NumberToWordsIndian.convert(350000),
+          'Three Lakh Fifty Thousand Rupees Only');
+      expect(NumberToWordsIndian.convert(12500000),
+          'One Crore Twenty Five Lakh Rupees Only');
     });
 
-    test('2. PdfReceiptService generates valid Labour Wage Slip PDF bytes', () async {
+    test('2. PdfReceiptService generates valid Labour Wage Slip PDF bytes',
+        () async {
       const worker = Worker(
         id: 101,
         name: 'Raju Mason',
@@ -68,7 +75,8 @@ void main() {
       expect(header, '%PDF-');
     });
 
-    test('3. PdfReceiptService generates valid Payment Voucher PDF bytes', () async {
+    test('3. PdfReceiptService generates valid Payment Voucher PDF bytes',
+        () async {
       final pdfBytes = await PdfReceiptService.generatePaymentVoucher(
         transactionId: 501,
         date: DateTime(2026, 3, 2),
@@ -90,7 +98,9 @@ void main() {
       expect(header, '%PDF-');
     });
 
-    test('4. PdfReceiptService generates valid Petty Cash Imprest Voucher PDF bytes', () async {
+    test(
+        '4. PdfReceiptService generates valid Petty Cash Imprest Voucher PDF bytes',
+        () async {
       final voucher = PettyCashVoucher(
         id: 701,
         walletId: 1,
@@ -120,7 +130,8 @@ void main() {
       expect(header, '%PDF-');
     });
 
-    testWidgets('5. PdfPreviewDialog renders cleanly with 0 layout overflow', (tester) async {
+    testWidgets('5. PdfPreviewDialog renders cleanly with 0 layout overflow',
+        (tester) async {
       await tester.binding.setSurfaceSize(const Size(1440, 900));
 
       await tester.pumpWidget(
@@ -135,7 +146,8 @@ void main() {
                 height: 800,
                 child: PdfPreviewDialog(
                   title: 'Labour Wage Receipt — Raju Mason',
-                  pdfBuilder: (format) async => Uint8List.fromList([37, 80, 68, 70, 45]),
+                  pdfBuilder: (format) async =>
+                      Uint8List.fromList([37, 80, 68, 70, 45]),
                 ),
               ),
             ),

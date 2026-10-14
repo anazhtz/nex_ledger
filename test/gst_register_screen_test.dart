@@ -114,9 +114,9 @@ void main() {
       (tester) async {
     await seed();
     await pump(tester);
-    await tester.tap(find.byKey(const ValueKey('gst-project-null')));
+    await tester.tap(find.byKey(const Key('project_picker')));
     await tester.pump(const Duration(milliseconds: 400));
-    await tester.tap(find.textContaining('PRJ-B').last);
+    await tester.tap(find.text('Site PRJ-B').last);
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.text('GST Invoices (1)'), findsOneWidget);
     expect(find.text('₹11,800.00'), findsWidgets);

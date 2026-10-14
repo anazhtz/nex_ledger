@@ -292,4 +292,40 @@ void main() {
     expect(inputGstTotals(const []).total, 0);
     await fresh.close();
   });
+
+  test('GST on advance stock is paid but not yet in project costs', () async {
+    final shop = (await db.select(db.vendors).get()).first.id;
+    await PurchaseInvoiceRepository(db).createInvoice(PurchaseInvoiceDraft(
+      date: DateTime(2026, 10, 20),
+      invoiceNo: 'S-1',
+      vendorId: shop,
+      projectId: projA,
+      isAdvanceStock: true,
+      lines: const [
+        InvoiceLineDraft(item: 'Cement stock', qty: 100, rate: 100, gstRate: 18)
+      ],
+    ));
+    final all = await load();
+    final stock = all.firstWhere((e) => e.docNo.contains('S-1'));
+    expect(stock.inProjectCost, isFalse);
+    expect(stock.gst, 1800,
+        reason: 'the GST was paid, so it is in the input GST report');
+
+    final a = summarizeByProject(all).firstWhere((p) => p.projectId == projA);
+    expect(a.totals.gst, 11160 + 1800,
+        reason: 'input GST counts everything paid');
+    expect(a.gstInCosts, 11160,
+        reason: 'but only the GST inside project costs is shown against costs');
+    expect(gstInProjectCosts(all, projectId: projA), 11160);
+    expect(gstInProjectCosts(all), 15960,
+        reason: 'all projects, stock excluded');
+  });
+
+  test('costs with and without GST', () {
+    const v = ProjectCostView(totalCosts: 595600, gstInCosts: 75600);
+    expect(v.costsWithoutGst, 520000);
+    expect(
+        const ProjectCostView(totalCosts: 100, gstInCosts: 0).costsWithoutGst,
+        100);
+  });
 }

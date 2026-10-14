@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
@@ -269,24 +270,12 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                       child: projectsAsync.when(
                         loading: () => const LinearProgressIndicator(),
                         error: (_, __) => const SizedBox.shrink(),
-                        data: (projects) => DropdownButtonFormField<int?>(
+                        data: (projects) => ProjectPickerField(
+                          projects: projects,
                           value: selectedProject,
-                          decoration: InputDecoration(
-                            labelText: 'Active Project Context',
-                            isDense: true,
-                            prefixIcon: Icon(Icons.domain_rounded, size: 18.sp),
-                          ),
-                          items: [
-                            const DropdownMenuItem(
-                                value: null, child: Text('— Select Project —')),
-                            ...projects.map(
-                              (p) => DropdownMenuItem(
-                                value: p.id,
-                                child: Text('${p.code} — ${p.name}',
-                                    overflow: TextOverflow.ellipsis),
-                              ),
-                            ),
-                          ],
+                          labelText: 'Active Project Context',
+                          hintText: 'Select Project',
+                          prefixIcon: Icons.domain_rounded,
                           onChanged: (v) => ref
                               .read(attendanceProjectProvider.notifier)
                               .state = v,

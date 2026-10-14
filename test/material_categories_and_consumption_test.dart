@@ -27,7 +27,8 @@ void main() {
   });
 
   group('Material Categories & Project Material Consumption Audit', () {
-    test('1. Material Categorization & Project Cumulative Consumption Stats', () async {
+    test('1. Material Categorization & Project Cumulative Consumption Stats',
+        () async {
       // 1. Setup Projects & Vendor
       final prj1Id = await db.projectDao.insertProject(
         ProjectsCompanion.insert(
@@ -114,11 +115,13 @@ void main() {
       );
 
       // 4. Verify Project 1 Material Consumption Breakdown
-      final prj1Materials = await purchaseRepo.watchMaterialConsumptionByProject(prj1Id).first;
+      final prj1Materials =
+          await purchaseRepo.watchMaterialConsumptionByProject(prj1Id).first;
       expect(prj1Materials.length, 2);
 
       // Steel Category in PRJ 1
-      final steelSummary = prj1Materials.firstWhere((m) => m.categoryName == 'Steel / TMT / Rebar');
+      final steelSummary = prj1Materials
+          .firstWhere((m) => m.categoryName == 'Steel / TMT / Rebar');
       expect(steelSummary.totalQuantity, 5.0);
       expect(steelSummary.unit, 'Tons');
       expect(steelSummary.totalAmount, 300000.0);
@@ -126,7 +129,8 @@ void main() {
       expect(steelSummary.billCount, 1);
 
       // Cement Category in PRJ 1 (200 + 250 = 450 Bags, ₹80,000 + ₹1,05,000 = ₹1,85,000)
-      final cementSummary = prj1Materials.firstWhere((m) => m.categoryName == 'Cement');
+      final cementSummary =
+          prj1Materials.firstWhere((m) => m.categoryName == 'Cement');
       expect(cementSummary.totalQuantity, 450.0);
       expect(cementSummary.unit, 'Bags');
       expect(cementSummary.totalAmount, 185000.0);
@@ -134,14 +138,17 @@ void main() {
       expect(cementSummary.billCount, 2);
 
       // 5. Verify Project 2 Material Consumption Isolation
-      final prj2Materials = await purchaseRepo.watchMaterialConsumptionByProject(prj2Id).first;
+      final prj2Materials =
+          await purchaseRepo.watchMaterialConsumptionByProject(prj2Id).first;
       expect(prj2Materials.length, 1);
       expect(prj2Materials.first.categoryName, 'Cement');
       expect(prj2Materials.first.totalQuantity, 100.0);
       expect(prj2Materials.first.totalAmount, 40000.0);
     });
 
-    testWidgets('2. PurchaseFormScreen & PurchaseListScreen render cleanly with material breakdown', (tester) async {
+    testWidgets(
+        '2. PurchaseFormScreen & PurchaseListScreen render cleanly with material breakdown',
+        (tester) async {
       tester.view.physicalSize = const Size(1280, 800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -150,7 +157,8 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           appDatabaseProvider.overrideWithValue(db),
-          purchaseViewTabProvider.overrideWith((ref) => 1), // Material Breakdown tab
+          purchaseViewTabProvider
+              .overrideWith((ref) => 1), // Material Breakdown tab
         ],
       );
       addTearDown(container.dispose);

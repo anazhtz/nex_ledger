@@ -42,7 +42,8 @@ void main() {
       ];
       await validFile.writeAsBytes(validBytes);
 
-      final validInfo = await DatabaseBackupRestoreService.inspectBackupFile(validSqlitePath);
+      final validInfo =
+          await DatabaseBackupRestoreService.inspectBackupFile(validSqlitePath);
       expect(validInfo.isValidSqlite, isTrue);
       expect(validInfo.fileName, 'valid_test.sqlite');
       expect(validInfo.sizeBytes, validBytes.length);
@@ -51,9 +52,11 @@ void main() {
       // 2. Create an invalid/corrupted dummy text file
       final invalidPath = p.join(tempDir.path, 'corrupted.txt');
       final invalidFile = File(invalidPath);
-      await invalidFile.writeAsString('This is just a text file, not a sqlite DB');
+      await invalidFile
+          .writeAsString('This is just a text file, not a sqlite DB');
 
-      final invalidInfo = await DatabaseBackupRestoreService.inspectBackupFile(invalidPath);
+      final invalidInfo =
+          await DatabaseBackupRestoreService.inspectBackupFile(invalidPath);
       expect(invalidInfo.isValidSqlite, isFalse);
       expect(invalidInfo.fileName, 'corrupted.txt');
     });
@@ -66,9 +69,11 @@ void main() {
       );
     });
 
-    test('3. Restore Invalid File Throws FormatException with Clear Message', () async {
+    test('3. Restore Invalid File Throws FormatException with Clear Message',
+        () async {
       final corruptFilePath = p.join(tempDir.path, 'invalid_backup.db');
-      await File(corruptFilePath).writeAsString('Random gibberish bytes without sqlite header');
+      await File(corruptFilePath)
+          .writeAsString('Random gibberish bytes without sqlite header');
 
       expect(
         () => DatabaseBackupRestoreService.restoreDatabase(
@@ -108,7 +113,8 @@ void main() {
       expect(infoMb.formattedSize, '5.00 MB');
     });
 
-    testWidgets('5. RestoreDatabaseDialog UI Rendering & File Picker Interface', (tester) async {
+    testWidgets('5. RestoreDatabaseDialog UI Rendering & File Picker Interface',
+        (tester) async {
       tester.view.physicalSize = const Size(1280, 800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -137,10 +143,12 @@ void main() {
 
       // Check header
       expect(find.text('Restore Database from Backup'), findsOneWidget);
-      expect(find.textContaining('Replace current database records'), findsOneWidget);
+      expect(find.textContaining('Replace current database records'),
+          findsOneWidget);
 
       // Check file picker action button
-      expect(find.textContaining('Click to Choose Backup File'), findsOneWidget);
+      expect(
+          find.textContaining('Click to Choose Backup File'), findsOneWidget);
 
       // Check safety guarantee notice
       expect(find.textContaining('Safety Guarantee:'), findsOneWidget);

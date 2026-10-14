@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/daos/petty_cash_dao.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
@@ -674,28 +675,11 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                   error: (_, __) => const SizedBox.shrink(),
                   data: (projects) => SizedBox(
                     width: 220.w,
-                    child: DropdownButtonFormField<int?>(
+                    child: ProjectPickerField(
+                      projects: projects,
                       value: selectedFilterProject,
-                      isExpanded: true,
-                      decoration: InputDecoration(
-                        labelText: 'Filter Project',
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(
-                            horizontal: 10.w, vertical: 8.h),
-                      ),
-                      items: [
-                        const DropdownMenuItem(
-                            value: null,
-                            child: Text('All Projects',
-                                overflow: TextOverflow.ellipsis)),
-                        ...projects.map(
-                          (p) => DropdownMenuItem(
-                            value: p.id,
-                            child: Text('${p.code} — ${p.name}',
-                                overflow: TextOverflow.ellipsis),
-                          ),
-                        ),
-                      ],
+                      labelText: 'Filter Project',
+                      allLabel: 'All Projects',
                       onChanged: (v) => ref
                           .read(pettyCashFilterProjectProvider.notifier)
                           .state = v,

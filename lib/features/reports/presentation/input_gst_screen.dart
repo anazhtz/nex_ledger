@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
@@ -9,6 +10,7 @@ import 'package:nex_ledger/core/utils/financial_year.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 import 'package:nex_ledger/features/purchase/providers/purchase_invoice_providers.dart';
 import 'package:nex_ledger/features/reports/data/input_gst.dart';
+import 'package:nex_ledger/features/reports/providers/report_providers.dart';
 import 'package:nex_ledger/shared/widgets/data_table_card.dart';
 import 'package:nex_ledger/shared/widgets/stat_card.dart';
 
@@ -78,8 +80,15 @@ class _InputGstScreenState extends ConsumerState<InputGstScreen> {
             .firstOrNull,
         formatDate: DateFormatter.format,
       );
+      final pnls = ref.read(consolidatedPnlProvider).asData?.value ?? const [];
       final path = await ExcelExportService.exportInputGst(
-          entries: rows, filterText: text);
+        entries: rows,
+        filterText: text,
+        projectCosts: {
+          for (final p in pnls)
+            p.project.id: p.expenses + p.purchases + p.labourCosts
+        },
+      );
       if (!mounted) return;
       if (path != null) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -199,21 +208,11 @@ class _InputGstScreenState extends ConsumerState<InputGstScreen> {
           children: [
             SizedBox(
               width: 230,
-              child: DropdownButtonFormField<int?>(
-                key: ValueKey('igst-project-$projectValue'),
+              child: ProjectPickerField(
+                projects: projects,
                 value: projectValue,
-                isExpanded: true,
-                decoration:
-                    const InputDecoration(labelText: 'Project', isDense: true),
-                items: [
-                  const DropdownMenuItem<int?>(
-                      value: null, child: Text('All Projects')),
-                  ...projects.map((p) => DropdownMenuItem<int?>(
-                        value: p.id,
-                        child: Text('${p.code} — ${p.name}',
-                            overflow: TextOverflow.ellipsis),
-                      )),
-                ],
+                labelText: 'Project',
+                allLabel: 'All Projects',
                 onChanged: (v) => setState(() => _filter = v == null
                     ? _filter.copyWith(clearProject: true)
                     : _filter.copyWith(projectId: v)),
@@ -347,15 +346,29 @@ class _InputGstScreenState extends ConsumerState<InputGstScreen> {
   static const _emptyMessage =
       'No GST bills yet. Turn on GST when you enter a purchase, subcontractor bill or expense.';
 
+  /// Each project's total costs (GST included), as in the P&L.
+  Map<int, double> _projectCosts() {
+    final pnls = ref.watch(consolidatedPnlProvider).asData?.value ?? const [];
+    return {
+      for (final p in pnls)
+        p.project.id: p.expenses + p.purchases + p.labourCosts
+    };
+  }
+
   Widget _projectTable(List<InputGstEntry> rows) {
     final projects = summarizeByProject(rows);
+    final costs = _projectCosts();
     return DataTableCard(
       title: 'Input GST by Project',
       emptyMessage:
           _filter.isEmpty ? _emptyMessage : 'No GST bills match these filters.',
-      minWidth: 1200,
+      minWidth: 1700,
       columns: [
         const DataColumn(label: Text('Project')),
+        const DataColumn(
+            label: Text('Project Costs (incl. GST)'), numeric: true),
+        const DataColumn(label: Text('GST inside Costs'), numeric: true),
+        const DataColumn(label: Text('Costs without GST'), numeric: true),
         const DataColumn(label: Text('Taxable Value'), numeric: true),
         const DataColumn(label: Text('CGST'), numeric: true),
         const DataColumn(label: Text('SGST'), numeric: true),
@@ -384,6 +397,18 @@ class _InputGstScreenState extends ConsumerState<InputGstScreen> {
                 _view = _InputView.entries;
               }),
             ),
+            ...() {
+              final view = ProjectCostView(
+                  totalCosts: costs[p.projectId] ?? 0.0,
+                  gstInCosts: p.gstInCosts);
+              return [
+                DataCell(Text(CurrencyFormatter.format(view.totalCosts),
+                    style: const TextStyle(fontWeight: FontWeight.w600))),
+                DataCell(Text(_m(view.gstInCosts),
+                    style: const TextStyle(color: _purple))),
+                DataCell(Text(CurrencyFormatter.format(view.costsWithoutGst))),
+              ];
+            }(),
             DataCell(Text(CurrencyFormatter.format(p.totals.taxable))),
             DataCell(Text(_m(p.totals.cgst))),
             DataCell(Text(_m(p.totals.sgst))),

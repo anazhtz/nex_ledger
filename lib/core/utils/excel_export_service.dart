@@ -943,6 +943,7 @@ class ExcelExportService {
   static Excel buildInputGstWorkbook({
     required List<InputGstEntry> entries,
     required String filterText,
+    Map<int, double> projectCosts = const {},
   }) {
     final excel = Excel.createExcel();
     final byProject = excel['By Project'];
@@ -964,6 +965,9 @@ class ExcelExportService {
       TextCellValue('#'),
       TextCellValue('Project'),
       TextCellValue('Name'),
+      TextCellValue('Project Costs incl. GST (₹)'),
+      TextCellValue('GST inside Costs (₹)'),
+      TextCellValue('Costs without GST (₹)'),
       TextCellValue('Taxable Value (₹)'),
       TextCellValue('CGST (₹)'),
       TextCellValue('SGST (₹)'),
@@ -973,11 +977,20 @@ class ExcelExportService {
         TextCellValue('${s.label} GST (₹)'),
     ]);
     var n = 1;
+    var sumCosts = 0.0, sumGstInCosts = 0.0;
     for (final p in summarizeByProject(entries)) {
+      final view = ProjectCostView(
+          totalCosts: projectCosts[p.projectId] ?? 0.0,
+          gstInCosts: p.gstInCosts);
+      sumCosts += view.totalCosts;
+      sumGstInCosts += view.gstInCosts;
       byProject.appendRow([
         IntCellValue(n++),
         TextCellValue(p.projectCode),
         TextCellValue(p.projectName),
+        DoubleCellValue(view.totalCosts),
+        DoubleCellValue(view.gstInCosts),
+        DoubleCellValue(view.costsWithoutGst),
         DoubleCellValue(p.totals.taxable),
         DoubleCellValue(p.totals.cgst),
         DoubleCellValue(p.totals.sgst),
@@ -992,6 +1005,11 @@ class ExcelExportService {
       TextCellValue(''),
       TextCellValue('TOTAL'),
       TextCellValue(''),
+      DoubleCellValue(sumCosts),
+      DoubleCellValue(sumGstInCosts),
+      DoubleCellValue(
+          ProjectCostView(totalCosts: sumCosts, gstInCosts: sumGstInCosts)
+              .costsWithoutGst),
       DoubleCellValue(t.taxable),
       DoubleCellValue(t.cgst),
       DoubleCellValue(t.sgst),
@@ -1075,9 +1093,10 @@ class ExcelExportService {
   static Future<String?> exportInputGst({
     required List<InputGstEntry> entries,
     required String filterText,
+    Map<int, double> projectCosts = const {},
   }) {
-    final excel =
-        buildInputGstWorkbook(entries: entries, filterText: filterText);
+    final excel = buildInputGstWorkbook(
+        entries: entries, filterText: filterText, projectCosts: projectCosts);
     final stamp = DateFormatter.toDbString(DateTime.now());
     return _saveExcelFile(excel, 'Input_GST_Report_$stamp.xlsx');
   }

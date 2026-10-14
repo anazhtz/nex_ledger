@@ -24,7 +24,8 @@ void main() {
 
   tearDown(() async => db.close());
 
-  test('Bank Accounts Master, Opening Balances, and Multi-Account Liquidity', () async {
+  test('Bank Accounts Master, Opening Balances, and Multi-Account Liquidity',
+      () async {
     // 1. Create a Project
     final pId = await projectRepo.createProject(
       code: 'PRJ-BANK-001',
@@ -70,8 +71,10 @@ void main() {
     );
 
     var balances = await bankRepo.watchAccountsWithBalances().first;
-    var cashBal = balances.firstWhere((b) => b.account.id == cashAccId).currentBalance;
-    var bankBal = balances.firstWhere((b) => b.account.id == bankAccId).currentBalance;
+    var cashBal =
+        balances.firstWhere((b) => b.account.id == cashAccId).currentBalance;
+    var bankBal =
+        balances.firstWhere((b) => b.account.id == bankAccId).currentBalance;
     expect(cashBal, 8000.0, reason: '₹10,000 - ₹2,000 = ₹8,000');
     expect(bankBal, 50000.0, reason: 'Bank unaffected');
 
@@ -89,8 +92,10 @@ void main() {
     );
 
     balances = await bankRepo.watchAccountsWithBalances().first;
-    cashBal = balances.firstWhere((b) => b.account.id == cashAccId).currentBalance;
-    bankBal = balances.firstWhere((b) => b.account.id == bankAccId).currentBalance;
+    cashBal =
+        balances.firstWhere((b) => b.account.id == cashAccId).currentBalance;
+    bankBal =
+        balances.firstWhere((b) => b.account.id == bankAccId).currentBalance;
     expect(cashBal, 8000.0);
     expect(bankBal, 35000.0, reason: '₹50,000 - ₹15,000 = ₹35,000');
 
@@ -104,15 +109,18 @@ void main() {
     );
 
     balances = await bankRepo.watchAccountsWithBalances().first;
-    cashBal = balances.firstWhere((b) => b.account.id == cashAccId).currentBalance;
-    bankBal = balances.firstWhere((b) => b.account.id == bankAccId).currentBalance;
+    cashBal =
+        balances.firstWhere((b) => b.account.id == cashAccId).currentBalance;
+    bankBal =
+        balances.firstWhere((b) => b.account.id == bankAccId).currentBalance;
     expect(cashBal, 13000.0, reason: '₹8,000 + ₹5,000 = ₹13,000');
     expect(bankBal, 30000.0, reason: '₹35,000 - ₹5,000 = ₹30,000');
 
     liq = await bankRepo.watchLiquiditySummary().first;
     expect(liq.cashInHand, 13000.0);
     expect(liq.inBanks, 30000.0);
-    expect(liq.totalLiquidity, 43000.0, reason: 'Total funds unchanged by internal transfer');
+    expect(liq.totalLiquidity, 43000.0,
+        reason: 'Total funds unchanged by internal transfer');
   });
 
   test('Negative Cash Balance Calculation', () async {
@@ -141,8 +149,10 @@ void main() {
     );
 
     final balances = await bankRepo.watchAccountsWithBalances().first;
-    final cashBal = balances.firstWhere((b) => b.account.id == cashAccId).currentBalance;
-    expect(cashBal, -2500.0, reason: '₹1,000 - ₹3,500 = -₹2,500 negative balance');
+    final cashBal =
+        balances.firstWhere((b) => b.account.id == cashAccId).currentBalance;
+    expect(cashBal, -2500.0,
+        reason: '₹1,000 - ₹3,500 = -₹2,500 negative balance');
 
     final liq = await bankRepo.watchLiquiditySummary().first;
     expect(liq.cashInHand, -2500.0);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/constants/material_constants.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
@@ -120,27 +121,12 @@ class PurchaseListScreen extends ConsumerWidget {
                     children: [
                       SizedBox(
                         width: 280.w,
-                        child: DropdownButtonFormField<int?>(
+                        child: ProjectPickerField(
+                          projects: projects,
                           value: filterProject,
-                          isExpanded: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Filter by Project',
-                            prefixIcon: Icon(Icons.folder_outlined, size: 20),
-                            isDense: true,
-                          ),
-                          items: [
-                            const DropdownMenuItem(
-                                value: null,
-                                child: Text('All Projects & Stock',
-                                    overflow: TextOverflow.ellipsis)),
-                            ...projects.map(
-                              (p) => DropdownMenuItem(
-                                value: p.id,
-                                child: Text('${p.code} — ${p.name}',
-                                    overflow: TextOverflow.ellipsis),
-                              ),
-                            ),
-                          ],
+                          labelText: 'Filter by Project',
+                          allLabel: 'All Projects & Stock',
+                          prefixIcon: Icons.folder_outlined,
                           onChanged: (v) => ref
                               .read(purchaseProjectFilterProvider.notifier)
                               .state = v,

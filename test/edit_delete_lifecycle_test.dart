@@ -93,7 +93,8 @@ void main() {
     expect(balance, 45000);
 
     final txns = await cashBookRepo.watchAllTransactions().first;
-    final expenseTxn = txns.firstWhere((t) => t.transaction.type == TransactionType.expense);
+    final expenseTxn =
+        txns.firstWhere((t) => t.transaction.type == TransactionType.expense);
 
     // 3. Edit Expense from ₹5,000 to ₹8,000
     await cashBookRepo.updateTransaction(

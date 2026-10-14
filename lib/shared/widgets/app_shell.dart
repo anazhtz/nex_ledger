@@ -9,6 +9,7 @@ import 'package:nex_ledger/features/auth/providers/auth_provider.dart';
 import 'package:nex_ledger/features/cash_book/providers/cash_book_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 import 'package:nex_ledger/shared/widgets/keyboard_shortcuts_dialog.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 
 /// Navigation item model with section grouping
 class NavItem {
@@ -374,86 +375,17 @@ class _AppShellState extends ConsumerState<AppShell> {
                                   ? selectedId
                                   : null;
 
-                          return Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 12.w, vertical: 4.h),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEAF1FB),
-                              borderRadius: BorderRadius.circular(8.r),
-                              border: Border.all(
-                                color: const Color(0xFFBFD4EE),
-                              ),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<int?>(
-                                value: validSelectedId,
-                                isDense: true,
-                                icon: const Icon(
-                                  Icons.keyboard_arrow_down_rounded,
-                                  color: Color(0xFF1F5FBF),
-                                  size: 20,
-                                ),
-                                style: TextStyle(
-                                  fontSize: 13.sp,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF1F5FBF),
-                                ),
-                                onChanged: (int? newId) {
-                                  ref
-                                      .read(selectedProjectIdProvider.notifier)
-                                      .state = newId;
-                                },
-                                items: [
-                                  DropdownMenuItem<int?>(
-                                    value: null,
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.border_all_rounded,
-                                            size: 16.sp,
-                                            color: const Color(0xFF1F5FBF)),
-                                        SizedBox(width: 6.w),
-                                        const Text(
-                                            'All Projects (Company Overview)'),
-                                      ],
-                                    ),
-                                  ),
-                                  ...projects.map((p) {
-                                    return DropdownMenuItem<int?>(
-                                      value: p.id,
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 6.w, vertical: 2.h),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF1F5FBF)
-                                                  .withValues(alpha: 0.1),
-                                              borderRadius:
-                                                  BorderRadius.circular(4.r),
-                                            ),
-                                            child: Text(
-                                              p.code,
-                                              style: TextStyle(
-                                                fontSize: 11.sp,
-                                                fontWeight: FontWeight.bold,
-                                                color: const Color(0xFF1F5FBF),
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(width: 8.w),
-                                          ConstrainedBox(
-                                            constraints:
-                                                BoxConstraints(maxWidth: 160.w),
-                                            child: Text(p.name,
-                                                overflow:
-                                                    TextOverflow.ellipsis),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }),
-                                ],
-                              ),
+                          return SizedBox(
+                            width: 300.w,
+                            child: ProjectPickerField(
+                              projects: projects,
+                              value: validSelectedId,
+                              dense: true,
+                              allLabel: 'All Projects (Company Overview)',
+                              fieldKey: const Key('active_project_picker'),
+                              onChanged: (newId) => ref
+                                  .read(selectedProjectIdProvider.notifier)
+                                  .state = newId,
                             ),
                           );
                         },

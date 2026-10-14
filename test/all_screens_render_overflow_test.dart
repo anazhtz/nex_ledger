@@ -103,11 +103,13 @@ void main() {
       await testScreen(tester, const SubcontractHubScreen());
     });
 
-    testWidgets('ClientBillingHubScreen renders with 0 overflow', (tester) async {
+    testWidgets('ClientBillingHubScreen renders with 0 overflow',
+        (tester) async {
       await testScreen(tester, const ClientBillingHubScreen());
     });
 
-    testWidgets('ProjectBudgetVarianceHubScreen renders with 0 overflow', (tester) async {
+    testWidgets('ProjectBudgetVarianceHubScreen renders with 0 overflow',
+        (tester) async {
       await testScreen(tester, const ProjectBudgetVarianceHubScreen());
     });
 

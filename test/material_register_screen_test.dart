@@ -26,7 +26,8 @@ void main() {
   });
 
   group('Project Material Register & Quantity Statement Tests', () {
-    testWidgets('1. Calculates total quantities, average rate, and groups correctly',
+    testWidgets(
+        '1. Calculates total quantities, average rate, and groups correctly',
         (tester) async {
       // 1. Setup Projects & Vendor
       final prj1Id = await db.projectDao.insertProject(
@@ -49,7 +50,8 @@ void main() {
         ),
       );
 
-      final vendorId = await purchaseRepo.addVendor('Shree Cement & Steel Mart');
+      final vendorId =
+          await purchaseRepo.addVendor('Shree Cement & Steel Mart');
 
       // 2. Add Inwards for Project 1:
       // Inward 1: 500 bags Cement @ ₹380 = ₹1,90,000
@@ -178,7 +180,8 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     });
 
-    testWidgets('2. MaterialRegisterScreen renders cleanly with 0 overflow on narrow desktop',
+    testWidgets(
+        '2. MaterialRegisterScreen renders cleanly with 0 overflow on narrow desktop',
         (tester) async {
       final container = ProviderContainer(
         overrides: [

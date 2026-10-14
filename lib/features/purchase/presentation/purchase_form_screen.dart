@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/constants/material_constants.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
@@ -816,19 +817,11 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
   Widget _buildProjectDropdown(List<Project> projects) {
     final value =
         projects.any((p) => p.id == _selectedProject) ? _selectedProject : null;
-    return DropdownButtonFormField<int>(
+    return ProjectPickerField(
+      projects: projects,
       value: value,
-      isExpanded: true,
-      decoration: _dec(hint: 'Select project'),
-      items: projects
-          .map((p) => DropdownMenuItem(
-                value: p.id,
-                child: Text('${p.code} — ${p.name}',
-                    overflow: TextOverflow.ellipsis),
-              ))
-          .toList(),
-      onChanged: (v) => setState(() => _selectedProject = v),
       validator: (v) => v == null ? 'Required' : null,
+      onChanged: (v) => setState(() => _selectedProject = v),
     );
   }
 

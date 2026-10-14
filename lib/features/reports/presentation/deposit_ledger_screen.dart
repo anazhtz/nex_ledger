@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/core/utils/excel_export_service.dart';
@@ -105,22 +106,11 @@ class _DepositLedgerScreenState extends ConsumerState<DepositLedgerScreen> {
               error: (_, __) => const SizedBox.shrink(),
               data: (projects) => SizedBox(
                 width: 300,
-                child: DropdownButtonFormField<int?>(
+                child: ProjectPickerField(
+                  projects: projects,
                   value: _selectedProject,
-                  isExpanded: true,
-                  decoration:
-                      const InputDecoration(labelText: 'Select Project'),
-                  items: [
-                    const DropdownMenuItem(
-                        value: null, child: Text('— Show all projects —')),
-                    ...projects.map(
-                      (p) => DropdownMenuItem(
-                        value: p.id,
-                        child: Text('${p.code}  —  ${p.name}',
-                            overflow: TextOverflow.ellipsis),
-                      ),
-                    ),
-                  ],
+                  labelText: 'Select Project',
+                  allLabel: 'Show all projects',
                   onChanged: (v) {
                     setState(() => _selectedProject = v);
                     ref.read(depositProjectFilterProvider.notifier).state = v;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
@@ -744,19 +745,12 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
       }
     }
 
-    return DropdownButtonFormField<int>(
+    return ProjectPickerField(
+      projects: projects,
       value: _selectedProject,
-      isExpanded: true,
-      decoration: const InputDecoration(labelText: 'Select Target Project *'),
-      items: projects
-          .map((p) => DropdownMenuItem(
-                value: p.id,
-                child: Text('${p.code} — ${p.name}',
-                    overflow: TextOverflow.ellipsis),
-              ))
-          .toList(),
-      onChanged: (v) => setState(() => _selectedProject = v),
+      labelText: 'Select Target Project *',
       validator: (v) => v == null ? 'Required' : null,
+      onChanged: (v) => setState(() => _selectedProject = v),
     );
   }
 }

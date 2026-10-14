@@ -28,8 +28,12 @@ void main() {
     await db.close();
   });
 
-  group('Subcontractor Piece-Rate & Measurement Work Orders Comprehensive Audit', () {
-    test('1. Work Order Agreement, Running Measurements, Retention Holding & Due Balance', () async {
+  group(
+      'Subcontractor Piece-Rate & Measurement Work Orders Comprehensive Audit',
+      () {
+    test(
+        '1. Work Order Agreement, Running Measurements, Retention Holding & Due Balance',
+        () async {
       // 1. Setup Project
       final prjId = await db.projectDao.insertProject(
         ProjectsCompanion.insert(
@@ -78,15 +82,19 @@ void main() {
         measuredQuantity: 4000.0,
         unitRate: 18.0,
         retentionPercentage: 5.0,
-        locationOrDescription: 'Ground floor living room and bedrooms plastered',
+        locationOrDescription:
+            'Ground floor living room and bedrooms plastered',
       );
 
       // Verify Project P&L recognizes the gross cost of ₹72,000
-      final prjTxns = await db.transactionDao.watchTransactionsByProject(prjId).first;
-      final bill1Txn = prjTxns.firstWhere((t) => t.type == TransactionType.subcontractBill);
+      final prjTxns =
+          await db.transactionDao.watchTransactionsByProject(prjId).first;
+      final bill1Txn =
+          prjTxns.firstWhere((t) => t.type == TransactionType.subcontractBill);
       expect(bill1Txn.amount, 72000.0);
       expect(bill1Txn.affectsPnl, true);
-      expect(bill1Txn.affectsCash, false); // No cash out upon measurement certification
+      expect(bill1Txn.affectsCash,
+          false); // No cash out upon measurement certification
 
       // Check Work Order Financial Summary after Bill 1
       var summary = await subRepo.watchWorkOrderFinancialSummary(woId).first;
@@ -117,8 +125,8 @@ void main() {
       expect(summary!.totalMeasuredQuantity, 7000.0);
       expect(summary.progressPercentage, 70.0);
       expect(summary.totalGrossCertified, 126000.0); // 72,000 + 54,000
-      expect(summary.totalRetentionHeld, 6300.0);   // 3,600 + 2,700
-      expect(summary.totalNetBillable, 119700.0);   // 126,000 - 6,300
+      expect(summary.totalRetentionHeld, 6300.0); // 3,600 + 2,700
+      expect(summary.totalNetBillable, 119700.0); // 126,000 - 6,300
       expect(summary.currentNetDue, 119700.0);
 
       // 6. Record Running Advance / Payment: ₹70,000
@@ -134,10 +142,13 @@ void main() {
       );
 
       // Verify payment moves physical cash, but does NOT double count in P&L
-      final updatedPrjTxns = await db.transactionDao.watchTransactionsByProject(prjId).first;
-      final payTxn = updatedPrjTxns.firstWhere((t) => t.type == TransactionType.subcontractPayment);
+      final updatedPrjTxns =
+          await db.transactionDao.watchTransactionsByProject(prjId).first;
+      final payTxn = updatedPrjTxns
+          .firstWhere((t) => t.type == TransactionType.subcontractPayment);
       expect(payTxn.amount, 70000.0);
-      expect(payTxn.affectsPnl, false); // P&L already recognized at measurement time
+      expect(payTxn.affectsPnl,
+          false); // P&L already recognized at measurement time
       expect(payTxn.affectsCash, true); // Moves bank cash balance
 
       // Verify running due balance: ₹1,19,700 - ₹70,000 = ₹49,700
@@ -159,7 +170,8 @@ void main() {
       expect(subSummary.currentNetDue, 49700.0);
     });
 
-    testWidgets('2. Subcontract screens render cleanly with 0 overflows', (tester) async {
+    testWidgets('2. Subcontract screens render cleanly with 0 overflows',
+        (tester) async {
       tester.view.physicalSize = const Size(1280, 800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);

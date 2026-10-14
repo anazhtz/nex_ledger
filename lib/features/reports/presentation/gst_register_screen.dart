@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
@@ -212,21 +213,11 @@ class _GstRegisterScreenState extends ConsumerState<GstRegisterScreen> {
           children: [
             SizedBox(
               width: 230,
-              child: DropdownButtonFormField<int?>(
-                key: ValueKey('gst-project-$projectValue'),
+              child: ProjectPickerField(
+                projects: projects,
                 value: projectValue,
-                isExpanded: true,
-                decoration:
-                    const InputDecoration(labelText: 'Project', isDense: true),
-                items: [
-                  const DropdownMenuItem<int?>(
-                      value: null, child: Text('All Projects')),
-                  ...projects.map((p) => DropdownMenuItem<int?>(
-                        value: p.id,
-                        child: Text('${p.code} — ${p.name}',
-                            overflow: TextOverflow.ellipsis),
-                      )),
-                ],
+                labelText: 'Project',
+                allLabel: 'All Projects',
                 onChanged: (v) => setState(() => _filter = v == null
                     ? _filter.copyWith(clearProject: true)
                     : _filter.copyWith(projectId: v)),

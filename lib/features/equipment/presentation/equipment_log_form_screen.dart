@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
@@ -415,30 +416,15 @@ class _EquipmentLogFormScreenState
                             final validProjects = projects
                                 .where((p) => p.type == ProjectType.project)
                                 .toList();
-                            return DropdownButtonFormField<int?>(
+                            return ProjectPickerField(
+                              projects: validProjects,
                               value: _selectedProjectId,
-                              isExpanded: true,
-                              decoration: const InputDecoration(
-                                labelText: 'Target Project Site *',
-                                prefixIcon: Icon(Icons.folder_outlined),
-                              ),
-                              items: [
-                                const DropdownMenuItem(
-                                  value: null,
-                                  child: Text('— Select Project —',
-                                      overflow: TextOverflow.ellipsis),
-                                ),
-                                ...validProjects.map(
-                                  (p) => DropdownMenuItem(
-                                    value: p.id,
-                                    child: Text('${p.code} — ${p.name}',
-                                        overflow: TextOverflow.ellipsis),
-                                  ),
-                                ),
-                              ],
+                              labelText: 'Target Project Site *',
+                              hintText: 'Select Project',
+                              prefixIcon: Icons.folder_outlined,
+                              validator: (v) => v == null ? 'Required' : null,
                               onChanged: (v) =>
                                   setState(() => _selectedProjectId = v),
-                              validator: (v) => v == null ? 'Required' : null,
                             );
                           },
                         ),

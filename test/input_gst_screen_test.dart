@@ -119,6 +119,14 @@ void main() {
     expect(find.text('₹10,800.00'), findsWidgets);
     expect(find.text('₹4,800.00'), findsWidgets);
     expect(find.text('₹15,600.00'), findsWidgets, reason: 'total input GST');
+    // project costs incl. GST, the GST inside them, and costs without GST
+    // A: 11,800 purchase + 59,000 subcontract = 70,800 (GST 10,800) -> 60,000
+    // B: 11,200 purchase + 23,600 rent = 34,800 (GST 4,800) -> 30,000
+    expect(find.text('₹70,800.00'), findsOneWidget);
+    expect(
+        find.text('₹60,000.00'), findsWidgets); // also equals A's taxable value
+    expect(find.text('₹34,800.00'), findsOneWidget);
+    expect(find.text('₹30,000.00'), findsWidgets);
     expect(find.text('PRJ-A'), findsOneWidget);
     expect(find.text('PRJ-B'), findsOneWidget);
     for (final h in [
@@ -154,10 +162,10 @@ void main() {
   testWidgets('project filter shows one project', (tester) async {
     await seed();
     await pump(tester);
-    await tester.tap(find.byKey(const ValueKey('igst-project-null')));
+    await tester.tap(find.byKey(const Key('project_picker')));
     await tester.pump(const Duration(milliseconds: 400));
-    await tester.tap(find.textContaining('PRJ-B').last);
-    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.text('Site PRJ-B').first);
+    await tester.pumpAndSettle();
     expect(find.text('PRJ-A'), findsNothing);
     expect(find.text('₹4,800.00'), findsWidgets);
   });
@@ -191,8 +199,19 @@ void main() {
       () async {
     await seed();
     final entries = await InputGstRepository(db).loadEntries();
+    // project ids are looked up by code, not assumed
+    final a = (await (db.select(db.projects)
+              ..where((p) => p.code.equals('PRJ-A')))
+            .getSingle())
+        .id;
+    final b = (await (db.select(db.projects)
+              ..where((p) => p.code.equals('PRJ-B')))
+            .getSingle())
+        .id;
     final excel = ExcelExportService.buildInputGstWorkbook(
-        entries: entries, filterText: 'Project: All');
+        entries: entries,
+        filterText: 'Project: All',
+        projectCosts: {a: 70800, b: 34800});
     expect(
         excel.tables.keys.toSet(), {'By Project', 'By Source', 'All Entries'});
 
@@ -203,17 +222,23 @@ void main() {
     expect(byProject.rows.length,
         4 + 1 + 2 + 1); // info, header, 2 projects, total
     expect(v(byProject, 5, 1), 'PRJ-A');
-    expect(d(byProject, 5, 7), 10800); // total input GST for A
-    expect(d(byProject, 6, 7), 4800);
+    expect([d(byProject, 5, 3), d(byProject, 5, 4), d(byProject, 5, 5)],
+        [70800, 10800, 60000]);
+    expect([d(byProject, 6, 3), d(byProject, 6, 4), d(byProject, 6, 5)],
+        [34800, 4800, 30000]);
+    expect(d(byProject, 5, 10), 10800); // total input GST for A
+    expect(d(byProject, 6, 10), 4800);
     final total = byProject.rows.last;
     expect(total[1]?.value.toString(), 'TOTAL');
-    expect(d(byProject, 7, 7), 15600);
+    expect(d(byProject, 7, 10), 15600);
+    expect([d(byProject, 7, 3), d(byProject, 7, 4), d(byProject, 7, 5)],
+        [105600, 15600, 90000]);
     // the by-source columns are in the same order as the enum: purchases, subcontract, machinery, expenses
     expect([
-      d(byProject, 7, 8),
-      d(byProject, 7, 9),
-      d(byProject, 7, 10),
-      d(byProject, 7, 11)
+      d(byProject, 7, 11),
+      d(byProject, 7, 12),
+      d(byProject, 7, 13),
+      d(byProject, 7, 14)
     ], [
       3000,
       9000,

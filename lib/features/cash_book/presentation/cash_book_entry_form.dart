@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:nex_ledger/features/cash_book/data/cash_book_repository.dart';
 import 'package:nex_ledger/shared/widgets/optional_gst_panel.dart';
 import 'package:nex_ledger/core/utils/gst_utils.dart';
@@ -795,18 +796,12 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
     final selectedProjectValue =
         projects.any((p) => p.id == _selectedProject) ? _selectedProject : null;
 
-    return DropdownButtonFormField<int>(
+    return ProjectPickerField(
+      projects: projects,
       value: selectedProjectValue,
-      decoration: const InputDecoration(labelText: 'Select Target Project *'),
-      items: projects
-          .map((p) => DropdownMenuItem(
-                value: p.id,
-                child: Text('${p.code} — ${p.name}',
-                    overflow: TextOverflow.ellipsis),
-              ))
-          .toList(),
-      onChanged: (v) => setState(() => _selectedProject = v),
+      labelText: 'Select Target Project *',
       validator: (v) => v == null ? 'Required' : null,
+      onChanged: (v) => setState(() => _selectedProject = v),
     );
   }
 }

@@ -154,7 +154,8 @@ void main() {
       expect(summary.currentUnspentCashBalance, 10000.0);
 
       // 6. Portfolio Metrics Check
-      final metrics = await pettyCashRepo.watchPettyCashPortfolioMetrics().first;
+      final metrics =
+          await pettyCashRepo.watchPettyCashPortfolioMetrics().first;
       expect(metrics.activeSupervisorsCount, 1);
       expect(metrics.totalFloatDisbursed, 30000.0);
       expect(metrics.totalSiteExpensesClaimed, 10500.0);
@@ -162,7 +163,8 @@ void main() {
       expect(metrics.totalCashInSupervisorsPockets, 10000.0);
     });
 
-    testWidgets('2a. PettyCashHubScreen renders cleanly with 0 overflows', (tester) async {
+    testWidgets('2a. PettyCashHubScreen renders cleanly with 0 overflows',
+        (tester) async {
       await tester.binding.setSurfaceSize(const Size(1440, 900));
 
       final container = ProviderContainer(
@@ -196,7 +198,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('2b. PettyCashWalletFormScreen renders cleanly with 0 overflows', (tester) async {
+    testWidgets(
+        '2b. PettyCashWalletFormScreen renders cleanly with 0 overflows',
+        (tester) async {
       await tester.binding.setSurfaceSize(const Size(1440, 900));
 
       final container = ProviderContainer(
@@ -230,7 +234,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('2c. PettyCashVoucherFormScreen renders cleanly with 0 overflows', (tester) async {
+    testWidgets(
+        '2c. PettyCashVoucherFormScreen renders cleanly with 0 overflows',
+        (tester) async {
       await tester.binding.setSurfaceSize(const Size(1440, 900));
 
       final container = ProviderContainer(
@@ -264,7 +270,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('2d. PettyCashDisburseOrReturnDialog renders cleanly with 0 overflows', (tester) async {
+    testWidgets(
+        '2d. PettyCashDisburseOrReturnDialog renders cleanly with 0 overflows',
+        (tester) async {
       await tester.binding.setSurfaceSize(const Size(1440, 900));
 
       final container = ProviderContainer(

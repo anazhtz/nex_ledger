@@ -76,7 +76,9 @@ void main() {
 
   tearDown(() async => db.close());
 
-  test('Comprehensive Master ERP Audit — Complete Financial Engine & Modules Verification', () async {
+  test(
+      'Comprehensive Master ERP Audit — Complete Financial Engine & Modules Verification',
+      () async {
     // ═══════════════════════════════════════════════════════════════════════════
     // 1. BANK ACCOUNTS & INITIAL LIQUIDITY
     // ═══════════════════════════════════════════════════════════════════════════
@@ -138,11 +140,13 @@ void main() {
     );
 
     var pnl = await reportRepo.watchProjectPnl(pId).first;
-    expect(pnl.netPnl, 0.0, reason: 'Govt EMD paid is an asset, NEVER hits P&L');
+    expect(pnl.netPnl, 0.0,
+        reason: 'Govt EMD paid is an asset, NEVER hits P&L');
 
     // Govt releases/returns ₹1,00,000 EMD back to bank (Cash Inflow, P&L = 0)
     final allDeposits = await depositRepo.watchDepositsByProject(pId).first;
-    final emdDeposit = allDeposits.firstWhere((d) => d.deposit.depositType == DepositType.paid);
+    final emdDeposit = allDeposits
+        .firstWhere((d) => d.deposit.depositType == DepositType.paid);
 
     await depositRepo.recoverDeposit(
       depositId: emdDeposit.deposit.id,
@@ -156,7 +160,8 @@ void main() {
     );
 
     pnl = await reportRepo.watchProjectPnl(pId).first;
-    expect(pnl.netPnl, 0.0, reason: 'Govt EMD recovery is NOT income, P&L remains 0');
+    expect(pnl.netPnl, 0.0,
+        reason: 'Govt EMD recovery is NOT income, P&L remains 0');
 
     // ═══════════════════════════════════════════════════════════════════════════
     // 4. DUAL-DIRECTION DEPOSIT SYSTEM (Flow B: Client Advance Received & Adjusted)
@@ -173,7 +178,8 @@ void main() {
     );
 
     pnl = await reportRepo.watchProjectPnl(pId).first;
-    expect(pnl.netPnl, 0.0, reason: 'Client deposit is a liability, P&L remains 0');
+    expect(pnl.netPnl, 0.0,
+        reason: 'Client deposit is a liability, P&L remains 0');
     expect(pnl.depositsHeld, 500000.0, reason: 'Deposit liability recorded');
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -195,8 +201,10 @@ void main() {
     );
 
     pnl = await reportRepo.watchProjectPnl(pId).first;
-    expect(pnl.purchases, 325000.0, reason: 'Material cost recognized on accrual basis');
-    expect(pnl.accountsPayable, 325000.0, reason: 'Unpaid vendor balance in Accounts Payable');
+    expect(pnl.purchases, 325000.0,
+        reason: 'Material cost recognized on accrual basis');
+    expect(pnl.accountsPayable, 325000.0,
+        reason: 'Unpaid vendor balance in Accounts Payable');
 
     // Settle partial payment of ₹2,00,000 to steel vendor from Bank
     final purchases = await db.purchaseDao.watchPurchasesByProject(pId).first;
@@ -211,10 +219,12 @@ void main() {
 
     pnl = await reportRepo.watchProjectPnl(pId).first;
     expect(pnl.purchases, 325000.0, reason: 'No double-counting on payment');
-    expect(pnl.accountsPayable, 125000.0, reason: '₹325,000 - ₹200,000 = ₹125,000 remaining payable');
+    expect(pnl.accountsPayable, 125000.0,
+        reason: '₹325,000 - ₹200,000 = ₹125,000 remaining payable');
 
     // Verify Vendor Ledger in Ledgers Hub
-    final vendorLedger = await ledgerRepo.watchVendorLedger(vId, projectId: pId).first;
+    final vendorLedger =
+        await ledgerRepo.watchVendorLedger(vId, projectId: pId).first;
     expect(vendorLedger.summary.totalCredit, 325000.0);
     expect(vendorLedger.summary.totalDebit, 200000.0);
     expect(vendorLedger.summary.closingBalance, 125000.0);
@@ -316,7 +326,8 @@ void main() {
     );
 
     // Verify Subcontractor Ledger
-    final subLedger = await ledgerRepo.watchSubcontractorLedger(subId, projectId: pId).first;
+    final subLedger =
+        await ledgerRepo.watchSubcontractorLedger(subId, projectId: pId).first;
     expect(subLedger.summary.totalCredit, 190000.0);
     expect(subLedger.summary.totalDebit, 190000.0);
     expect(subLedger.summary.closingBalance, 0.0);
@@ -401,9 +412,11 @@ void main() {
       narration: 'Unspent cash float return',
     );
 
-    final allWallets = await db.pettyCashDao.watchAllWalletsWithBalances().first;
+    final allWallets =
+        await db.pettyCashDao.watchAllWalletsWithBalances().first;
     final walletSummary = allWallets.firstWhere((w) => w.wallet.id == walletId);
-    expect(walletSummary.currentUnspentCashBalance, 0.0, reason: 'Wallet fully reconciled (₹20k adv - ₹12k exp - ₹8k ret)');
+    expect(walletSummary.currentUnspentCashBalance, 0.0,
+        reason: 'Wallet fully reconciled (₹20k adv - ₹12k exp - ₹8k ret)');
 
     // ═══════════════════════════════════════════════════════════════════════════
     // 10. CLIENT RA BILLING & REVENUE RECOGNITION
@@ -431,7 +444,8 @@ void main() {
 
     // Adjust ₹3,00,000 of the Client Deposit from Step 4 against this RA Bill to clear the rest of the bill!
     final clientDeposits = await depositRepo.watchDepositsByProject(pId).first;
-    final clientDeposit = clientDeposits.firstWhere((d) => d.deposit.depositType == DepositType.received);
+    final clientDeposit = clientDeposits
+        .firstWhere((d) => d.deposit.depositType == DepositType.received);
 
     await depositRepo.adjustDepositToIncome(
       depositId: clientDeposit.deposit.id,
@@ -446,7 +460,8 @@ void main() {
     final clientLedger = await ledgerRepo.watchClientLedger(pId).first;
     expect(clientLedger.summary.totalCredit, 1140000.0); // Net certified amount
     expect(clientLedger.summary.totalDebit, 840000.0);
-    expect(clientLedger.summary.closingBalance, 300000.0); // ₹11,40,000 - ₹8,40,000 = ₹3,00,000 regular receivable
+    expect(clientLedger.summary.closingBalance,
+        300000.0); // ₹11,40,000 - ₹8,40,000 = ₹3,00,000 regular receivable
 
     // ═══════════════════════════════════════════════════════════════════════════
     // 11. FINAL COMPREHENSIVE PROJECT P&L & CONSOLIDATED AUDIT
@@ -478,9 +493,12 @@ void main() {
     // ═══════════════════════════════════════════════════════════════════════════
     final budgetSummary = await budgetRepo.watchProjectBudgetSummary(pId).first;
     expect(budgetSummary, isNotNull);
-    expect(budgetSummary!.totalAllocatedBudget, 3200000.0); // 15L + 5L + 8L + 4L
-    expect(budgetSummary.totalActualCost, 565000.0); // 325k + 6k + 200k + 22k + 12k
-    expect(budgetSummary.netVariance, 3200000.0 - 565000.0); // ₹26,35,000 Surplus
+    expect(
+        budgetSummary!.totalAllocatedBudget, 3200000.0); // 15L + 5L + 8L + 4L
+    expect(budgetSummary.totalActualCost,
+        565000.0); // 325k + 6k + 200k + 22k + 12k
+    expect(
+        budgetSummary.netVariance, 3200000.0 - 565000.0); // ₹26,35,000 Surplus
     expect(budgetSummary.overallStatus, BudgetHealthStatus.healthy);
 
     // ═══════════════════════════════════════════════════════════════════════════

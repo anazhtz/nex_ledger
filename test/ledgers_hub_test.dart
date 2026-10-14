@@ -24,8 +24,12 @@ void main() {
     await db.close();
   });
 
-  group('Ledgers Hub & Statements — Comprehensive Business Rules & Accounting Audit', () {
-    test('1. Supplier / Vendor Ledger: Billed, Settled, and Running Payable Due', () async {
+  group(
+      'Ledgers Hub & Statements — Comprehensive Business Rules & Accounting Audit',
+      () {
+    test(
+        '1. Supplier / Vendor Ledger: Billed, Settled, and Running Payable Due',
+        () async {
       // 1. Setup Project & Vendor
       final projId = await db.projectDao.insertProject(
         ProjectsCompanion.insert(
@@ -59,17 +63,17 @@ void main() {
       );
 
       await db.into(db.purchases).insert(
-        PurchasesCompanion.insert(
-          transactionId: txnId1,
-          vendorId: vendorId,
-          itemDescription: 'UltraTech Cement 50 Bags',
-          quantity: const Value(50.0),
-          unitRate: const Value(400.0),
-          unit: const Value('bags'),
-          paidAmount: const Value(5000.0),
-          paymentStatus: PaymentStatus.partial,
-        ),
-      );
+            PurchasesCompanion.insert(
+              transactionId: txnId1,
+              vendorId: vendorId,
+              itemDescription: 'UltraTech Cement 50 Bags',
+              quantity: const Value(50.0),
+              unitRate: const Value(400.0),
+              unit: const Value('bags'),
+              paidAmount: const Value(5000.0),
+              paymentStatus: PaymentStatus.partial,
+            ),
+          );
 
       // 3. Purchase Bill 2: 2 Tons TMT Steel @ ₹60,000 = ₹1,20,000 (Full Credit / Pending)
       final txnId2 = await db.transactionDao.insertTransaction(
@@ -86,17 +90,17 @@ void main() {
       );
 
       await db.into(db.purchases).insert(
-        PurchasesCompanion.insert(
-          transactionId: txnId2,
-          vendorId: vendorId,
-          itemDescription: 'TMT Steel 12mm 2 Tons',
-          quantity: const Value(2.0),
-          unitRate: const Value(60000.0),
-          unit: const Value('tons'),
-          paidAmount: const Value(0.0),
-          paymentStatus: PaymentStatus.pending,
-        ),
-      );
+            PurchasesCompanion.insert(
+              transactionId: txnId2,
+              vendorId: vendorId,
+              itemDescription: 'TMT Steel 12mm 2 Tons',
+              quantity: const Value(2.0),
+              unitRate: const Value(60000.0),
+              unit: const Value('tons'),
+              paidAmount: const Value(0.0),
+              paymentStatus: PaymentStatus.pending,
+            ),
+          );
 
       // 4. Standalone Settlement Payment: ₹50,000 paid to Supreme Cement & Steel
       await db.transactionDao.insertTransaction(
@@ -104,7 +108,8 @@ void main() {
           projectId: projId,
           date: DateTime(2026, 8, 10),
           type: TransactionType.purchasePayment,
-          affectsPnl: const Value(false), // P&L was already hit at bill creation
+          affectsPnl:
+              const Value(false), // P&L was already hit at bill creation
           affectsCash: const Value(true),
           amount: 50000.0,
           paymentMode: const Value(PaymentMode.bank),
@@ -130,7 +135,9 @@ void main() {
       expect(entries.length, 4);
     });
 
-    test('2. Labour / Worker Ledger: Attendance Earned, Paid, and Running Wage Due', () async {
+    test(
+        '2. Labour / Worker Ledger: Attendance Earned, Paid, and Running Wage Due',
+        () async {
       // 1. Setup Project & Worker
       final projId = await db.projectDao.insertProject(
         ProjectsCompanion.insert(
@@ -213,7 +220,9 @@ void main() {
       expect(entries.length, 4); // 3 attendance items + 1 payment
     });
 
-    test('3. Bank & Cash Account Ledger: Opening Balance, Inflows, Outflows, and Running Balance', () async {
+    test(
+        '3. Bank & Cash Account Ledger: Opening Balance, Inflows, Outflows, and Running Balance',
+        () async {
       // 1. Setup Bank Account
       final bankId = await db.bankAccountDao.insertAccount(
         BankAccountsCompanion.insert(
@@ -266,7 +275,8 @@ void main() {
       );
 
       // 4. Verify Account Ledger
-      final result = await ledgerRepo.watchAccountLedger(bankAccountId: bankId).first;
+      final result =
+          await ledgerRepo.watchAccountLedger(bankAccountId: bankId).first;
       final summary = result.summary;
       final entries = result.entries;
 
@@ -278,7 +288,9 @@ void main() {
       expect(entries.length, 2);
     });
 
-    test('4. Personal / Owner Equity Ledger: Capital Injected, Drawings, and P&L Isolation', () async {
+    test(
+        '4. Personal / Owner Equity Ledger: Capital Injected, Drawings, and P&L Isolation',
+        () async {
       // 1. Record Owner Capital Injection: ₹2,00,000
       await ledgerRepo.recordOwnerCapital(
         amount: 200000.0,
@@ -320,7 +332,8 @@ void main() {
       expect(pnlTxns.isEmpty, true);
     });
 
-    testWidgets('5. LedgersHubScreen renders cleanly with 0 overflows', (tester) async {
+    testWidgets('5. LedgersHubScreen renders cleanly with 0 overflows',
+        (tester) async {
       tester.view.physicalSize = const Size(1280, 800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);

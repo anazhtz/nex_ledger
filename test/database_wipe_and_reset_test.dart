@@ -21,7 +21,9 @@ void main() {
 
   tearDown(() async => db.close());
 
-  test('wipeAndResetData safely clears all transactional data and resets balances', () async {
+  test(
+      'wipeAndResetData safely clears all transactional data and resets balances',
+      () async {
     // 1. Create a project
     final pId = await projectRepo.createProject(
       code: 'PRJ-RESET-01',

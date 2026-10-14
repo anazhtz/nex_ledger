@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/constants/material_constants.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
@@ -455,30 +456,12 @@ class _MaterialRegisterScreenState
                     projectsAsync.maybeWhen(
                       data: (projects) => SizedBox(
                         width: 320.w,
-                        child: DropdownButtonFormField<int?>(
+                        child: ProjectPickerField(
+                          projects: projects,
                           value: selectedProjectId,
-                          isExpanded: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Select Project',
-                            prefixIcon:
-                                Icon(Icons.business_center_outlined, size: 20),
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 10),
-                          ),
-                          items: [
-                            const DropdownMenuItem<int?>(
-                              value: null,
-                              child: Text('All Projects (Consolidated View)',
-                                  overflow: TextOverflow.ellipsis),
-                            ),
-                            ...projects.map((p) => DropdownMenuItem<int?>(
-                                  value: p.id,
-                                  child: Text(
-                                    '${p.code} — ${p.name}',
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                )),
-                          ],
+                          labelText: 'Select Project',
+                          allLabel: 'All Projects (Consolidated View)',
+                          prefixIcon: Icons.business_center_outlined,
                           onChanged: (pId) {
                             ref
                                 .read(

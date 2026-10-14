@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
@@ -272,29 +273,18 @@ class _SubcontractPaymentFormScreenState
                               child: projectsAsync.when(
                                 loading: () => const SizedBox.shrink(),
                                 error: (_, __) => const SizedBox.shrink(),
-                                data: (projects) =>
-                                    DropdownButtonFormField<int>(
-                                  isExpanded: true,
+                                data: (projects) => ProjectPickerField(
+                                  projects: projects,
                                   value: projects
                                           .any((p) => p.id == _selectedProject)
                                       ? _selectedProject
                                       : null,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Target Project *',
-                                    prefixIcon: Icon(Icons.folder_outlined),
-                                  ),
-                                  items: projects
-                                      .map((p) => DropdownMenuItem(
-                                            value: p.id,
-                                            child: Text('${p.code} — ${p.name}',
-                                                overflow:
-                                                    TextOverflow.ellipsis),
-                                          ))
-                                      .toList(),
-                                  onChanged: (v) =>
-                                      setState(() => _selectedProject = v),
+                                  labelText: 'Target Project *',
+                                  prefixIcon: Icons.folder_outlined,
                                   validator: (v) =>
                                       v == null ? 'Required' : null,
+                                  onChanged: (v) =>
+                                      setState(() => _selectedProject = v),
                                 ),
                               ),
                             ),

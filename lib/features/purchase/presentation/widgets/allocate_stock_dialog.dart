@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/daos/purchase_dao.dart';
@@ -119,22 +120,12 @@ class AllocateStockDialogState extends ConsumerState<AllocateStockDialog> {
               projectsAsync.when(
                 loading: () => const LinearProgressIndicator(),
                 error: (_, __) => const SizedBox.shrink(),
-                data: (projects) => DropdownButtonFormField<int>(
+                data: (projects) => ProjectPickerField(
+                  projects: projects,
                   value: _targetProjectId,
-                  isExpanded: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Target Project to Charge *',
-                    isDense: true,
-                  ),
-                  items: projects
-                      .map((p) => DropdownMenuItem(
-                            value: p.id,
-                            child: Text('${p.code} — ${p.name}',
-                                overflow: TextOverflow.ellipsis),
-                          ))
-                      .toList(),
-                  onChanged: (v) => setState(() => _targetProjectId = v),
+                  labelText: 'Target Project to Charge *',
                   validator: (v) => v == null ? 'Select target project' : null,
+                  onChanged: (v) => setState(() => _targetProjectId = v),
                 ),
               ),
               const SizedBox(height: 14),
