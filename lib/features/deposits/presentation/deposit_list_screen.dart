@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -158,26 +159,12 @@ class DepositListScreen extends ConsumerWidget {
                       error: (_, __) => const SizedBox.shrink(),
                       data: (projects) => SizedBox(
                         width: 260,
-                        child: DropdownButtonFormField<int?>(
+                        child: ProjectPickerField(
+                          projects: projects,
                           value: filterProject,
-                          isExpanded: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Filter by Project',
-                            isDense: true,
-                          ),
-                          items: [
-                            const DropdownMenuItem(
-                                value: null,
-                                child: Text('All Projects',
-                                    overflow: TextOverflow.ellipsis)),
-                            ...projects.map(
-                              (p) => DropdownMenuItem(
-                                value: p.id,
-                                child: Text(p.name,
-                                    overflow: TextOverflow.ellipsis),
-                              ),
-                            ),
-                          ],
+                          labelText: 'Filter by Project',
+                          allLabel: 'All Projects',
+                          dense: true,
                           onChanged: (v) => ref
                               .read(depositProjectFilterProvider.notifier)
                               .state = v,

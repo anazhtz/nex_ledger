@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -122,24 +123,12 @@ class CashBookListScreen extends ConsumerWidget {
                     children: [
                       SizedBox(
                         width: 220,
-                        child: DropdownButtonFormField<int?>(
+                        child: ProjectPickerField(
+                          projects: projects,
                           value: filter.projectId,
-                          isExpanded: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Project',
-                            isDense: true,
-                          ),
-                          items: [
-                            const DropdownMenuItem(
-                                value: null, child: Text('All Projects')),
-                            ...projects.map(
-                              (p) => DropdownMenuItem(
-                                value: p.id,
-                                child: Text(p.name,
-                                    overflow: TextOverflow.ellipsis),
-                              ),
-                            ),
-                          ],
+                          labelText: 'Project',
+                          allLabel: 'All Projects',
+                          dense: true,
                           onChanged: (v) => ref
                               .read(cashBookFilterProvider.notifier)
                               .state = filter.copyWith(
