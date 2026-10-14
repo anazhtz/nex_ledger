@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nex_ledger/core/services/license_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -53,7 +54,8 @@ bool licenseEnforcedByDefault() {
   return !kDebugMode;
 }
 
-class LicenseNotifier extends StateNotifier<LicenseState> {
+class LicenseNotifier extends StateNotifier<LicenseState>
+    with WidgetsBindingObserver {
   LicenseNotifier({LicenseService? service, bool? enforce})
       : _service = service,
         super(const LicenseState()) {
@@ -62,14 +64,21 @@ class LicenseNotifier extends StateNotifier<LicenseState> {
       check();
       // keep checking while the app stays open
       _timer = Timer.periodic(recheckEvery, (_) => check(silent: true));
+      // ...and right away when the user comes back to the window
+      WidgetsBinding.instance.addObserver(this);
     } else {
       state = const LicenseState(
           gate: LicenseGate.active, companyName: 'Developer (not checked)');
     }
   }
 
-  /// How often the license is checked while the app is running.
-  static const Duration recheckEvery = Duration(hours: 6);
+  /// How often the license is checked while the app is running. Each check is
+  /// two small reads, far below the free Firestore limits.
+  static const Duration recheckEvery = Duration(minutes: 3);
+
+  /// Coming back to the window checks again, but not more than this often.
+  static const Duration resumeCheckGap = Duration(seconds: 20);
+  DateTime? _lastCheck;
 
   LicenseService? _service;
   Timer? _timer;
@@ -87,6 +96,7 @@ class LicenseNotifier extends StateNotifier<LicenseState> {
   /// Checks the saved key. [silent] keeps the current screen (no spinner).
   Future<void> check({bool silent = false}) async {
     if (!_enforce && state.gate == LicenseGate.active) return;
+    _lastCheck = DateTime.now();
     if (!silent) state = state.copyWith(busy: true);
     final result = await (await _svc()).verify();
     if (!mounted) return;
@@ -101,7 +111,17 @@ class LicenseNotifier extends StateNotifier<LicenseState> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState lifecycle) {
+    if (lifecycle != AppLifecycleState.resumed) return;
+    final last = _lastCheck;
+    if (last == null || DateTime.now().difference(last) >= resumeCheckGap) {
+      check(silent: true);
+    }
+  }
+
+  @override
   void dispose() {
+    if (_enforce) WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     super.dispose();
   }

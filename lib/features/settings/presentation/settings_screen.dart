@@ -1147,7 +1147,7 @@ class _SoftwareUpdateCardState extends State<_SoftwareUpdateCard> {
                             ),
                           ),
                           Text(
-                            'Pulls latest builds & bug fixes automatically from GitHub releases',
+                            'Checks for new versions and bug fixes',
                             style: TextStyle(
                               fontSize: 11.sp,
                               color: const Color(0xFF64748B),

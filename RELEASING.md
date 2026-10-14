@@ -63,7 +63,8 @@ Remote Config `is_under_maintenance = true` (with `maintenance_title` / `mainten
 # Licenses: one key per client company
 
 Every client company gets its own **license key**. The app asks for it on first start, needs an
-internet connection to start, and checks again about every 6 hours while it is open.
+internet connection to start, and checks again every 3 minutes while it is open and whenever the user comes back to its window,
+so a block or maintenance switch reaches a running app within a few minutes.
 You manage everything from the **admin page** (works on your phone).
 
 ## One-time setup (about 20 minutes, all free)
