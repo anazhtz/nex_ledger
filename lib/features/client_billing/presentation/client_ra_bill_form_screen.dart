@@ -63,7 +63,8 @@ class _ClientRaBillFormScreenState
   double get _retentionAmount => _grossAmount * (_retentionPct / 100.0);
 
   double get _advanceDeduction =>
-      double.tryParse(_advanceDeductCtrl.text.replaceAll(',', '').trim()) ?? 0.0;
+      double.tryParse(_advanceDeductCtrl.text.replaceAll(',', '').trim()) ??
+      0.0;
 
   double get _tdsDeduction =>
       double.tryParse(_tdsDeductCtrl.text.replaceAll(',', '').trim()) ?? 0.0;
@@ -82,7 +83,8 @@ class _ClientRaBillFormScreenState
 
     if (_grossAmount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid positive gross bill amount.')),
+        const SnackBar(
+            content: Text('Please enter a valid positive gross bill amount.')),
       );
       return;
     }
@@ -105,7 +107,8 @@ class _ClientRaBillFormScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('✓ Client RA Bill certified & added to project revenue!'),
+            content:
+                Text('✓ Client RA Bill certified & added to project revenue!'),
             backgroundColor: Color(0xFF059669),
           ),
         );
@@ -114,7 +117,8 @@ class _ClientRaBillFormScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
+          SnackBar(
+              content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
         );
       }
     } finally {
@@ -131,7 +135,8 @@ class _ClientRaBillFormScreenState
       bindings: {
         const SingleActivator(LogicalKeyboardKey.enter, control: true): _submit,
         const SingleActivator(LogicalKeyboardKey.enter, meta: true): _submit,
-        const SingleActivator(LogicalKeyboardKey.escape): () => context.go('/client-billing'),
+        const SingleActivator(LogicalKeyboardKey.escape): () =>
+            context.go('/client-billing'),
       },
       child: Scaffold(
         backgroundColor: theme.colorScheme.surfaceContainerLowest,
@@ -189,8 +194,8 @@ class _ClientRaBillFormScreenState
 
                         // ─── Project Selector ────────────────────────────────
                         projectsAsync.when(
-                          loading: () => const Center(
-                              child: LinearProgressIndicator()),
+                          loading: () =>
+                              const Center(child: LinearProgressIndicator()),
                           error: (e, _) => Text('Error loading projects: $e'),
                           data: (projects) {
                             final validProjects = projects
@@ -199,8 +204,8 @@ class _ClientRaBillFormScreenState
 
                             return DropdownButtonFormField<int>(
                               isExpanded: true,
-                              value: validProjects.any(
-                                      (p) => p.id == _selectedProjectId)
+                              value: validProjects
+                                      .any((p) => p.id == _selectedProjectId)
                                   ? _selectedProjectId
                                   : null,
                               decoration: const InputDecoration(
@@ -222,9 +227,8 @@ class _ClientRaBillFormScreenState
                                   if (v != null) {
                                     final p = validProjects
                                         .firstWhere((item) => item.id == v);
-                                    _retentionPctCtrl.text = p
-                                        .clientRetentionPercentage
-                                        .toString();
+                                    _retentionPctCtrl.text =
+                                        p.clientRetentionPercentage.toString();
                                   }
                                 });
                               },
@@ -251,8 +255,9 @@ class _ClientRaBillFormScreenState
                                   hintText: 'RA-01',
                                   prefixIcon: Icon(Icons.tag_outlined),
                                 ),
-                                validator: (v) =>
-                                    v == null || v.trim().isEmpty ? 'Required' : null,
+                                validator: (v) => v == null || v.trim().isEmpty
+                                    ? 'Required'
+                                    : null,
                               ),
                             ),
                             SizedBox(width: 14.w),
@@ -262,14 +267,16 @@ class _ClientRaBillFormScreenState
                                 child: InputDecorator(
                                   decoration: const InputDecoration(
                                     labelText: 'Invoice / Bill Date *',
-                                    prefixIcon: Icon(Icons.calendar_today_outlined),
+                                    prefixIcon:
+                                        Icon(Icons.calendar_today_outlined),
                                   ),
                                   child: Text(
                                     '${_billDate.day.toString().padLeft(2, '0')}/'
                                     '${_billDate.month.toString().padLeft(2, '0')}/'
                                     '${_billDate.year}',
                                     style: TextStyle(
-                                        fontSize: 13.sp, fontWeight: FontWeight.w500),
+                                        fontSize: 13.sp,
+                                        fontWeight: FontWeight.w500),
                                   ),
                                 ),
                               ),
@@ -285,13 +292,16 @@ class _ClientRaBillFormScreenState
                               child: TextFormField(
                                 controller: _stageCtrl,
                                 decoration: const InputDecoration(
-                                  labelText: 'Work Stage / Milestone Description *',
+                                  labelText:
+                                      'Work Stage / Milestone Description *',
                                   hintText:
                                       'e.g. Ground Floor RCC Columns & 1st Slab Concreting Completed',
-                                  prefixIcon: Icon(Icons.assignment_turned_in_outlined),
+                                  prefixIcon:
+                                      Icon(Icons.assignment_turned_in_outlined),
                                 ),
-                                validator: (v) =>
-                                    v == null || v.trim().isEmpty ? 'Required' : null,
+                                validator: (v) => v == null || v.trim().isEmpty
+                                    ? 'Required'
+                                    : null,
                               ),
                             ),
                             SizedBox(width: 14.w),
@@ -302,7 +312,8 @@ class _ClientRaBillFormScreenState
                                 child: InputDecorator(
                                   decoration: const InputDecoration(
                                     labelText: 'Payment Due Date',
-                                    prefixIcon: Icon(Icons.event_available_outlined),
+                                    prefixIcon:
+                                        Icon(Icons.event_available_outlined),
                                   ),
                                   child: Text(
                                     _dueDate != null
@@ -340,12 +351,15 @@ class _ClientRaBillFormScreenState
                                   prefixText: '₹ ',
                                   prefixIcon: Icon(Icons.currency_rupee),
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(
-                                    decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
                                 onChanged: (_) => setState(() {}),
                                 validator: (v) {
-                                  if (v == null || v.trim().isEmpty) return 'Required';
-                                  final num = double.tryParse(v.replaceAll(',', ''));
+                                  if (v == null || v.trim().isEmpty)
+                                    return 'Required';
+                                  final num =
+                                      double.tryParse(v.replaceAll(',', ''));
                                   if (num == null || num <= 0) return 'Invalid';
                                   return null;
                                 },
@@ -361,8 +375,9 @@ class _ClientRaBillFormScreenState
                                   suffixText: '%',
                                   prefixIcon: Icon(Icons.lock_clock_outlined),
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(
-                                    decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
                                 onChanged: (_) => setState(() {}),
                               ),
                             ),
@@ -376,13 +391,15 @@ class _ClientRaBillFormScreenState
                               child: TextFormField(
                                 controller: _advanceDeductCtrl,
                                 decoration: const InputDecoration(
-                                  labelText: 'Mobilization Advance Recovery (₹)',
+                                  labelText:
+                                      'Mobilization Advance Recovery (₹)',
                                   hintText: '0',
                                   prefixText: '₹ ',
                                   prefixIcon: Icon(Icons.remove_circle_outline),
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(
-                                    decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
                                 onChanged: (_) => setState(() {}),
                               ),
                             ),
@@ -391,13 +408,15 @@ class _ClientRaBillFormScreenState
                               child: TextFormField(
                                 controller: _tdsDeductCtrl,
                                 decoration: const InputDecoration(
-                                  labelText: 'TDS / Withholding Tax Deducted (₹)',
+                                  labelText:
+                                      'TDS / Withholding Tax Deducted (₹)',
                                   hintText: '0',
                                   prefixText: '₹ ',
                                   prefixIcon: Icon(Icons.percent_rounded),
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(
-                                    decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
                                 onChanged: (_) => setState(() {}),
                               ),
                             ),
@@ -406,7 +425,8 @@ class _ClientRaBillFormScreenState
                         SizedBox(height: 16.h),
 
                         // ─── Live Calculation Card ───────────────────────────
-                        if (_grossAmount > 0) _buildLiveCalculationCard(context),
+                        if (_grossAmount > 0)
+                          _buildLiveCalculationCard(context),
 
                         SizedBox(height: 14.h),
 
@@ -472,7 +492,8 @@ class _ClientRaBillFormScreenState
                                       ),
                                     )
                                   : const Icon(Icons.check, size: 18),
-                              label: const Text('Certify & Save RA Bill (Ctrl+Enter)'),
+                              label: const Text(
+                                  'Certify & Save RA Bill (Ctrl+Enter)'),
                             ),
                           ],
                         ),
@@ -543,7 +564,8 @@ class _ClientRaBillFormScreenState
               SizedBox(height: 6.h),
               Text(
                 'Already Invoiced: ${CurrencyFormatter.format(progress.totalGrossBilled)} (${progress.billingProgressPercentage.toStringAsFixed(1)}%) • Remaining Unbilled: ${CurrencyFormatter.format(progress.unbilledContractValue)} • Collected: ${CurrencyFormatter.format(progress.totalClientReceipts)} • Pending: ${CurrencyFormatter.format(progress.clientOutstandingReceivables)}',
-                style: TextStyle(fontSize: 11.sp, color: const Color(0xFF1E40AF)),
+                style:
+                    TextStyle(fontSize: 11.sp, color: const Color(0xFF1E40AF)),
               ),
             ],
           ),
@@ -583,7 +605,8 @@ class _ClientRaBillFormScreenState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Gross Work Certified:',
-                  style: TextStyle(fontSize: 12.sp, color: const Color(0xFF047857))),
+                  style: TextStyle(
+                      fontSize: 12.sp, color: const Color(0xFF047857))),
               Text(CurrencyFormatter.format(_grossAmount),
                   style: TextStyle(
                       fontSize: 12.sp,
@@ -595,8 +618,10 @@ class _ClientRaBillFormScreenState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Client Retention Held (${_retentionPct.toStringAsFixed(1)}%):',
-                  style: TextStyle(fontSize: 12.sp, color: Colors.orange.shade900)),
+              Text(
+                  'Client Retention Held (${_retentionPct.toStringAsFixed(1)}%):',
+                  style: TextStyle(
+                      fontSize: 12.sp, color: Colors.orange.shade900)),
               Text('- ${CurrencyFormatter.format(_retentionAmount)}',
                   style: TextStyle(
                       fontSize: 12.sp,
@@ -610,7 +635,8 @@ class _ClientRaBillFormScreenState
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Mobilization Advance Recovery:',
-                    style: TextStyle(fontSize: 12.sp, color: Colors.amber.shade900)),
+                    style: TextStyle(
+                        fontSize: 12.sp, color: Colors.amber.shade900)),
                 Text('- ${CurrencyFormatter.format(_advanceDeduction)}',
                     style: TextStyle(
                         fontSize: 12.sp,
@@ -625,7 +651,8 @@ class _ClientRaBillFormScreenState
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('TDS / Tax Withheld:',
-                    style: TextStyle(fontSize: 12.sp, color: const Color(0xFF64748B))),
+                    style: TextStyle(
+                        fontSize: 12.sp, color: const Color(0xFF64748B))),
                 Text('- ${CurrencyFormatter.format(_tdsDeduction)}',
                     style: TextStyle(
                         fontSize: 12.sp,

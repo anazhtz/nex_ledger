@@ -4,7 +4,8 @@ import 'package:nex_ledger/core/database/daos/project_budget_dao.dart';
 import 'package:nex_ledger/features/budgets/data/project_budget_repository.dart';
 
 /// Repository Provider for Project Budgets
-final projectBudgetRepositoryProvider = Provider<ProjectBudgetRepository>((ref) {
+final projectBudgetRepositoryProvider =
+    Provider<ProjectBudgetRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
   return ProjectBudgetRepository(
     db.projectBudgetDao,
@@ -46,7 +47,8 @@ final filteredProjectBudgetSummariesProvider =
     Provider<AsyncValue<List<ProjectBudgetSummary>>>((ref) {
   final allSummariesAsync = ref.watch(allProjectBudgetSummariesProvider);
   final filterProject = ref.watch(projectBudgetFilterProvider);
-  final searchQuery = ref.watch(projectBudgetSearchQueryProvider).trim().toLowerCase();
+  final searchQuery =
+      ref.watch(projectBudgetSearchQueryProvider).trim().toLowerCase();
 
   return allSummariesAsync.whenData((summaries) {
     return summaries.where((s) {
@@ -56,7 +58,8 @@ final filteredProjectBudgetSummariesProvider =
       if (searchQuery.isNotEmpty) {
         final matchesName = s.project.name.toLowerCase().contains(searchQuery);
         final matchesCode = s.project.code.toLowerCase().contains(searchQuery);
-        final matchesClient = (s.project.clientName ?? '').toLowerCase().contains(searchQuery);
+        final matchesClient =
+            (s.project.clientName ?? '').toLowerCase().contains(searchQuery);
         if (!matchesName && !matchesCode && !matchesClient) return false;
       }
       return true;

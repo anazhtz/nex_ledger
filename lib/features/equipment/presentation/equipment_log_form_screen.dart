@@ -23,10 +23,12 @@ class EquipmentLogFormScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<EquipmentLogFormScreen> createState() => _EquipmentLogFormScreenState();
+  ConsumerState<EquipmentLogFormScreen> createState() =>
+      _EquipmentLogFormScreenState();
 }
 
-class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen> {
+class _EquipmentLogFormScreenState
+    extends ConsumerState<EquipmentLogFormScreen> {
   final _formKey = GlobalKey<FormState>();
   DateTime _logDate = DateTime.now();
 
@@ -133,7 +135,8 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
   double get _fuelLitres => _parse(_fuelLitresCtrl);
   double get _fuelRate => _parse(_fuelRateCtrl);
   double get _fuelCostDeduction => _fuelLitres * _fuelRate;
-  double get _netPayableAmount => (_grossRentalCost - _fuelCostDeduction).clamp(0.0, double.infinity);
+  double get _netPayableAmount =>
+      (_grossRentalCost - _fuelCostDeduction).clamp(0.0, double.infinity);
 
   void _onEquipmentSelected(EquipmentWithDetails? eq) {
     if (eq == null) return;
@@ -200,9 +203,12 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
           fuelCostDeduction: _fuelCostDeduction,
           netPayableAmount: _netPayableAmount,
           workDescription: _workDescCtrl.text.trim(),
-          operatorName: _operatorCtrl.text.trim().isNotEmpty ? _operatorCtrl.text.trim() : null,
+          operatorName: _operatorCtrl.text.trim().isNotEmpty
+              ? _operatorCtrl.text.trim()
+              : null,
           supervisorVerified: _supervisorVerified,
-          notes: _notesCtrl.text.trim().isNotEmpty ? _notesCtrl.text.trim() : null,
+          notes:
+              _notesCtrl.text.trim().isNotEmpty ? _notesCtrl.text.trim() : null,
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -232,9 +238,12 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
         fuelCostDeduction: _fuelCostDeduction,
         netPayableAmount: _netPayableAmount,
         workDescription: _workDescCtrl.text.trim(),
-        operatorName: _operatorCtrl.text.trim().isNotEmpty ? _operatorCtrl.text.trim() : null,
+        operatorName: _operatorCtrl.text.trim().isNotEmpty
+            ? _operatorCtrl.text.trim()
+            : null,
         supervisorVerified: _supervisorVerified,
-        notes: _notesCtrl.text.trim().isNotEmpty ? _notesCtrl.text.trim() : null,
+        notes:
+            _notesCtrl.text.trim().isNotEmpty ? _notesCtrl.text.trim() : null,
       );
 
       if (mounted) {
@@ -249,7 +258,8 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
+          SnackBar(
+              content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
         );
       }
     } finally {
@@ -267,7 +277,8 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
       bindings: {
         const SingleActivator(LogicalKeyboardKey.enter, control: true): _submit,
         const SingleActivator(LogicalKeyboardKey.enter, meta: true): _submit,
-        const SingleActivator(LogicalKeyboardKey.escape): () => context.go('/equipment'),
+        const SingleActivator(LogicalKeyboardKey.escape): () =>
+            context.go('/equipment'),
       },
       child: Scaffold(
         backgroundColor: theme.colorScheme.surfaceContainerLowest,
@@ -335,13 +346,16 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                                 child: InputDecorator(
                                   decoration: const InputDecoration(
                                     labelText: 'Log Date *',
-                                    prefixIcon: Icon(Icons.calendar_today_outlined),
+                                    prefixIcon:
+                                        Icon(Icons.calendar_today_outlined),
                                   ),
                                   child: Text(
                                     '${_logDate.day.toString().padLeft(2, '0')}/'
                                     '${_logDate.month.toString().padLeft(2, '0')}/'
                                     '${_logDate.year}',
-                                    style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w500),
+                                    style: TextStyle(
+                                        fontSize: 13.sp,
+                                        fontWeight: FontWeight.w500),
                                   ),
                                 ),
                               ),
@@ -352,17 +366,20 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                               child: equipmentsAsync.when(
                                 loading: () => const LinearProgressIndicator(),
                                 error: (e, _) => Text('Error: $e'),
-                                data: (equipments) => DropdownButtonFormField<int?>(
+                                data: (equipments) =>
+                                    DropdownButtonFormField<int?>(
                                   value: _selectedEquipmentId,
                                   isExpanded: true,
                                   decoration: const InputDecoration(
                                     labelText: 'Select Machine / Equipment *',
-                                    prefixIcon: Icon(Icons.precision_manufacturing_outlined),
+                                    prefixIcon: Icon(
+                                        Icons.precision_manufacturing_outlined),
                                   ),
                                   items: [
                                     const DropdownMenuItem(
                                       value: null,
-                                      child: Text('— Select Machine —', overflow: TextOverflow.ellipsis),
+                                      child: Text('— Select Machine —',
+                                          overflow: TextOverflow.ellipsis),
                                     ),
                                     ...equipments.map(
                                       (eq) => DropdownMenuItem(
@@ -376,11 +393,13 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                                   ],
                                   onChanged: (id) {
                                     if (id != null) {
-                                      final match = equipments.firstWhere((item) => item.equipment.id == id);
+                                      final match = equipments.firstWhere(
+                                          (item) => item.equipment.id == id);
                                       _onEquipmentSelected(match);
                                     }
                                   },
-                                  validator: (v) => v == null ? 'Required' : null,
+                                  validator: (v) =>
+                                      v == null ? 'Required' : null,
                                 ),
                               ),
                             ),
@@ -393,8 +412,9 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                           loading: () => const LinearProgressIndicator(),
                           error: (e, _) => Text('Error: $e'),
                           data: (projects) {
-                            final validProjects =
-                                projects.where((p) => p.type == ProjectType.project).toList();
+                            final validProjects = projects
+                                .where((p) => p.type == ProjectType.project)
+                                .toList();
                             return DropdownButtonFormField<int?>(
                               value: _selectedProjectId,
                               isExpanded: true,
@@ -405,16 +425,19 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                               items: [
                                 const DropdownMenuItem(
                                   value: null,
-                                  child: Text('— Select Project —', overflow: TextOverflow.ellipsis),
+                                  child: Text('— Select Project —',
+                                      overflow: TextOverflow.ellipsis),
                                 ),
                                 ...validProjects.map(
                                   (p) => DropdownMenuItem(
                                     value: p.id,
-                                    child: Text('${p.code} — ${p.name}', overflow: TextOverflow.ellipsis),
+                                    child: Text('${p.code} — ${p.name}',
+                                        overflow: TextOverflow.ellipsis),
                                   ),
                                 ),
                               ],
-                              onChanged: (v) => setState(() => _selectedProjectId = v),
+                              onChanged: (v) =>
+                                  setState(() => _selectedProjectId = v),
                               validator: (v) => v == null ? 'Required' : null,
                             );
                           },
@@ -432,7 +455,9 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                                   hintText: '1450.0',
                                   prefixIcon: Icon(Icons.speed_outlined),
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
                                 onChanged: (_) => _onReadingsChanged(),
                               ),
                             ),
@@ -445,7 +470,9 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                                   hintText: '1458.5',
                                   prefixIcon: Icon(Icons.speed_outlined),
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
                                 onChanged: (_) => _onReadingsChanged(),
                               ),
                             ),
@@ -459,12 +486,17 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                               child: TextFormField(
                                 controller: _totalUnitsCtrl,
                                 decoration: const InputDecoration(
-                                  labelText: 'Total Logged Units (Hrs/Days/Trips) *',
+                                  labelText:
+                                      'Total Logged Units (Hrs/Days/Trips) *',
                                   hintText: '8.5',
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
                                 onChanged: (_) => _onTotalOrBreakdownChanged(),
-                                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                                validator: (v) => v == null || v.trim().isEmpty
+                                    ? 'Required'
+                                    : null,
                               ),
                             ),
                             SizedBox(width: 14.w),
@@ -472,10 +504,13 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                               child: TextFormField(
                                 controller: _breakdownUnitsCtrl,
                                 decoration: const InputDecoration(
-                                  labelText: 'Breakdown / Idle Units (Deducted)',
+                                  labelText:
+                                      'Breakdown / Idle Units (Deducted)',
                                   hintText: '0.5',
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
                                 onChanged: (_) => _onTotalOrBreakdownChanged(),
                               ),
                             ),
@@ -494,9 +529,13 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                                   hintText: '8.0',
                                   prefixIcon: Icon(Icons.check_circle_outline),
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
                                 onChanged: (_) => setState(() {}),
-                                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                                validator: (v) => v == null || v.trim().isEmpty
+                                    ? 'Required'
+                                    : null,
                               ),
                             ),
                             SizedBox(width: 14.w),
@@ -508,9 +547,13 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                                   hintText: '1200',
                                   prefixText: '₹ ',
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
                                 onChanged: (_) => setState(() {}),
-                                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                                validator: (v) => v == null || v.trim().isEmpty
+                                    ? 'Required'
+                                    : null,
                               ),
                             ),
                           ],
@@ -531,7 +574,8 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                               Row(
                                 children: [
                                   Icon(Icons.local_gas_station_rounded,
-                                      size: 18.sp, color: const Color(0xFFD97706)),
+                                      size: 18.sp,
+                                      color: const Color(0xFFD97706)),
                                   SizedBox(width: 8.w),
                                   Expanded(
                                     child: Text(
@@ -557,7 +601,8 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                                         suffixText: 'Ltr',
                                       ),
                                       keyboardType:
-                                          const TextInputType.numberWithOptions(decimal: true),
+                                          const TextInputType.numberWithOptions(
+                                              decimal: true),
                                       onChanged: (_) => setState(() {}),
                                     ),
                                   ),
@@ -571,7 +616,8 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                                         prefixText: '₹ ',
                                       ),
                                       keyboardType:
-                                          const TextInputType.numberWithOptions(decimal: true),
+                                          const TextInputType.numberWithOptions(
+                                              decimal: true),
                                       onChanged: (_) => setState(() {}),
                                     ),
                                   ),
@@ -614,11 +660,17 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                               ),
                               SizedBox(height: 8.h),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text('Gross Rental Cost (${_billableUnits.toStringAsFixed(1)} units @ ${CurrencyFormatter.format(_unitRate)}):',
-                                      style: TextStyle(fontSize: 12.sp, color: const Color(0xFF047857))),
-                                  Text(CurrencyFormatter.format(_grossRentalCost),
+                                  Text(
+                                      'Gross Rental Cost (${_billableUnits.toStringAsFixed(1)} units @ ${CurrencyFormatter.format(_unitRate)}):',
+                                      style: TextStyle(
+                                          fontSize: 12.sp,
+                                          color: const Color(0xFF047857))),
+                                  Text(
+                                      CurrencyFormatter.format(
+                                          _grossRentalCost),
                                       style: TextStyle(
                                           fontSize: 12.sp,
                                           fontWeight: FontWeight.bold,
@@ -628,11 +680,15 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                               if (_fuelCostDeduction > 0) ...[
                                 SizedBox(height: 4.h),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text('Less: Contractor Diesel Supplied:',
-                                        style: TextStyle(fontSize: 12.sp, color: Colors.amber.shade900)),
-                                    Text('- ${CurrencyFormatter.format(_fuelCostDeduction)}',
+                                        style: TextStyle(
+                                            fontSize: 12.sp,
+                                            color: Colors.amber.shade900)),
+                                    Text(
+                                        '- ${CurrencyFormatter.format(_fuelCostDeduction)}',
                                         style: TextStyle(
                                             fontSize: 12.sp,
                                             fontWeight: FontWeight.bold,
@@ -642,14 +698,17 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                               ],
                               const Divider(color: Color(0xFFA7F3D0)),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text('Net Amount Payable to Machine Owner:',
                                       style: TextStyle(
                                           fontSize: 13.sp,
                                           fontWeight: FontWeight.bold,
                                           color: const Color(0xFF065F46))),
-                                  Text(CurrencyFormatter.format(_netPayableAmount),
+                                  Text(
+                                      CurrencyFormatter.format(
+                                          _netPayableAmount),
                                       style: TextStyle(
                                           fontSize: 15.sp,
                                           fontWeight: FontWeight.bold,
@@ -675,11 +734,14 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                         TextFormField(
                           controller: _workDescCtrl,
                           decoration: const InputDecoration(
-                            labelText: 'Work Description / Civil Task Executed *',
-                            hintText: 'e.g. Basement raft footing trench excavation & earth removal',
+                            labelText:
+                                'Work Description / Civil Task Executed *',
+                            hintText:
+                                'e.g. Basement raft footing trench excavation & earth removal',
                             prefixIcon: Icon(Icons.assignment_outlined),
                           ),
-                          validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                          validator: (v) =>
+                              v == null || v.trim().isEmpty ? 'Required' : null,
                         ),
                         SizedBox(height: 14.h),
 
@@ -700,9 +762,11 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                             Expanded(
                               flex: 2,
                               child: SwitchListTile(
-                                title: Text('Verified on Site', style: TextStyle(fontSize: 12.sp)),
+                                title: Text('Verified on Site',
+                                    style: TextStyle(fontSize: 12.sp)),
                                 value: _supervisorVerified,
-                                onChanged: (v) => setState(() => _supervisorVerified = v),
+                                onChanged: (v) =>
+                                    setState(() => _supervisorVerified = v),
                                 contentPadding: EdgeInsets.zero,
                                 dense: true,
                               ),
@@ -737,10 +801,13 @@ class _EquipmentLogFormScreenState extends ConsumerState<EquipmentLogFormScreen>
                                   ? SizedBox(
                                       width: 16.sp,
                                       height: 16.sp,
-                                      child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                      child: const CircularProgressIndicator(
+                                          strokeWidth: 2, color: Colors.white),
                                     )
                                   : const Icon(Icons.check, size: 18),
-                              label: Text(_isEditing ? 'Update Log' : 'Save Daily Log Sheet'),
+                              label: Text(_isEditing
+                                  ? 'Update Log'
+                                  : 'Save Daily Log Sheet'),
                             ),
                           ],
                         ),

@@ -34,8 +34,8 @@ class ProjectListScreen extends ConsumerWidget {
                     ),
                     Text(
                       'Manage projects and overhead entries',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant),
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -50,8 +50,7 @@ class ProjectListScreen extends ConsumerWidget {
             const SizedBox(height: 24),
             Expanded(
               child: projectsAsync.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Center(child: Text('Error: $e')),
                 data: (projects) => DataTableCard(
                   emptyMessage: 'No projects yet. Create your first project.',
@@ -76,14 +75,14 @@ class ProjectListScreen extends ConsumerWidget {
                       DataCell(Text(p.clientName ?? '—')),
                       DataCell(Text(p.type.displayName)),
                       DataCell(_StatusChip(status: p.status)),
-                      DataCell(
-                          Text(DateFormatter.format(p.startDate))),
+                      DataCell(Text(DateFormatter.format(p.startDate))),
                       DataCell(
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.inventory_2_outlined, size: 18),
+                              icon: const Icon(Icons.inventory_2_outlined,
+                                  size: 18),
                               tooltip: 'Material Register',
                               color: const Color(0xFF1F5FBF),
                               onPressed: () =>
@@ -97,7 +96,8 @@ class ProjectListScreen extends ConsumerWidget {
                             ),
                             if (p.status != ProjectStatus.closed)
                               IconButton(
-                                icon: const Icon(Icons.archive_outlined, size: 18),
+                                icon: const Icon(Icons.archive_outlined,
+                                    size: 18),
                                 tooltip: 'Close Project',
                                 color: Colors.orange.shade700,
                                 onPressed: () async {
@@ -117,7 +117,8 @@ class ProjectListScreen extends ConsumerWidget {
                               ),
                             if (p.code != 'ADMIN-OVH')
                               IconButton(
-                                icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                                icon: const Icon(Icons.delete_outline_rounded,
+                                    size: 18),
                                 tooltip: 'Delete Project',
                                 color: theme.colorScheme.error,
                                 onPressed: () async {
@@ -126,7 +127,8 @@ class ProjectListScreen extends ConsumerWidget {
                                     builder: (ctx) => AlertDialog(
                                       title: Row(
                                         children: [
-                                          Icon(Icons.delete_forever_rounded, color: Colors.red.shade700),
+                                          Icon(Icons.delete_forever_rounded,
+                                              color: Colors.red.shade700),
                                           const SizedBox(width: 8),
                                           const Text('Delete Project?'),
                                         ],
@@ -137,14 +139,18 @@ class ProjectListScreen extends ConsumerWidget {
                                       ),
                                       actions: [
                                         TextButton(
-                                          onPressed: () => Navigator.pop(ctx, false),
+                                          onPressed: () =>
+                                              Navigator.pop(ctx, false),
                                           child: const Text('Cancel'),
                                         ),
                                         FilledButton(
-                                          onPressed: () => Navigator.pop(ctx, true),
+                                          onPressed: () =>
+                                              Navigator.pop(ctx, true),
                                           style: FilledButton.styleFrom(
-                                              backgroundColor: Colors.red.shade700),
-                                          child: const Text('Delete Permanently'),
+                                              backgroundColor:
+                                                  Colors.red.shade700),
+                                          child:
+                                              const Text('Delete Permanently'),
                                         ),
                                       ],
                                     ),
@@ -155,15 +161,19 @@ class ProjectListScreen extends ConsumerWidget {
                                           .read(projectRepositoryProvider)
                                           .deleteProject(p.id);
                                       if (!context.mounted) return;
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         SnackBar(
-                                          content: Text('✓ Project "${p.name}" deleted.'),
-                                          backgroundColor: const Color(0xFF059669),
+                                          content: Text(
+                                              '✓ Project "${p.name}" deleted.'),
+                                          backgroundColor:
+                                              const Color(0xFF059669),
                                         ),
                                       );
                                     } catch (e) {
                                       if (!context.mounted) return;
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         SnackBar(
                                           content: Text('Error: $e'),
                                           backgroundColor: Colors.red.shade700,
@@ -202,9 +212,7 @@ class _StatusChip extends StatelessWidget {
     return Chip(
       label: Text(status.displayName),
       labelStyle: TextStyle(
-          color: color.shade800,
-          fontSize: 12,
-          fontWeight: FontWeight.w500),
+          color: color.shade800, fontSize: 12, fontWeight: FontWeight.w500),
       backgroundColor: color.shade50,
       side: BorderSide(color: color.shade200),
       visualDensity: VisualDensity.compact,

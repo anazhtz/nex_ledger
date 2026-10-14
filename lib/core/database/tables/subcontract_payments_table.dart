@@ -10,12 +10,15 @@ class SubcontractPayments extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get transactionId => integer().references(Transactions, #id)();
   IntColumn get subcontractorId => integer().references(Subcontractors, #id)();
-  IntColumn get workOrderId => integer().nullable().references(WorkOrders, #id)();
+  IntColumn get workOrderId =>
+      integer().nullable().references(WorkOrders, #id)();
   RealColumn get amount => real()();
   DateTimeColumn get paymentDate => dateTime()();
   TextColumn get paymentMode => textEnum<PaymentMode>()();
-  IntColumn get bankAccountId => integer().nullable().references(BankAccounts, #id)();
-  BoolColumn get isRetentionRelease => boolean().withDefault(const Constant(false))();
+  IntColumn get bankAccountId =>
+      integer().nullable().references(BankAccounts, #id)();
+  BoolColumn get isRetentionRelease =>
+      boolean().withDefault(const Constant(false))();
   BoolColumn get isAdvance => boolean().withDefault(const Constant(false))();
   TextColumn get referenceNo => text().nullable()();
   TextColumn get notes => text().nullable()();

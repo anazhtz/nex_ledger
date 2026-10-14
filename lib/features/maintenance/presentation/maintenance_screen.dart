@@ -101,9 +101,11 @@ class MaintenanceScreen extends ConsumerWidget {
                         height: 90.h,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0xFFE11D48).withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFFE11D48).withValues(alpha: 0.15),
                           border: Border.all(
-                            color: const Color(0xFFF43F5E).withValues(alpha: 0.4),
+                            color:
+                                const Color(0xFFF43F5E).withValues(alpha: 0.4),
                             width: 2,
                           ),
                         ),
@@ -125,7 +127,8 @@ class MaintenanceScreen extends ConsumerWidget {
                           color: const Color(0xFFBE123C).withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20.r),
                           border: Border.all(
-                            color: const Color(0xFFF43F5E).withValues(alpha: 0.4),
+                            color:
+                                const Color(0xFFF43F5E).withValues(alpha: 0.4),
                           ),
                         ),
                         child: Row(
@@ -222,7 +225,10 @@ class MaintenanceScreen extends ConsumerWidget {
                               ? null
                               : () async {
                                   await notifier.checkStatus();
-                                  if (context.mounted && !ref.read(maintenanceProvider).isUnderMaintenance) {
+                                  if (context.mounted &&
+                                      !ref
+                                          .read(maintenanceProvider)
+                                          .isUnderMaintenance) {
                                     context.go('/');
                                   }
                                 },
@@ -264,7 +270,8 @@ class MaintenanceScreen extends ConsumerWidget {
                               context.go('/');
                             }
                           },
-                          icon: const Icon(Icons.developer_mode, color: Color(0xFF64748B)),
+                          icon: const Icon(Icons.developer_mode,
+                              color: Color(0xFF64748B)),
                           label: const Text(
                             '[Debug Mode] Deactivate Maintenance Mode',
                             style: TextStyle(color: Color(0xFF64748B)),

@@ -102,12 +102,15 @@ class BankAccountRepository {
           projectId: projId,
           date: date,
           type: TransactionType.expense,
-          affectsPnl: const Value(false), // Contra transfer is NOT an operating expense
+          affectsPnl:
+              const Value(false), // Contra transfer is NOT an operating expense
           affectsCash: const Value(true),
           amount: amount,
           bankAccountId: Value(fromAccountId),
-          paymentMode: Value(fromAcc.isCashAccount ? PaymentMode.cash : PaymentMode.bank),
-          narration: Value(narration ?? 'Fund Transfer to ${toAcc.accountName}'),
+          paymentMode: Value(
+              fromAcc.isCashAccount ? PaymentMode.cash : PaymentMode.bank),
+          narration:
+              Value(narration ?? 'Fund Transfer to ${toAcc.accountName}'),
           referenceNo: Value(referenceNo),
         ),
       );
@@ -118,12 +121,15 @@ class BankAccountRepository {
           projectId: projId,
           date: date,
           type: TransactionType.income,
-          affectsPnl: const Value(false), // Contra transfer is NOT operating income
+          affectsPnl:
+              const Value(false), // Contra transfer is NOT operating income
           affectsCash: const Value(true),
           amount: amount,
           bankAccountId: Value(toAccountId),
-          paymentMode: Value(toAcc.isCashAccount ? PaymentMode.cash : PaymentMode.bank),
-          narration: Value(narration ?? 'Fund Transfer from ${fromAcc.accountName}'),
+          paymentMode:
+              Value(toAcc.isCashAccount ? PaymentMode.cash : PaymentMode.bank),
+          narration:
+              Value(narration ?? 'Fund Transfer from ${fromAcc.accountName}'),
           referenceNo: Value(referenceNo),
         ),
       );

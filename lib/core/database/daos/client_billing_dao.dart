@@ -90,8 +90,8 @@ class ClientBillingDao extends DatabaseAccessor<AppDatabase>
   Stream<List<ClientRaBillDetail>> watchClientRaBills({int? projectId}) {
     final query = select(clientRaBills).join([
       innerJoin(projects, projects.id.equalsExp(clientRaBills.projectId)),
-      innerJoin(transactions,
-          transactions.id.equalsExp(clientRaBills.transactionId)),
+      innerJoin(
+          transactions, transactions.id.equalsExp(clientRaBills.transactionId)),
     ]);
 
     if (projectId != null) {
@@ -114,9 +114,10 @@ class ClientBillingDao extends DatabaseAccessor<AppDatabase>
   Future<ClientRaBillDetail?> getClientRaBillById(int id) async {
     final query = select(clientRaBills).join([
       innerJoin(projects, projects.id.equalsExp(clientRaBills.projectId)),
-      innerJoin(transactions,
-          transactions.id.equalsExp(clientRaBills.transactionId)),
-    ])..where(clientRaBills.id.equals(id));
+      innerJoin(
+          transactions, transactions.id.equalsExp(clientRaBills.transactionId)),
+    ])
+      ..where(clientRaBills.id.equals(id));
 
     final row = await query.getSingleOrNull();
     if (row == null) return null;
@@ -137,7 +138,8 @@ class ClientBillingDao extends DatabaseAccessor<AppDatabase>
     if (bill == null) return 0;
 
     return db.transaction(() async {
-      await (delete(transactions)..where((t) => t.id.equals(bill.transactionId)))
+      await (delete(transactions)
+            ..where((t) => t.id.equals(bill.transactionId)))
           .go();
       return (delete(clientRaBills)..where((b) => b.id.equals(id))).go();
     });
@@ -185,7 +187,8 @@ class ClientBillingDao extends DatabaseAccessor<AppDatabase>
       into(clientReceipts).insert(entry);
 
   Future<int> deleteClientReceipt(int id) async {
-    final receipt = await (select(clientReceipts)..where((r) => r.id.equals(id)))
+    final receipt = await (select(clientReceipts)
+          ..where((r) => r.id.equals(id)))
         .getSingleOrNull();
     if (receipt == null) return 0;
 
@@ -204,7 +207,8 @@ class ClientBillingDao extends DatabaseAccessor<AppDatabase>
       'SELECT 1',
       readsFrom: {projects, clientRaBills, clientReceipts, transactions},
     ).watch().asyncMap((_) async {
-      final project = await (select(projects)..where((p) => p.id.equals(projectId)))
+      final project = await (select(projects)
+            ..where((p) => p.id.equals(projectId)))
           .getSingleOrNull();
       if (project == null) return null;
 
@@ -244,13 +248,16 @@ class ClientBillingDao extends DatabaseAccessor<AppDatabase>
           ? project.clientContractValue
           : (project.budget ?? grossBilled);
 
-      final unbilled = (contractValue - grossBilled).clamp(0.0, double.infinity);
+      final unbilled =
+          (contractValue - grossBilled).clamp(0.0, double.infinity);
       final progressPct = contractValue > 0
           ? ((grossBilled / contractValue) * 100).clamp(0.0, 999.0)
           : 0.0;
 
-      final outstanding = (netCertified - totalReceipts).clamp(0.0, double.infinity);
-      final remainingRetention = (retentionWithheld - retentionReleased).clamp(0.0, double.infinity);
+      final outstanding =
+          (netCertified - totalReceipts).clamp(0.0, double.infinity);
+      final remainingRetention =
+          (retentionWithheld - retentionReleased).clamp(0.0, double.infinity);
 
       return ProjectRevenueProgress(
         project: project,
@@ -320,12 +327,14 @@ class ClientBillingDao extends DatabaseAccessor<AppDatabase>
             ? p.clientContractValue
             : (p.budget ?? grossBilled);
 
-        final unbilled = (contractValue - grossBilled).clamp(0.0, double.infinity);
+        final unbilled =
+            (contractValue - grossBilled).clamp(0.0, double.infinity);
         final progressPct = contractValue > 0
             ? ((grossBilled / contractValue) * 100).clamp(0.0, 999.0)
             : 0.0;
 
-        final outstanding = (netCertified - totalReceipts).clamp(0.0, double.infinity);
+        final outstanding =
+            (netCertified - totalReceipts).clamp(0.0, double.infinity);
         final remainingRetention =
             (retentionWithheld - retentionReleased).clamp(0.0, double.infinity);
 

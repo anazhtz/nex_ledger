@@ -79,8 +79,7 @@ class _ProjectFormScreenState extends ConsumerState<ProjectFormScreen> {
           id: widget.projectId!,
           code: _codeCtrl.text,
           name: _nameCtrl.text,
-          clientName:
-              _clientCtrl.text.isNotEmpty ? _clientCtrl.text : null,
+          clientName: _clientCtrl.text.isNotEmpty ? _clientCtrl.text : null,
           type: _type,
           status: _status,
           startDate: _startDate,
@@ -90,8 +89,7 @@ class _ProjectFormScreenState extends ConsumerState<ProjectFormScreen> {
         await repo.createProject(
           code: _codeCtrl.text,
           name: _nameCtrl.text,
-          clientName:
-              _clientCtrl.text.isNotEmpty ? _clientCtrl.text : null,
+          clientName: _clientCtrl.text.isNotEmpty ? _clientCtrl.text : null,
           type: _type,
           status: _status,
           startDate: _startDate,
@@ -132,194 +130,202 @@ class _ProjectFormScreenState extends ConsumerState<ProjectFormScreen> {
       bindings: {
         const SingleActivator(LogicalKeyboardKey.enter, control: true): _submit,
         const SingleActivator(LogicalKeyboardKey.enter, meta: true): _submit,
-        const SingleActivator(LogicalKeyboardKey.escape): () => context.go('/projects'),
+        const SingleActivator(LogicalKeyboardKey.escape): () =>
+            context.go('/projects'),
       },
       child: Focus(
         autofocus: true,
         child: Scaffold(
           backgroundColor: theme.colorScheme.surfaceContainerLowest,
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+          body: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => context.go('/projects'),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () => context.go('/projects'),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _isEditing ? 'Edit Project' : 'New Project',
+                      style: theme.textTheme.headlineMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  _isEditing ? 'Edit Project' : 'New Project',
-                  style: theme.textTheme.headlineMedium
-                      ?.copyWith(fontWeight: FontWeight.w700),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            if (isLoading)
-              const Center(child: CircularProgressIndicator())
-            else
-              SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 560),
-                  child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: 2,
-                                child: TextFormField(
-                                  controller: _codeCtrl,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Project Code *',
-                                    hintText: 'PRJ-2026-001',
-                                  ),
-                                  textCapitalization:
-                                      TextCapitalization.characters,
-                                  validator: (v) => v == null || v.isEmpty
-                                      ? 'Required'
-                                      : null,
+                const SizedBox(height: 24),
+                if (isLoading)
+                  const Center(child: CircularProgressIndicator())
+                else
+                  SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 560),
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 2,
+                                      child: TextFormField(
+                                        controller: _codeCtrl,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Project Code *',
+                                          hintText: 'PRJ-2026-001',
+                                        ),
+                                        textCapitalization:
+                                            TextCapitalization.characters,
+                                        validator: (v) => v == null || v.isEmpty
+                                            ? 'Required'
+                                            : null,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      flex: 3,
+                                      child: TextFormField(
+                                        controller: _nameCtrl,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Project Name *',
+                                        ),
+                                        validator: (v) => v == null || v.isEmpty
+                                            ? 'Required'
+                                            : null,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                flex: 3,
-                                child: TextFormField(
-                                  controller: _nameCtrl,
+                                const SizedBox(height: 16),
+                                TextFormField(
+                                  controller: _clientCtrl,
                                   decoration: const InputDecoration(
-                                    labelText: 'Project Name *',
+                                    labelText: 'Client Name',
                                   ),
-                                  validator: (v) => v == null || v.isEmpty
-                                      ? 'Required'
-                                      : null,
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _clientCtrl,
-                            decoration: const InputDecoration(
-                              labelText: 'Client Name',
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child:
+                                          DropdownButtonFormField<ProjectType>(
+                                        value: _type,
+                                        isExpanded: true,
+                                        decoration: const InputDecoration(
+                                            labelText: 'Type'),
+                                        items: ProjectType.values
+                                            .map((t) => DropdownMenuItem(
+                                                  value: t,
+                                                  child: Text(t.displayName,
+                                                      overflow: TextOverflow
+                                                          .ellipsis),
+                                                ))
+                                            .toList(),
+                                        onChanged: (v) =>
+                                            setState(() => _type = v!),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: DropdownButtonFormField<
+                                          ProjectStatus>(
+                                        value: _status,
+                                        isExpanded: true,
+                                        decoration: const InputDecoration(
+                                            labelText: 'Status'),
+                                        items: ProjectStatus.values
+                                            .map((s) => DropdownMenuItem(
+                                                  value: s,
+                                                  child: Text(s.displayName,
+                                                      overflow: TextOverflow
+                                                          .ellipsis),
+                                                ))
+                                            .toList(),
+                                        onChanged: (v) =>
+                                            setState(() => _status = v!),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: InkWell(
+                                        onTap: _pickDate,
+                                        child: InputDecorator(
+                                          decoration: const InputDecoration(
+                                            labelText: 'Start Date',
+                                            suffixIcon: Icon(
+                                                Icons.calendar_today_outlined,
+                                                size: 18),
+                                          ),
+                                          child: Text(
+                                            '${_startDate.day.toString().padLeft(2, '0')}/'
+                                            '${_startDate.month.toString().padLeft(2, '0')}/'
+                                            '${_startDate.year}',
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: TextFormField(
+                                        controller: _budgetCtrl,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Budget (₹)',
+                                          prefixText: '₹ ',
+                                        ),
+                                        keyboardType: const TextInputType
+                                            .numberWithOptions(decimal: true),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 24),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    TextButton(
+                                      onPressed: () => context.go('/projects'),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    FilledButton(
+                                      onPressed: _loading ? null : _submit,
+                                      child: _loading
+                                          ? const SizedBox(
+                                              width: 18,
+                                              height: 18,
+                                              child: CircularProgressIndicator(
+                                                  strokeWidth: 2),
+                                            )
+                                          : Text(
+                                              _isEditing
+                                                  ? 'Save Changes'
+                                                  : 'Create',
+                                            ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: DropdownButtonFormField<ProjectType>(
-                                  value: _type,
-                                  isExpanded: true,
-                                  decoration: const InputDecoration(
-                                      labelText: 'Type'),
-                                  items: ProjectType.values
-                                      .map((t) => DropdownMenuItem(
-                                            value: t,
-                                            child: Text(t.displayName, overflow: TextOverflow.ellipsis),
-                                          ))
-                                      .toList(),
-                                  onChanged: (v) =>
-                                      setState(() => _type = v!),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: DropdownButtonFormField<ProjectStatus>(
-                                  value: _status,
-                                  isExpanded: true,
-                                  decoration: const InputDecoration(
-                                      labelText: 'Status'),
-                                  items: ProjectStatus.values
-                                      .map((s) => DropdownMenuItem(
-                                            value: s,
-                                            child: Text(s.displayName, overflow: TextOverflow.ellipsis),
-                                          ))
-                                      .toList(),
-                                  onChanged: (v) =>
-                                      setState(() => _status = v!),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: InkWell(
-                                  onTap: _pickDate,
-                                  child: InputDecorator(
-                                    decoration: const InputDecoration(
-                                      labelText: 'Start Date',
-                                      suffixIcon: Icon(
-                                          Icons.calendar_today_outlined,
-                                          size: 18),
-                                    ),
-                                    child: Text(
-                                      '${_startDate.day.toString().padLeft(2, '0')}/'
-                                      '${_startDate.month.toString().padLeft(2, '0')}/'
-                                      '${_startDate.year}',
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: TextFormField(
-                                  controller: _budgetCtrl,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Budget (₹)',
-                                    prefixText: '₹ ',
-                                  ),
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                          decimal: true),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton(
-                                onPressed: () => context.go('/projects'),
-                                child: const Text('Cancel'),
-                              ),
-                              const SizedBox(width: 12),
-                              FilledButton(
-                                onPressed: _loading ? null : _submit,
-                                child: _loading
-                                    ? const SizedBox(
-                                        width: 18,
-                                        height: 18,
-                                        child: CircularProgressIndicator(
-                                            strokeWidth: 2),
-                                      )
-                                    : Text(
-                                        _isEditing ? 'Save Changes' : 'Create',
-                                      ),
-                              ),
-                            ],
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
-    ),
-  ),
-);
+    );
   }
 }

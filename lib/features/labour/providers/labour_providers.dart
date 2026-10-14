@@ -79,9 +79,9 @@ final workerLedgerSummaryProvider =
     StreamProvider.family<WorkerLedgerSummary, int>((ref, workerId) {
   final db = ref.watch(appDatabaseProvider);
 
-  final workerStream =
-      db.labourDao.watchAllWorkers().map((list) =>
-          list.where((w) => w.id == workerId).firstOrNull);
+  final workerStream = db.labourDao
+      .watchAllWorkers()
+      .map((list) => list.where((w) => w.id == workerId).firstOrNull);
 
   return _combine2(
     () => workerStream,
@@ -122,8 +122,7 @@ Stream<(double, double, double)> _combineAttendanceAndPayments(
             0.0, (s, a) => s + a.attendance.status.payFraction);
         final otHours = attendance.fold<double>(
             0.0, (s, a) => s + a.attendance.overtimeHours);
-        final paid =
-            payments.fold<double>(0.0, (s, t) => s + t.amount);
+        final paid = payments.fold<double>(0.0, (s, t) => s + t.amount);
         return (days, otHours, paid);
       },
     );
@@ -156,11 +155,19 @@ Stream<R> _combine2<A, B, R>(
   controller = StreamController<R>.broadcast(
     onListen: () {
       subA = createA().listen(
-        (a) { lastA = a; hasA = true; tryEmit(); },
+        (a) {
+          lastA = a;
+          hasA = true;
+          tryEmit();
+        },
         onError: controller.addError,
       );
       subB = createB().listen(
-        (b) { lastB = b; hasB = true; tryEmit(); },
+        (b) {
+          lastB = b;
+          hasB = true;
+          tryEmit();
+        },
         onError: controller.addError,
       );
     },

@@ -47,7 +47,6 @@ class AppTheme {
       scaffoldBackgroundColor: surfaceBg,
       fontFamily: 'Roboto',
       visualDensity: VisualDensity.compact,
-
       appBarTheme: const AppBarTheme(
         backgroundColor: cardBg,
         foregroundColor: textMain,
@@ -59,7 +58,6 @@ class AppTheme {
           color: textMain,
         ),
       ),
-
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -69,7 +67,6 @@ class AppTheme {
         color: cardBg,
         margin: EdgeInsets.zero,
       ),
-
       inputDecorationTheme: InputDecorationTheme(
         border: border(borderColor),
         enabledBorder: border(borderColor),
@@ -85,7 +82,6 @@ class AppTheme {
         hintStyle: const TextStyle(color: Color(0xFF9AA5B8), fontSize: 13),
         errorStyle: const TextStyle(fontSize: 11),
       ),
-
       dataTableTheme: DataTableThemeData(
         headingRowColor: WidgetStateProperty.all(tableHeaderBg),
         headingTextStyle: const TextStyle(
@@ -105,7 +101,6 @@ class AppTheme {
         dataRowMinHeight: 40,
         dataRowMaxHeight: 52,
       ),
-
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: primaryBlue,
@@ -118,7 +113,6 @@ class AppTheme {
           textStyle: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
         ),
       ),
-
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: textMain,
@@ -130,7 +124,6 @@ class AppTheme {
           textStyle: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
         ),
       ),
-
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: primaryBlue,
@@ -141,7 +134,6 @@ class AppTheme {
           textStyle: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
         ),
       ),
-
       dividerTheme: const DividerThemeData(
         color: borderColor,
         thickness: 1,

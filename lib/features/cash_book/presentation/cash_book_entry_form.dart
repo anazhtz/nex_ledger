@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nex_ledger/features/cash_book/data/cash_book_repository.dart';
+import 'package:nex_ledger/shared/widgets/optional_gst_panel.dart';
+import 'package:nex_ledger/core/utils/gst_utils.dart';
 import 'package:nex_ledger/features/cash_book/presentation/widgets/expense_category_picker.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
@@ -37,6 +40,12 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
   // Category selection (flat single-dropdown)
   int? _selectedCategoryId;
 
+  /// Optional GST on an expense (the amount field is then the value before GST).
+  OptionalGstValue _gst = const OptionalGstValue();
+
+  /// Re-created when a saved entry loads, so the panel starts from its values.
+  Key _gstPanelKey = const ValueKey('gst-new');
+
   bool get _isEditing => widget.transactionId != null;
 
   @override
@@ -65,8 +74,33 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
         _selectedBankAccountId = txn.bankAccountId;
         _selectedCategoryId = txn.expenseCategoryId;
       });
+      // An expense saved with GST shows its value BEFORE GST in the amount box.
+      final g = await repo.getGstDetail(txn.id);
+      if (g != null && mounted) {
+        setState(() {
+          final t = g.taxableAmount;
+          _amountCtrl.text =
+              t % 1 == 0 ? t.toInt().toString() : t.toStringAsFixed(2);
+          _gst = OptionalGstValue(
+            enabled: true,
+            rate: g.gstRate,
+            interState: g.isInterState,
+            partyName: g.partyName ?? '',
+            partyGstin: g.partyGstin ?? '',
+          );
+          _gstPanelKey = ValueKey('gst-loaded-${txn.id}');
+        });
+      }
     }
   }
+
+  ExpenseGstInput _expenseGst() => ExpenseGstInput(
+        rate: _gst.rate,
+        interState: _gst.interState,
+        partyName: _gst.partyName,
+        partyGstin: _gst.partyGstin,
+        billNo: _refCtrl.text,
+      );
 
   @override
   void dispose() {
@@ -105,6 +139,10 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
       return;
     }
 
+    // With GST, the cash that leaves is the value plus GST.
+    final gstOn = _type == TransactionType.expense && _gst.isActive;
+    final postedAmount = gstOn ? _gst.split(amount).total : amount;
+
     // Negative cash balance protection check on expenses
     if (_type == TransactionType.expense) {
       final accountsWithBalances =
@@ -124,7 +162,7 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
                     .totalLiquidity ??
                 0.0);
 
-        if (currentBal - amount < 0) {
+        if (currentBal - postedAmount < 0) {
           final proceed = await showDialog<bool>(
             context: context,
             builder: (ctx) => AlertDialog(
@@ -137,8 +175,8 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
                 ],
               ),
               content: Text(
-                'This expense of ${CurrencyFormatter.format(amount)} exceeds the current balance in ${targetAcc?.account.accountName ?? 'Total Liquidity'} (${CurrencyFormatter.format(currentBal)}).\n\n'
-                'Recording this entry will make the balance negative (${CurrencyFormatter.format(currentBal - amount)}).\n\n'
+                'This expense of ${CurrencyFormatter.format(postedAmount)} exceeds the current balance in ${targetAcc?.account.accountName ?? 'Total Liquidity'} (${CurrencyFormatter.format(currentBal)}).\n\n'
+                'Recording this entry will make the balance negative (${CurrencyFormatter.format(currentBal - postedAmount)}).\n\n'
                 'Do you wish to proceed anyway?',
               ),
               actions: [
@@ -178,6 +216,7 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
           referenceNo: _refCtrl.text.isNotEmpty ? _refCtrl.text.trim() : null,
           expenseCategoryId:
               _type == TransactionType.expense ? _selectedCategoryId : null,
+          gst: gstOn ? _expenseGst() : null,
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -215,6 +254,7 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
               : null,
           referenceNo: _refCtrl.text.isNotEmpty ? _refCtrl.text.trim() : null,
           expenseCategoryId: _selectedCategoryId,
+          gst: gstOn ? _expenseGst() : null,
         );
       }
       if (mounted) {
@@ -393,10 +433,16 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
                                   SizedBox(width: 16.w),
                                   Expanded(
                                     child: TextFormField(
+                                      key: const Key('cb_amount'),
                                       controller: _amountCtrl,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Amount (₹) *',
-                                        prefixIcon: Icon(
+                                      onChanged: (_) => setState(() {}),
+                                      decoration: InputDecoration(
+                                        labelText:
+                                            (_type == TransactionType.expense &&
+                                                    _gst.enabled)
+                                                ? 'Amount before GST (₹) *'
+                                                : 'Amount (₹) *',
+                                        prefixIcon: const Icon(
                                             Icons.currency_rupee_rounded,
                                             size: 20),
                                       ),
@@ -418,6 +464,22 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
                                 ],
                               ),
                               SizedBox(height: 16.h),
+
+                              // Optional GST (expenses only)
+                              if (_type == TransactionType.expense) ...[
+                                OptionalGstPanel(
+                                  key: _gstPanelKey,
+                                  taxable: double.tryParse(_amountCtrl.text
+                                          .replaceAll(',', '')
+                                          .trim()) ??
+                                      0.0,
+                                  initial: _gst,
+                                  title: 'This expense has GST',
+                                  partyLabel: 'Paid to',
+                                  onChanged: (v) => setState(() => _gst = v),
+                                ),
+                                SizedBox(height: 16.h),
+                              ],
 
                               // Payment mode
                               DropdownButtonFormField<PaymentMode?>(
@@ -697,12 +759,15 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
-              Text(
-                '${activeProject.code} — ${activeProject.name}',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
+              Flexible(
+                child: Text(
+                  '${activeProject.code} — ${activeProject.name}',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
               ),
               const Spacer(),

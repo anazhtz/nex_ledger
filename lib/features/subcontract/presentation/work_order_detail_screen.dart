@@ -130,7 +130,8 @@ class WorkOrderDetailScreen extends ConsumerWidget {
                           children: [
                             _buildStatCard(
                               title: 'Total Contract Value',
-                              value: CurrencyFormatter.format(wo.contractAmount),
+                              value:
+                                  CurrencyFormatter.format(wo.contractAmount),
                               subtitle:
                                   '${wo.estimatedQuantity % 1 == 0 ? wo.estimatedQuantity.toInt() : wo.estimatedQuantity} ${wo.unit} @ ₹${wo.agreedRate}/unit',
                               color: const Color(0xFF3B82F6),
@@ -161,7 +162,8 @@ class WorkOrderDetailScreen extends ConsumerWidget {
                             SizedBox(width: 12.w),
                             _buildStatCard(
                               title: 'Total Paid / Advances',
-                              value: CurrencyFormatter.format(summary.totalPaid),
+                              value:
+                                  CurrencyFormatter.format(summary.totalPaid),
                               subtitle: 'Disbursed to contractor',
                               color: const Color(0xFF6366F1),
                               bgColor: const Color(0xFFEAF1FB),
@@ -170,8 +172,8 @@ class WorkOrderDetailScreen extends ConsumerWidget {
                             SizedBox(width: 12.w),
                             _buildStatCard(
                               title: 'Current Net Due',
-                              value:
-                                  CurrencyFormatter.format(summary.currentNetDue),
+                              value: CurrencyFormatter.format(
+                                  summary.currentNetDue),
                               subtitle: 'Payable balance',
                               color: summary.currentNetDue > 0.01
                                   ? const Color(0xFFEF4444)
@@ -243,7 +245,8 @@ class WorkOrderDetailScreen extends ConsumerWidget {
 
                 // ─── Sub-Table 1: Certified Measurement Bills ────────────────
                 billsAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (e, _) => Text('Error loading bills: $e'),
                   data: (bills) {
                     return DataTableCard(
@@ -255,6 +258,7 @@ class WorkOrderDetailScreen extends ConsumerWidget {
                         DataColumn(label: Text('Measured Qty')),
                         DataColumn(label: Text('Gross Work (₹)')),
                         DataColumn(label: Text('Retention (5%)')),
+                        DataColumn(label: Text('GST (₹)')),
                         DataColumn(label: Text('Net Billable (₹)')),
                         DataColumn(label: Text('Location / Notes')),
                       ],
@@ -275,6 +279,12 @@ class WorkOrderDetailScreen extends ConsumerWidget {
                           DataCell(Text(
                             CurrencyFormatter.format(b.retentionAmount),
                             style: TextStyle(color: Colors.orange.shade800),
+                          )),
+                          DataCell(Text(
+                            (b.cgstAmount + b.sgstAmount + b.igstAmount) > 0
+                                ? '+ ${CurrencyFormatter.format(b.cgstAmount + b.sgstAmount + b.igstAmount)} (${b.gstRate % 1 == 0 ? b.gstRate.toInt() : b.gstRate}%)'
+                                : '—',
+                            style: const TextStyle(color: Color(0xFF7C3AED)),
                           )),
                           DataCell(Text(
                             CurrencyFormatter.format(b.netAmount),

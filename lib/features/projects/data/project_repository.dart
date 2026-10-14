@@ -68,7 +68,8 @@ class ProjectRepository {
   Future<void> deleteProject(int id) async {
     final project = await _dao.getProjectById(id);
     if (project != null && project.code == 'ADMIN-OVH') {
-      throw Exception('The default Admin / Overhead system project cannot be deleted.');
+      throw Exception(
+          'The default Admin / Overhead system project cannot be deleted.');
     }
     await _dao.deleteProject(id);
   }

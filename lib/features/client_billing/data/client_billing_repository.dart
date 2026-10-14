@@ -70,7 +70,8 @@ class ClientBillingRepository {
           date: billDate,
           type: TransactionType.clientRaBill,
           affectsPnl: const Value(true), // Revenue hits Project P&L immediately
-          affectsCash: const Value(false), // No physical cash movement until collection
+          affectsCash:
+              const Value(false), // No physical cash movement until collection
           amount: grossAmount,
           narration: Value(
             'Client RA Bill $billNumber ($clientName): ${stageOrDescription.trim()}',
@@ -129,7 +130,8 @@ class ClientBillingRepository {
           date: receiptDate,
           type: TransactionType.clientReceipt,
           affectsPnl: const Value(false), // P&L already recognized by RA bills
-          affectsCash: const Value(true), // Physical money received into bank/drawer
+          affectsCash:
+              const Value(true), // Physical money received into bank/drawer
           amount: amount,
           paymentMode: Value(paymentMode),
           bankAccountId: Value(bankAccountId),
@@ -162,7 +164,8 @@ class ClientBillingRepository {
     });
   }
 
-  Future<int> deleteClientReceipt(int id) => _billingDao.deleteClientReceipt(id);
+  Future<int> deleteClientReceipt(int id) =>
+      _billingDao.deleteClientReceipt(id);
 
   // ─── Update Project Client Contract Master ──────────────────────────────────
 

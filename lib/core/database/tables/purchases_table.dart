@@ -19,8 +19,7 @@ class Purchases extends Table {
   TextColumn get paymentStatus => textEnum<PaymentStatus>()();
   BoolColumn get isAdvanceStock =>
       boolean().withDefault(const Constant(false))();
-  RealColumn get allocatedAmount =>
-      real().withDefault(const Constant(0.0))();
+  RealColumn get allocatedAmount => real().withDefault(const Constant(0.0))();
   TextColumn get materialCategory => text().nullable()();
 
   // ─── GST invoice fields (null / 0 on purchases entered the old way) ───────
@@ -44,5 +43,6 @@ class Purchases extends Table {
   RealColumn get igstAmount => real().withDefault(const Constant(0.0))();
 
   /// True for freight / loading / other charge rows (not a material).
-  BoolColumn get isOtherCharge => boolean().withDefault(const Constant(false))();
+  BoolColumn get isOtherCharge =>
+      boolean().withDefault(const Constant(false))();
 }

@@ -3,12 +3,18 @@
 
 enum ProjectType { project, adminOverhead }
 
+/// Where a GST detail row (TransactionGsts) came from.
+enum TxnGstKind {
+  expense, // Cash Book expense
+  equipment, // Machinery & equipment rental settlement
+}
+
 enum ProjectStatus { active, onHold, closed }
 
 enum WorkOrderStatus { active, completed, onHold, cancelled }
 
 enum DepositType {
-  paid,     // Security Deposit Paid to Govt / Client (Asset, Outflow)
+  paid, // Security Deposit Paid to Govt / Client (Asset, Outflow)
   received, // Security Deposit Received from Client / Subcontractor (Liability, Inflow)
 }
 
@@ -28,17 +34,17 @@ enum TransactionType {
   purchasePayment, // cash outflow when settling a pending/partial purchase bill
   stockAllocation, // material/stock allocated to a project from advance stock (hits P&L, no cash)
   labourPayment,
-  subcontractBill,    // Subcontract measurement/RA bill certified (hits P&L, no cash out)
+  subcontractBill, // Subcontract measurement/RA bill certified (hits P&L, no cash out)
   subcontractPayment, // Cash/Bank outflow to subcontractor (moves cash, P&L already booked)
-  clientRaBill,       // Progressive RA Bill certified to client (hits P&L income, no cash)
-  clientReceipt,      // Cash/Bank inflow from client (moves cash, P&L already recognized)
-  deposit,           // Deposit received from client (Inflow, Liability, P&L = 0)
-  depositRefund,     // Deposit refunded to client (Outflow, Liability cleared, P&L = 0)
+  clientRaBill, // Progressive RA Bill certified to client (hits P&L income, no cash)
+  clientReceipt, // Cash/Bank inflow from client (moves cash, P&L already recognized)
+  deposit, // Deposit received from client (Inflow, Liability, P&L = 0)
+  depositRefund, // Deposit refunded to client (Outflow, Liability cleared, P&L = 0)
   depositAdjustment, // Deposit adjusted to income (No cash, P&L Income recognized)
-  depositPaid,       // Security Deposit Paid to Govt/Client (Outflow, Asset, P&L = 0)
-  depositRecovery,   // Security Deposit Recovered/Returned from Govt/Client (Inflow, Asset cleared, P&L = 0)
-  ownerCapital,      // Owner Capital Injected (Inflow, Equity, P&L = 0)
-  drawings,          // Owner Drawings / Personal Withdrawal (Outflow, Equity, P&L = 0)
+  depositPaid, // Security Deposit Paid to Govt/Client (Outflow, Asset, P&L = 0)
+  depositRecovery, // Security Deposit Recovered/Returned from Govt/Client (Inflow, Asset cleared, P&L = 0)
+  ownerCapital, // Owner Capital Injected (Inflow, Equity, P&L = 0)
+  drawings, // Owner Drawings / Personal Withdrawal (Outflow, Equity, P&L = 0)
 }
 
 enum PaymentMode { cash, bank, cheque, online }
@@ -48,55 +54,55 @@ enum PaymentStatus { paid, pending, partial }
 enum AttendanceStatus { present, halfDay, absent }
 
 enum DepositStatus {
-  held,              // Currently held (with Govt or as Liability)
-  recovered,         // Fully recovered/received back from Govt
-  adjusted,          // Fully adjusted to income
+  held, // Currently held (with Govt or as Liability)
+  recovered, // Fully recovered/received back from Govt
+  adjusted, // Fully adjusted to income
   partiallyAdjusted, // Partially adjusted or partially recovered
-  refunded,          // Refunded to client
+  refunded, // Refunded to client
 }
 
 enum BudgetCostHead {
-  materials,          // Material Purchases (Cement, Steel, Bricks, Tiles, Sand, etc.)
-  labour,             // Direct Labour & Worker Wages
-  subcontract,        // Subcontractors / Piece-Rate Work Orders
-  equipmentOverhead,  // Machinery (JCB, Crane), Fuel, Transport, Site Overheads
-  overallTotal,       // Master Project Target Cost Budget
+  materials, // Material Purchases (Cement, Steel, Bricks, Tiles, Sand, etc.)
+  labour, // Direct Labour & Worker Wages
+  subcontract, // Subcontractors / Piece-Rate Work Orders
+  equipmentOverhead, // Machinery (JCB, Crane), Fuel, Transport, Site Overheads
+  overallTotal, // Master Project Target Cost Budget
 }
 
 enum BudgetHealthStatus {
-  healthy,    // < 80% of budget spent
-  warning,    // 80% to 99.9% of budget spent (caution)
+  healthy, // < 80% of budget spent
+  warning, // 80% to 99.9% of budget spent (caution)
   overBudget, // >= 100% of budget spent (cost overrun)
 }
 
 enum EquipmentOwnership {
   rented, // Rented from third-party vendor / machinery owner
-  owned,  // Contractor / Company-owned asset
+  owned, // Contractor / Company-owned asset
 }
 
 enum EquipmentRentalBasis {
-  hourly,    // Billed per operating hour (e.g. ₹1,200/hr)
-  daily,     // Billed per shift / day (e.g. ₹9,000/day)
-  monthly,   // Billed per month (e.g. ₹1,50,000/mo)
+  hourly, // Billed per operating hour (e.g. ₹1,200/hr)
+  daily, // Billed per shift / day (e.g. ₹9,000/day)
+  monthly, // Billed per month (e.g. ₹1,50,000/mo)
   tripBasis, // Billed per trip / load (e.g. ₹1,800/trip)
 }
 
 enum EquipmentFuelPolicy {
   contractorSupplied, // Diesel provided by builder/contractor (deducted from owner's bill)
-  vendorSupplied,     // Diesel included/provided by equipment owner
+  vendorSupplied, // Diesel included/provided by equipment owner
 }
 
 enum EquipmentStatus {
-  active,      // Currently deployed on a project site
-  idle,        // Parked / standby on site
+  active, // Currently deployed on a project site
+  idle, // Parked / standby on site
   maintenance, // Under repair / breakdown
-  released,    // Demobilized & returned to vendor
+  released, // Demobilized & returned to vendor
 }
 
 enum PettyCashTxnType {
   advanceDisbursed, // Cash advance given to supervisor (Float Increases, Office Cash Decreases, P&L = 0)
-  voucherExpense,   // Supervisor spends cash on site (Float Decreases, Project P&L Expense Recorded)
-  cashReturned,     // Supervisor returns unused cash to office (Float Decreases, Office Cash Increases, P&L = 0)
+  voucherExpense, // Supervisor spends cash on site (Float Decreases, Project P&L Expense Recorded)
+  cashReturned, // Supervisor returns unused cash to office (Float Decreases, Office Cash Increases, P&L = 0)
   floatReplenished, // Office tops up the float (Float Increases, Office Cash Decreases, P&L = 0)
 }
 
@@ -178,9 +184,12 @@ extension TransactionTypeX on TransactionType {
         TransactionType.ownerCapital => false,
         TransactionType.drawings => false,
         TransactionType.depositAdjustment => true,
-        TransactionType.clientReceipt => false, // P&L already recognized at RA bill certification
-        TransactionType.purchasePayment => false, // P&L already hit at bill entry
-        TransactionType.subcontractPayment => false, // P&L already hit at RA bill certification
+        TransactionType.clientReceipt =>
+          false, // P&L already recognized at RA bill certification
+        TransactionType.purchasePayment =>
+          false, // P&L already hit at bill entry
+        TransactionType.subcontractPayment =>
+          false, // P&L already hit at RA bill certification
         _ => true,
       };
 
@@ -189,11 +198,14 @@ extension TransactionTypeX on TransactionType {
   bool get isDebit => switch (this) {
         TransactionType.expense => true,
         TransactionType.purchase => true,
-        TransactionType.purchasePayment => true, // actual cash out when bill is settled
+        TransactionType.purchasePayment =>
+          true, // actual cash out when bill is settled
         TransactionType.labourPayment => true,
-        TransactionType.subcontractPayment => true, // cash out when paying subcontractor
+        TransactionType.subcontractPayment =>
+          true, // cash out when paying subcontractor
         TransactionType.depositRefund => true,
-        TransactionType.depositPaid => true, // cash out when paying security deposit to govt
+        TransactionType.depositPaid =>
+          true, // cash out when paying security deposit to govt
         TransactionType.drawings => true, // cash out when owner withdraws money
         _ => false,
       };
@@ -238,20 +250,62 @@ class WorkOrderTradePreset {
 }
 
 const List<WorkOrderTradePreset> kStandardWorkOrderTrades = [
-  WorkOrderTradePreset(name: 'Plastering (Internal & External)', defaultUnit: 'Sq.ft', description: 'Wall & ceiling cement plastering'),
-  WorkOrderTradePreset(name: 'Tile Laying & Flooring', defaultUnit: 'Sq.ft', description: 'Vitrified tiles, granite, marble laying & polishing'),
-  WorkOrderTradePreset(name: 'Painting & Putty', defaultUnit: 'Sq.ft', description: 'Putty, primer, interior & exterior emulsion paint'),
-  WorkOrderTradePreset(name: 'Brick & Block Masonry', defaultUnit: 'Sq.ft', description: 'Red brick, solid concrete block, AAC block work'),
-  WorkOrderTradePreset(name: 'Bar Bending & Reinforcement', defaultUnit: 'Tons', description: 'TMT cutting, bending, and steel tying for slabs/columns'),
-  WorkOrderTradePreset(name: 'Centering & Shuttering', defaultUnit: 'Sq.ft', description: 'Formwork, plywood shuttering, and prop staging'),
-  WorkOrderTradePreset(name: 'Plumbing & Sanitation', defaultUnit: 'Points', description: 'Concealed CPVC/PVC piping, sanitary fittings & drainage'),
-  WorkOrderTradePreset(name: 'Electrical & Wiring', defaultUnit: 'Points', description: 'Conduit laying, wire pulling, switchboard fixing'),
-  WorkOrderTradePreset(name: 'False Ceiling & POP', defaultUnit: 'Sq.ft', description: 'Gypsum board / grid false ceiling & cornices'),
-  WorkOrderTradePreset(name: 'Carpentry & Woodwork', defaultUnit: 'Rft', description: 'Door frames, window shutters, modular cabinetry'),
-  WorkOrderTradePreset(name: 'Fabrication & MS Grills', defaultUnit: 'Kg', description: 'MS safety gates, stair railings, structural steel'),
-  WorkOrderTradePreset(name: 'Waterproofing', defaultUnit: 'Sq.ft', description: 'Terrace, sunken slab, basement chemical membrane'),
-  WorkOrderTradePreset(name: 'Excavation & Earthwork', defaultUnit: 'CFT', description: 'Footing trenches, basement excavation & backfilling'),
-  WorkOrderTradePreset(name: 'General Subcontract', defaultUnit: 'Lump sum', description: 'Custom contract / specialized civil task'),
+  WorkOrderTradePreset(
+      name: 'Plastering (Internal & External)',
+      defaultUnit: 'Sq.ft',
+      description: 'Wall & ceiling cement plastering'),
+  WorkOrderTradePreset(
+      name: 'Tile Laying & Flooring',
+      defaultUnit: 'Sq.ft',
+      description: 'Vitrified tiles, granite, marble laying & polishing'),
+  WorkOrderTradePreset(
+      name: 'Painting & Putty',
+      defaultUnit: 'Sq.ft',
+      description: 'Putty, primer, interior & exterior emulsion paint'),
+  WorkOrderTradePreset(
+      name: 'Brick & Block Masonry',
+      defaultUnit: 'Sq.ft',
+      description: 'Red brick, solid concrete block, AAC block work'),
+  WorkOrderTradePreset(
+      name: 'Bar Bending & Reinforcement',
+      defaultUnit: 'Tons',
+      description: 'TMT cutting, bending, and steel tying for slabs/columns'),
+  WorkOrderTradePreset(
+      name: 'Centering & Shuttering',
+      defaultUnit: 'Sq.ft',
+      description: 'Formwork, plywood shuttering, and prop staging'),
+  WorkOrderTradePreset(
+      name: 'Plumbing & Sanitation',
+      defaultUnit: 'Points',
+      description: 'Concealed CPVC/PVC piping, sanitary fittings & drainage'),
+  WorkOrderTradePreset(
+      name: 'Electrical & Wiring',
+      defaultUnit: 'Points',
+      description: 'Conduit laying, wire pulling, switchboard fixing'),
+  WorkOrderTradePreset(
+      name: 'False Ceiling & POP',
+      defaultUnit: 'Sq.ft',
+      description: 'Gypsum board / grid false ceiling & cornices'),
+  WorkOrderTradePreset(
+      name: 'Carpentry & Woodwork',
+      defaultUnit: 'Rft',
+      description: 'Door frames, window shutters, modular cabinetry'),
+  WorkOrderTradePreset(
+      name: 'Fabrication & MS Grills',
+      defaultUnit: 'Kg',
+      description: 'MS safety gates, stair railings, structural steel'),
+  WorkOrderTradePreset(
+      name: 'Waterproofing',
+      defaultUnit: 'Sq.ft',
+      description: 'Terrace, sunken slab, basement chemical membrane'),
+  WorkOrderTradePreset(
+      name: 'Excavation & Earthwork',
+      defaultUnit: 'CFT',
+      description: 'Footing trenches, basement excavation & backfilling'),
+  WorkOrderTradePreset(
+      name: 'General Subcontract',
+      defaultUnit: 'Lump sum',
+      description: 'Custom contract / specialized civil task'),
 ];
 
 /// Payment modes offered to users: Cash or Bank (cheque / online / transfer
@@ -334,7 +388,8 @@ extension EquipmentRentalBasisX on EquipmentRentalBasis {
 
 extension EquipmentFuelPolicyX on EquipmentFuelPolicy {
   String get displayName => switch (this) {
-        EquipmentFuelPolicy.contractorSupplied => 'Contractor Diesel (Deducted from Bill)',
+        EquipmentFuelPolicy.contractorSupplied =>
+          'Contractor Diesel (Deducted from Bill)',
         EquipmentFuelPolicy.vendorSupplied => 'Vendor Diesel (Included)',
       };
 }
@@ -363,17 +418,62 @@ class EquipmentCategoryPreset {
 }
 
 const List<EquipmentCategoryPreset> kStandardEquipmentCategories = [
-  EquipmentCategoryPreset(name: 'JCB / Backhoe Loader', defaultBasis: 'Hourly', iconName: 'front_loader', description: 'Earth excavation, levelling, trenching & material shifting'),
-  EquipmentCategoryPreset(name: 'Hydraulic Excavator (Poclain)', defaultBasis: 'Hourly', iconName: 'precision_manufacturing', description: 'Deep foundation, rock breaker, heavy earthmoving'),
-  EquipmentCategoryPreset(name: 'Mobile / Hydra Crane (12T-25T)', defaultBasis: 'Hourly', iconName: 'forklift', description: 'Rebar lifting, precast placement, heavy machine loading'),
-  EquipmentCategoryPreset(name: 'Tower Crane', defaultBasis: 'Monthly', iconName: 'construction', description: 'High-rise tower concrete & material vertical transport'),
-  EquipmentCategoryPreset(name: 'Tipper / Dump Truck (10-12 Wheeler)', defaultBasis: 'Trip Basis', iconName: 'local_shipping', description: 'Debris muck disposal, sand & aggregate transport'),
-  EquipmentCategoryPreset(name: 'Compactor / Road Roller', defaultBasis: 'Daily', iconName: 'roller_shades', description: 'Subgrade, WMM, soil & asphalt compaction'),
-  EquipmentCategoryPreset(name: 'Concrete Boom Pump / Transit Mixer', defaultBasis: 'Trip Basis', iconName: 'local_car_wash', description: 'Ready-mix concrete pumping & transport'),
-  EquipmentCategoryPreset(name: 'Diesel Generator (DG Set 62.5-250 kVA)', defaultBasis: 'Monthly', iconName: 'electric_bolt', description: 'Continuous site backup power & welding support'),
-  EquipmentCategoryPreset(name: 'Tractor & Trolley', defaultBasis: 'Daily', iconName: 'agriculture', description: 'Local site material transport & water tank hauling'),
-  EquipmentCategoryPreset(name: 'Piling Rig / Drilling Machine', defaultBasis: 'Hourly', iconName: 'handyman', description: 'Bored cast-in-situ concrete piles & micro-piling'),
-  EquipmentCategoryPreset(name: 'Other Civil Machinery', defaultBasis: 'Daily', iconName: 'build', description: 'Bar bending machines, plate compactors, vibrators'),
+  EquipmentCategoryPreset(
+      name: 'JCB / Backhoe Loader',
+      defaultBasis: 'Hourly',
+      iconName: 'front_loader',
+      description:
+          'Earth excavation, levelling, trenching & material shifting'),
+  EquipmentCategoryPreset(
+      name: 'Hydraulic Excavator (Poclain)',
+      defaultBasis: 'Hourly',
+      iconName: 'precision_manufacturing',
+      description: 'Deep foundation, rock breaker, heavy earthmoving'),
+  EquipmentCategoryPreset(
+      name: 'Mobile / Hydra Crane (12T-25T)',
+      defaultBasis: 'Hourly',
+      iconName: 'forklift',
+      description: 'Rebar lifting, precast placement, heavy machine loading'),
+  EquipmentCategoryPreset(
+      name: 'Tower Crane',
+      defaultBasis: 'Monthly',
+      iconName: 'construction',
+      description: 'High-rise tower concrete & material vertical transport'),
+  EquipmentCategoryPreset(
+      name: 'Tipper / Dump Truck (10-12 Wheeler)',
+      defaultBasis: 'Trip Basis',
+      iconName: 'local_shipping',
+      description: 'Debris muck disposal, sand & aggregate transport'),
+  EquipmentCategoryPreset(
+      name: 'Compactor / Road Roller',
+      defaultBasis: 'Daily',
+      iconName: 'roller_shades',
+      description: 'Subgrade, WMM, soil & asphalt compaction'),
+  EquipmentCategoryPreset(
+      name: 'Concrete Boom Pump / Transit Mixer',
+      defaultBasis: 'Trip Basis',
+      iconName: 'local_car_wash',
+      description: 'Ready-mix concrete pumping & transport'),
+  EquipmentCategoryPreset(
+      name: 'Diesel Generator (DG Set 62.5-250 kVA)',
+      defaultBasis: 'Monthly',
+      iconName: 'electric_bolt',
+      description: 'Continuous site backup power & welding support'),
+  EquipmentCategoryPreset(
+      name: 'Tractor & Trolley',
+      defaultBasis: 'Daily',
+      iconName: 'agriculture',
+      description: 'Local site material transport & water tank hauling'),
+  EquipmentCategoryPreset(
+      name: 'Piling Rig / Drilling Machine',
+      defaultBasis: 'Hourly',
+      iconName: 'handyman',
+      description: 'Bored cast-in-situ concrete piles & micro-piling'),
+  EquipmentCategoryPreset(
+      name: 'Other Civil Machinery',
+      defaultBasis: 'Daily',
+      iconName: 'build',
+      description: 'Bar bending machines, plate compactors, vibrators'),
 ];
 
 extension PettyCashTxnTypeX on PettyCashTxnType {
@@ -398,15 +498,42 @@ class PettyCashCategoryPreset {
 }
 
 const List<PettyCashCategoryPreset> kStandardPettyCashCategories = [
-  PettyCashCategoryPreset(name: 'Worker Tea, Food & Refreshments', defaultCostHead: BudgetCostHead.labour, description: 'Overtime worker snacks, tea, lunch for concrete pours'),
-  PettyCashCategoryPreset(name: 'Water Tanker & Site Utilities', defaultCostHead: BudgetCostHead.equipmentOverhead, description: 'Water tanker for curing, electricity & DG fuel topup'),
-  PettyCashCategoryPreset(name: 'Urgent Hardware & Consumables', defaultCostHead: BudgetCostHead.materials, description: 'Nails, binding wire, drill bits, tape, safety ropes'),
-  PettyCashCategoryPreset(name: 'Auto, Tempo & Material Cartage', defaultCostHead: BudgetCostHead.equipmentOverhead, description: 'Local tempo/rickshaw freight for sample delivery & minor materials'),
-  PettyCashCategoryPreset(name: 'Minor Tool Repair & Grease', defaultCostHead: BudgetCostHead.equipmentOverhead, description: 'Vibrator needle repair, welding rods, machine lubricant'),
-  PettyCashCategoryPreset(name: 'Drawing Prints & Site Office', defaultCostHead: BudgetCostHead.equipmentOverhead, description: 'Architectural blueprint prints, site files, stationery'),
-  PettyCashCategoryPreset(name: 'First Aid & Medical Emergency', defaultCostHead: BudgetCostHead.labour, description: 'Site worker emergency medical care, band-aids, ORS'),
-  PettyCashCategoryPreset(name: 'Local Permits & Miscellaneous', defaultCostHead: BudgetCostHead.equipmentOverhead, description: 'Police/traffic permissions, watchman tip, site petty cash misc.'),
-  PettyCashCategoryPreset(name: 'Other Site Expense', defaultCostHead: BudgetCostHead.equipmentOverhead, description: 'General site emergency voucher'),
+  PettyCashCategoryPreset(
+      name: 'Worker Tea, Food & Refreshments',
+      defaultCostHead: BudgetCostHead.labour,
+      description: 'Overtime worker snacks, tea, lunch for concrete pours'),
+  PettyCashCategoryPreset(
+      name: 'Water Tanker & Site Utilities',
+      defaultCostHead: BudgetCostHead.equipmentOverhead,
+      description: 'Water tanker for curing, electricity & DG fuel topup'),
+  PettyCashCategoryPreset(
+      name: 'Urgent Hardware & Consumables',
+      defaultCostHead: BudgetCostHead.materials,
+      description: 'Nails, binding wire, drill bits, tape, safety ropes'),
+  PettyCashCategoryPreset(
+      name: 'Auto, Tempo & Material Cartage',
+      defaultCostHead: BudgetCostHead.equipmentOverhead,
+      description:
+          'Local tempo/rickshaw freight for sample delivery & minor materials'),
+  PettyCashCategoryPreset(
+      name: 'Minor Tool Repair & Grease',
+      defaultCostHead: BudgetCostHead.equipmentOverhead,
+      description: 'Vibrator needle repair, welding rods, machine lubricant'),
+  PettyCashCategoryPreset(
+      name: 'Drawing Prints & Site Office',
+      defaultCostHead: BudgetCostHead.equipmentOverhead,
+      description: 'Architectural blueprint prints, site files, stationery'),
+  PettyCashCategoryPreset(
+      name: 'First Aid & Medical Emergency',
+      defaultCostHead: BudgetCostHead.labour,
+      description: 'Site worker emergency medical care, band-aids, ORS'),
+  PettyCashCategoryPreset(
+      name: 'Local Permits & Miscellaneous',
+      defaultCostHead: BudgetCostHead.equipmentOverhead,
+      description:
+          'Police/traffic permissions, watchman tip, site petty cash misc.'),
+  PettyCashCategoryPreset(
+      name: 'Other Site Expense',
+      defaultCostHead: BudgetCostHead.equipmentOverhead,
+      description: 'General site emergency voucher'),
 ];
-
-

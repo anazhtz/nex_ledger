@@ -23,7 +23,8 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _orderNumCtrl = TextEditingController();
   final _titleCtrl = TextEditingController();
-  final _tradeCtrl = TextEditingController(text: 'Plastering (Internal & External)');
+  final _tradeCtrl =
+      TextEditingController(text: 'Plastering (Internal & External)');
   final _unitCtrl = TextEditingController(text: 'Sq.ft');
   final _rateCtrl = TextEditingController();
   final _qtyCtrl = TextEditingController();
@@ -92,8 +93,10 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
   }
 
   double get _calculatedContractAmount {
-    final rate = double.tryParse(_rateCtrl.text.replaceAll(',', '').trim()) ?? 0.0;
-    final qty = double.tryParse(_qtyCtrl.text.replaceAll(',', '').trim()) ?? 0.0;
+    final rate =
+        double.tryParse(_rateCtrl.text.replaceAll(',', '').trim()) ?? 0.0;
+    final qty =
+        double.tryParse(_qtyCtrl.text.replaceAll(',', '').trim()) ?? 0.0;
     return rate * qty;
   }
 
@@ -112,14 +115,17 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
       return;
     }
 
-    final rate = double.tryParse(_rateCtrl.text.replaceAll(',', '').trim()) ?? 0.0;
-    final qty = double.tryParse(_qtyCtrl.text.replaceAll(',', '').trim()) ?? 0.0;
+    final rate =
+        double.tryParse(_rateCtrl.text.replaceAll(',', '').trim()) ?? 0.0;
+    final qty =
+        double.tryParse(_qtyCtrl.text.replaceAll(',', '').trim()) ?? 0.0;
     final retention =
         double.tryParse(_retentionCtrl.text.replaceAll(',', '').trim()) ?? 5.0;
 
     if (rate <= 0 || qty <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter valid positive rate and quantity.')),
+        const SnackBar(
+            content: Text('Please enter valid positive rate and quantity.')),
       );
       return;
     }
@@ -143,7 +149,8 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
           status: _status,
           startDate: _startDate,
           targetDate: _targetDate,
-          scopeOfWork: _scopeCtrl.text.isNotEmpty ? _scopeCtrl.text.trim() : null,
+          scopeOfWork:
+              _scopeCtrl.text.isNotEmpty ? _scopeCtrl.text.trim() : null,
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -168,7 +175,8 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
           status: _status,
           startDate: _startDate,
           targetDate: _targetDate,
-          scopeOfWork: _scopeCtrl.text.isNotEmpty ? _scopeCtrl.text.trim() : null,
+          scopeOfWork:
+              _scopeCtrl.text.isNotEmpty ? _scopeCtrl.text.trim() : null,
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -183,7 +191,8 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
+          SnackBar(
+              content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
         );
       }
     } finally {
@@ -201,7 +210,8 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
       bindings: {
         const SingleActivator(LogicalKeyboardKey.enter, control: true): _submit,
         const SingleActivator(LogicalKeyboardKey.enter, meta: true): _submit,
-        const SingleActivator(LogicalKeyboardKey.escape): () => context.go('/subcontracts'),
+        const SingleActivator(LogicalKeyboardKey.escape): () =>
+            context.go('/subcontracts'),
       },
       child: Scaffold(
         backgroundColor: theme.colorScheme.surfaceContainerLowest,
@@ -255,8 +265,9 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                                   labelText: 'Work Order # *',
                                   prefixIcon: Icon(Icons.tag_outlined),
                                 ),
-                                validator: (v) =>
-                                    v == null || v.trim().isEmpty ? 'Required' : null,
+                                validator: (v) => v == null || v.trim().isEmpty
+                                    ? 'Required'
+                                    : null,
                               ),
                             ),
                             SizedBox(width: 14.w),
@@ -264,9 +275,11 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                               child: projectsAsync.when(
                                 loading: () => const SizedBox.shrink(),
                                 error: (_, __) => const SizedBox.shrink(),
-                                data: (projects) => DropdownButtonFormField<int>(
+                                data: (projects) =>
+                                    DropdownButtonFormField<int>(
                                   isExpanded: true,
-                                  value: projects.any((p) => p.id == _selectedProject)
+                                  value: projects
+                                          .any((p) => p.id == _selectedProject)
                                       ? _selectedProject
                                       : null,
                                   decoration: const InputDecoration(
@@ -277,7 +290,8 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                                       .map((p) => DropdownMenuItem(
                                             value: p.id,
                                             child: Text('${p.code} — ${p.name}',
-                                                overflow: TextOverflow.ellipsis),
+                                                overflow:
+                                                    TextOverflow.ellipsis),
                                           ))
                                       .toList(),
                                   onChanged: (v) =>
@@ -300,11 +314,13 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                               Expanded(
                                 child: DropdownButtonFormField<int>(
                                   isExpanded: true,
-                                  value: subs.any((s) => s.id == _selectedSubcontractor)
+                                  value: subs.any(
+                                          (s) => s.id == _selectedSubcontractor)
                                       ? _selectedSubcontractor
                                       : null,
                                   decoration: const InputDecoration(
-                                    labelText: 'Subcontractor / Contractor Gang *',
+                                    labelText:
+                                        'Subcontractor / Contractor Gang *',
                                     prefixIcon: Icon(Icons.person_outline),
                                   ),
                                   items: subs
@@ -312,13 +328,15 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                                             value: s.id,
                                             child: Text(
                                                 '${s.name} (${s.trade})',
-                                                overflow: TextOverflow.ellipsis),
+                                                overflow:
+                                                    TextOverflow.ellipsis),
                                           ))
                                       .toList(),
                                   onChanged: (v) {
                                     setState(() {
                                       _selectedSubcontractor = v;
-                                      final selectedSub = subs.firstWhere((s) => s.id == v);
+                                      final selectedSub =
+                                          subs.firstWhere((s) => s.id == v);
                                       _tradeCtrl.text = selectedSub.trade;
                                     });
                                   },
@@ -328,7 +346,8 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                               ),
                               SizedBox(width: 8.w),
                               TextButton.icon(
-                                onPressed: () => _showQuickAddSubDialog(context),
+                                onPressed: () =>
+                                    _showQuickAddSubDialog(context),
                                 icon: const Icon(Icons.add, size: 16),
                                 label: const Text('New Contractor'),
                               ),
@@ -350,8 +369,10 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
-                            children: kStandardWorkOrderTrades.map((tradePreset) {
-                              final isSelected = _tradeCtrl.text == tradePreset.name;
+                            children:
+                                kStandardWorkOrderTrades.map((tradePreset) {
+                              final isSelected =
+                                  _tradeCtrl.text == tradePreset.name;
                               return Padding(
                                 padding: EdgeInsets.only(right: 8.w),
                                 child: ChoiceChip(
@@ -360,14 +381,19 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                                   selectedColor: const Color(0xFF1F5FBF),
                                   labelStyle: TextStyle(
                                     fontSize: 12.sp,
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                    color: isSelected ? Colors.white : const Color(0xFF334155),
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.w500,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : const Color(0xFF334155),
                                   ),
                                   onSelected: (selected) {
                                     if (selected) {
                                       setState(() {
                                         _tradeCtrl.text = tradePreset.name;
-                                        _unitCtrl.text = tradePreset.defaultUnit;
+                                        _unitCtrl.text =
+                                            tradePreset.defaultUnit;
                                         if (_titleCtrl.text.isEmpty) {
                                           _titleCtrl.text = tradePreset.name;
                                         }
@@ -385,7 +411,8 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                           controller: _titleCtrl,
                           decoration: const InputDecoration(
                             labelText: 'Work Order Title / Description *',
-                            hintText: 'e.g. Ground Floor Plastering & Ceiling Finishing',
+                            hintText:
+                                'e.g. Ground Floor Plastering & Ceiling Finishing',
                             prefixIcon: Icon(Icons.assignment_outlined),
                           ),
                           validator: (v) =>
@@ -405,11 +432,13 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                                   hintText: '18.00',
                                   prefixText: '₹ ',
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(
-                                    decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
                                 onChanged: (_) => setState(() {}),
-                                validator: (v) =>
-                                    v == null || v.trim().isEmpty ? 'Required' : null,
+                                validator: (v) => v == null || v.trim().isEmpty
+                                    ? 'Required'
+                                    : null,
                               ),
                             ),
                             SizedBox(width: 14.w),
@@ -421,8 +450,9 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                                   labelText: 'Unit *',
                                   hintText: 'Sq.ft',
                                 ),
-                                validator: (v) =>
-                                    v == null || v.trim().isEmpty ? 'Required' : null,
+                                validator: (v) => v == null || v.trim().isEmpty
+                                    ? 'Required'
+                                    : null,
                               ),
                             ),
                           ],
@@ -439,11 +469,13 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                                   labelText: 'Estimated Qty *',
                                   hintText: '10000',
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(
-                                    decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
                                 onChanged: (_) => setState(() {}),
-                                validator: (v) =>
-                                    v == null || v.trim().isEmpty ? 'Required' : null,
+                                validator: (v) => v == null || v.trim().isEmpty
+                                    ? 'Required'
+                                    : null,
                               ),
                             ),
                             SizedBox(width: 14.w),
@@ -455,8 +487,9 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                                   labelText: 'Retention %',
                                   suffixText: '%',
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(
-                                    decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
                               ),
                             ),
                           ],
@@ -471,12 +504,14 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFFEFF6FF),
                               borderRadius: BorderRadius.circular(10.r),
-                              border: Border.all(color: const Color(0xFFBFDBFE)),
+                              border:
+                                  Border.all(color: const Color(0xFFBFDBFE)),
                             ),
                             child: Row(
                               children: [
                                 Icon(Icons.calculate_outlined,
-                                    color: const Color(0xFF2563EB), size: 20.sp),
+                                    color: const Color(0xFF2563EB),
+                                    size: 20.sp),
                                 SizedBox(width: 10.w),
                                 Text(
                                   'Total Contract Value: ',
@@ -486,7 +521,8 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                                   ),
                                 ),
                                 Text(
-                                  CurrencyFormatter.format(_calculatedContractAmount),
+                                  CurrencyFormatter.format(
+                                      _calculatedContractAmount),
                                   style: TextStyle(
                                     fontSize: 15.sp,
                                     fontWeight: FontWeight.bold,
@@ -499,7 +535,8 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                         SizedBox(height: 8.h),
 
                         // ─── Real-Time Project Subcontract Budget Warning ─────
-                        if (_selectedProject != null && _calculatedContractAmount > 0)
+                        if (_selectedProject != null &&
+                            _calculatedContractAmount > 0)
                           BudgetWarningBanner(
                             projectId: _selectedProject,
                             costHead: BudgetCostHead.subcontract,
@@ -517,14 +554,16 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                                 child: InputDecorator(
                                   decoration: const InputDecoration(
                                     labelText: 'Start Date *',
-                                    prefixIcon: Icon(Icons.calendar_today_outlined),
+                                    prefixIcon:
+                                        Icon(Icons.calendar_today_outlined),
                                   ),
                                   child: Text(
                                     '${_startDate.day.toString().padLeft(2, '0')}/'
                                     '${_startDate.month.toString().padLeft(2, '0')}/'
                                     '${_startDate.year}',
                                     style: TextStyle(
-                                        fontSize: 13.sp, fontWeight: FontWeight.w500),
+                                        fontSize: 13.sp,
+                                        fontWeight: FontWeight.w500),
                                   ),
                                 ),
                               ),
@@ -536,7 +575,8 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                                 child: InputDecorator(
                                   decoration: const InputDecoration(
                                     labelText: 'Target Completion Date',
-                                    prefixIcon: Icon(Icons.event_available_outlined),
+                                    prefixIcon:
+                                        Icon(Icons.event_available_outlined),
                                   ),
                                   child: Text(
                                     _targetDate != null
@@ -670,7 +710,9 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
           FilledButton(
             onPressed: () async {
               if (!formKey.currentState!.validate()) return;
-              final id = await ref.read(subcontractRepositoryProvider).addSubcontractor(
+              final id = await ref
+                  .read(subcontractRepositoryProvider)
+                  .addSubcontractor(
                     name: nameCtrl.text.trim(),
                     trade: tradeCtrl.text.trim(),
                   );

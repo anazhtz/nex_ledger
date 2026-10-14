@@ -11,6 +11,7 @@ import 'package:nex_ledger/core/database/daos/labour_dao.dart';
 import 'package:nex_ledger/core/database/daos/purchase_dao.dart';
 import 'package:nex_ledger/features/purchase/data/purchase_invoice_repository.dart';
 import 'package:nex_ledger/features/reports/data/gst_register.dart';
+import 'package:nex_ledger/features/reports/data/input_gst.dart';
 import 'package:nex_ledger/features/reports/data/purchase_register.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
 import 'package:nex_ledger/features/reports/data/report_repository.dart';
@@ -933,5 +934,151 @@ class ExcelExportService {
     final excel = buildGstRegisterWorkbook(rows: rows, filterText: filterText);
     final stamp = DateFormatter.toDbString(DateTime.now());
     return _saveExcelFile(excel, 'GST_Purchase_Register_$stamp.xlsx');
+  }
+
+  // ─── Input GST report ──────────────────────────────────────────────────────
+
+  /// Three sheets: by project (with the split by source), by source, and
+  /// every entry. Kept separate from saving so it can be tested.
+  static Excel buildInputGstWorkbook({
+    required List<InputGstEntry> entries,
+    required String filterText,
+  }) {
+    final excel = Excel.createExcel();
+    final byProject = excel['By Project'];
+    final bySource = excel['By Source'];
+    final all = excel['All Entries'];
+    excel.delete('Sheet1');
+
+    final generated = 'Generated On: ${DateFormatter.format(DateTime.now())}';
+    void title(Sheet sh, String name) {
+      sh.appendRow([TextCellValue('NEXLEDGER ERP — $name')]);
+      sh.appendRow([TextCellValue(filterText)]);
+      sh.appendRow([TextCellValue(generated)]);
+      sh.appendRow([TextCellValue('')]);
+    }
+
+    // ── By project ──
+    title(byProject, 'INPUT GST BY PROJECT');
+    byProject.appendRow([
+      TextCellValue('#'),
+      TextCellValue('Project'),
+      TextCellValue('Name'),
+      TextCellValue('Taxable Value (₹)'),
+      TextCellValue('CGST (₹)'),
+      TextCellValue('SGST (₹)'),
+      TextCellValue('IGST (₹)'),
+      TextCellValue('Total Input GST (₹)'),
+      for (final s in InputGstSource.values)
+        TextCellValue('${s.label} GST (₹)'),
+    ]);
+    var n = 1;
+    for (final p in summarizeByProject(entries)) {
+      byProject.appendRow([
+        IntCellValue(n++),
+        TextCellValue(p.projectCode),
+        TextCellValue(p.projectName),
+        DoubleCellValue(p.totals.taxable),
+        DoubleCellValue(p.totals.cgst),
+        DoubleCellValue(p.totals.sgst),
+        DoubleCellValue(p.totals.igst),
+        DoubleCellValue(p.totals.gst),
+        for (final s in InputGstSource.values)
+          DoubleCellValue(p.gstBySource[s] ?? 0.0),
+      ]);
+    }
+    final t = inputGstTotals(entries);
+    byProject.appendRow([
+      TextCellValue(''),
+      TextCellValue('TOTAL'),
+      TextCellValue(''),
+      DoubleCellValue(t.taxable),
+      DoubleCellValue(t.cgst),
+      DoubleCellValue(t.sgst),
+      DoubleCellValue(t.igst),
+      DoubleCellValue(t.gst),
+      for (final s in InputGstSource.values)
+        DoubleCellValue(
+            inputGstTotals(entries.where((e) => e.source == s)).gst),
+    ]);
+
+    // ── By source ──
+    title(bySource, 'INPUT GST BY SOURCE');
+    bySource.appendRow([
+      TextCellValue('Source'),
+      TextCellValue('Bills'),
+      TextCellValue('Taxable Value (₹)'),
+      TextCellValue('CGST (₹)'),
+      TextCellValue('SGST (₹)'),
+      TextCellValue('IGST (₹)'),
+      TextCellValue('Total Input GST (₹)'),
+    ]);
+    for (final sm in summarizeBySource(entries)) {
+      bySource.appendRow([
+        TextCellValue(sm.source.label),
+        IntCellValue(sm.totals.entries),
+        DoubleCellValue(sm.totals.taxable),
+        DoubleCellValue(sm.totals.cgst),
+        DoubleCellValue(sm.totals.sgst),
+        DoubleCellValue(sm.totals.igst),
+        DoubleCellValue(sm.totals.gst),
+      ]);
+    }
+    bySource.appendRow([
+      TextCellValue('TOTAL'),
+      IntCellValue(t.entries),
+      DoubleCellValue(t.taxable),
+      DoubleCellValue(t.cgst),
+      DoubleCellValue(t.sgst),
+      DoubleCellValue(t.igst),
+      DoubleCellValue(t.gst),
+    ]);
+
+    // ── Every entry ──
+    title(all, 'INPUT GST — ALL ENTRIES');
+    all.appendRow([
+      TextCellValue('Date'),
+      TextCellValue('Project'),
+      TextCellValue('Source'),
+      TextCellValue('Party'),
+      TextCellValue('GSTIN'),
+      TextCellValue('Document'),
+      TextCellValue('Details'),
+      TextCellValue('Taxable Value (₹)'),
+      TextCellValue('CGST (₹)'),
+      TextCellValue('SGST (₹)'),
+      TextCellValue('IGST (₹)'),
+      TextCellValue('Total GST (₹)'),
+      TextCellValue('Bill Total (₹)'),
+    ]);
+    for (final e in entries) {
+      all.appendRow([
+        TextCellValue(DateFormatter.format(e.date)),
+        TextCellValue('${e.projectCode} — ${e.projectName}'),
+        TextCellValue(e.source.label),
+        TextCellValue(e.party),
+        TextCellValue(e.gstin ?? '—'),
+        TextCellValue(e.docNo),
+        TextCellValue(e.detail ?? '—'),
+        DoubleCellValue(e.taxable),
+        DoubleCellValue(e.cgst),
+        DoubleCellValue(e.sgst),
+        DoubleCellValue(e.igst),
+        DoubleCellValue(e.gst),
+        DoubleCellValue(e.total),
+      ]);
+    }
+
+    return excel;
+  }
+
+  static Future<String?> exportInputGst({
+    required List<InputGstEntry> entries,
+    required String filterText,
+  }) {
+    final excel =
+        buildInputGstWorkbook(entries: entries, filterText: filterText);
+    final stamp = DateFormatter.toDbString(DateTime.now());
+    return _saveExcelFile(excel, 'Input_GST_Report_$stamp.xlsx');
   }
 }

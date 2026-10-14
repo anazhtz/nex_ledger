@@ -123,8 +123,7 @@ class PurchaseDao extends DatabaseAccessor<AppDatabase>
   }
 
   /// Update payment status of a purchase.
-  Future<int> updatePaymentStatus(
-          int purchaseId, PaymentStatus status) =>
+  Future<int> updatePaymentStatus(int purchaseId, PaymentStatus status) =>
       (update(purchases)..where((p) => p.id.equals(purchaseId)))
           .write(PurchasesCompanion(paymentStatus: Value(status)));
 
@@ -133,15 +132,15 @@ class PurchaseDao extends DatabaseAccessor<AppDatabase>
           int purchaseId, double newPaidAmount, PaymentStatus status) =>
       (update(purchases)..where((p) => p.id.equals(purchaseId)))
           .write(PurchasesCompanion(
-            paidAmount: Value(newPaidAmount),
-            paymentStatus: Value(status),
-          ));
+        paidAmount: Value(newPaidAmount),
+        paymentStatus: Value(status),
+      ));
 
   /// Update allocated amount of an advance stock purchase.
   Future<int> updateAllocatedAmount(
           int purchaseId, double newAllocatedAmount) =>
-      (update(purchases)..where((p) => p.id.equals(purchaseId)))
-          .write(PurchasesCompanion(allocatedAmount: Value(newAllocatedAmount)));
+      (update(purchases)..where((p) => p.id.equals(purchaseId))).write(
+          PurchasesCompanion(allocatedAmount: Value(newAllocatedAmount)));
 
   /// Watch only advance stock purchases.
   Stream<List<PurchaseDetail>> watchAdvanceStockPurchases() {
@@ -180,7 +179,8 @@ class PurchaseDao extends DatabaseAccessor<AppDatabase>
 
   /// Watch a vendor reactively (for the header card).
   Stream<Vendor?> watchVendorById(int vendorId) =>
-      (select(vendors)..where((v) => v.id.equals(vendorId))).watchSingleOrNull();
+      (select(vendors)..where((v) => v.id.equals(vendorId)))
+          .watchSingleOrNull();
 
   Future<int> insertVendor(VendorsCompanion entry) =>
       into(vendors).insert(entry);
@@ -217,7 +217,8 @@ class PurchaseDao extends DatabaseAccessor<AppDatabase>
   }
 
   /// Stream of aggregated material consumption for a project grouped by category.
-  Stream<List<MaterialConsumptionSummary>> watchMaterialConsumptionByProject(int projectId) {
+  Stream<List<MaterialConsumptionSummary>> watchMaterialConsumptionByProject(
+      int projectId) {
     return watchPurchasesByProject(projectId).map((purchasesList) {
       final map = <String, List<PurchaseDetail>>{};
 

@@ -7530,6 +7530,54 @@ class $MeasurementBillsTable extends MeasurementBills
   late final GeneratedColumn<String> locationOrDescription =
       GeneratedColumn<String>('location_or_description', aliasedName, true,
           type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _gstRateMeta =
+      const VerificationMeta('gstRate');
+  @override
+  late final GeneratedColumn<double> gstRate = GeneratedColumn<double>(
+      'gst_rate', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _cgstAmountMeta =
+      const VerificationMeta('cgstAmount');
+  @override
+  late final GeneratedColumn<double> cgstAmount = GeneratedColumn<double>(
+      'cgst_amount', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _sgstAmountMeta =
+      const VerificationMeta('sgstAmount');
+  @override
+  late final GeneratedColumn<double> sgstAmount = GeneratedColumn<double>(
+      'sgst_amount', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _igstAmountMeta =
+      const VerificationMeta('igstAmount');
+  @override
+  late final GeneratedColumn<double> igstAmount = GeneratedColumn<double>(
+      'igst_amount', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _isInterStateMeta =
+      const VerificationMeta('isInterState');
+  @override
+  late final GeneratedColumn<bool> isInterState = GeneratedColumn<bool>(
+      'is_inter_state', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_inter_state" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _partyGstinMeta =
+      const VerificationMeta('partyGstin');
+  @override
+  late final GeneratedColumn<String> partyGstin = GeneratedColumn<String>(
+      'party_gstin', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -7552,6 +7600,12 @@ class $MeasurementBillsTable extends MeasurementBills
         retentionAmount,
         netAmount,
         locationOrDescription,
+        gstRate,
+        cgstAmount,
+        sgstAmount,
+        igstAmount,
+        isInterState,
+        partyGstin,
         createdAt
       ];
   @override
@@ -7645,6 +7699,40 @@ class $MeasurementBillsTable extends MeasurementBills
           locationOrDescription.isAcceptableOrUnknown(
               data['location_or_description']!, _locationOrDescriptionMeta));
     }
+    if (data.containsKey('gst_rate')) {
+      context.handle(_gstRateMeta,
+          gstRate.isAcceptableOrUnknown(data['gst_rate']!, _gstRateMeta));
+    }
+    if (data.containsKey('cgst_amount')) {
+      context.handle(
+          _cgstAmountMeta,
+          cgstAmount.isAcceptableOrUnknown(
+              data['cgst_amount']!, _cgstAmountMeta));
+    }
+    if (data.containsKey('sgst_amount')) {
+      context.handle(
+          _sgstAmountMeta,
+          sgstAmount.isAcceptableOrUnknown(
+              data['sgst_amount']!, _sgstAmountMeta));
+    }
+    if (data.containsKey('igst_amount')) {
+      context.handle(
+          _igstAmountMeta,
+          igstAmount.isAcceptableOrUnknown(
+              data['igst_amount']!, _igstAmountMeta));
+    }
+    if (data.containsKey('is_inter_state')) {
+      context.handle(
+          _isInterStateMeta,
+          isInterState.isAcceptableOrUnknown(
+              data['is_inter_state']!, _isInterStateMeta));
+    }
+    if (data.containsKey('party_gstin')) {
+      context.handle(
+          _partyGstinMeta,
+          partyGstin.isAcceptableOrUnknown(
+              data['party_gstin']!, _partyGstinMeta));
+    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -7683,6 +7771,18 @@ class $MeasurementBillsTable extends MeasurementBills
       locationOrDescription: attachedDatabase.typeMapping.read(
           DriftSqlType.string,
           data['${effectivePrefix}location_or_description']),
+      gstRate: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}gst_rate'])!,
+      cgstAmount: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}cgst_amount'])!,
+      sgstAmount: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}sgst_amount'])!,
+      igstAmount: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}igst_amount'])!,
+      isInterState: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_inter_state'])!,
+      partyGstin: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}party_gstin']),
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
     );
@@ -7707,6 +7807,12 @@ class MeasurementBill extends DataClass implements Insertable<MeasurementBill> {
   final double retentionAmount;
   final double netAmount;
   final String? locationOrDescription;
+  final double gstRate;
+  final double cgstAmount;
+  final double sgstAmount;
+  final double igstAmount;
+  final bool isInterState;
+  final String? partyGstin;
   final DateTime createdAt;
   const MeasurementBill(
       {required this.id,
@@ -7721,6 +7827,12 @@ class MeasurementBill extends DataClass implements Insertable<MeasurementBill> {
       required this.retentionAmount,
       required this.netAmount,
       this.locationOrDescription,
+      required this.gstRate,
+      required this.cgstAmount,
+      required this.sgstAmount,
+      required this.igstAmount,
+      required this.isInterState,
+      this.partyGstin,
       required this.createdAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -7738,6 +7850,14 @@ class MeasurementBill extends DataClass implements Insertable<MeasurementBill> {
     map['net_amount'] = Variable<double>(netAmount);
     if (!nullToAbsent || locationOrDescription != null) {
       map['location_or_description'] = Variable<String>(locationOrDescription);
+    }
+    map['gst_rate'] = Variable<double>(gstRate);
+    map['cgst_amount'] = Variable<double>(cgstAmount);
+    map['sgst_amount'] = Variable<double>(sgstAmount);
+    map['igst_amount'] = Variable<double>(igstAmount);
+    map['is_inter_state'] = Variable<bool>(isInterState);
+    if (!nullToAbsent || partyGstin != null) {
+      map['party_gstin'] = Variable<String>(partyGstin);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
@@ -7759,6 +7879,14 @@ class MeasurementBill extends DataClass implements Insertable<MeasurementBill> {
       locationOrDescription: locationOrDescription == null && nullToAbsent
           ? const Value.absent()
           : Value(locationOrDescription),
+      gstRate: Value(gstRate),
+      cgstAmount: Value(cgstAmount),
+      sgstAmount: Value(sgstAmount),
+      igstAmount: Value(igstAmount),
+      isInterState: Value(isInterState),
+      partyGstin: partyGstin == null && nullToAbsent
+          ? const Value.absent()
+          : Value(partyGstin),
       createdAt: Value(createdAt),
     );
   }
@@ -7781,6 +7909,12 @@ class MeasurementBill extends DataClass implements Insertable<MeasurementBill> {
       netAmount: serializer.fromJson<double>(json['netAmount']),
       locationOrDescription:
           serializer.fromJson<String?>(json['locationOrDescription']),
+      gstRate: serializer.fromJson<double>(json['gstRate']),
+      cgstAmount: serializer.fromJson<double>(json['cgstAmount']),
+      sgstAmount: serializer.fromJson<double>(json['sgstAmount']),
+      igstAmount: serializer.fromJson<double>(json['igstAmount']),
+      isInterState: serializer.fromJson<bool>(json['isInterState']),
+      partyGstin: serializer.fromJson<String?>(json['partyGstin']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -7801,6 +7935,12 @@ class MeasurementBill extends DataClass implements Insertable<MeasurementBill> {
       'netAmount': serializer.toJson<double>(netAmount),
       'locationOrDescription':
           serializer.toJson<String?>(locationOrDescription),
+      'gstRate': serializer.toJson<double>(gstRate),
+      'cgstAmount': serializer.toJson<double>(cgstAmount),
+      'sgstAmount': serializer.toJson<double>(sgstAmount),
+      'igstAmount': serializer.toJson<double>(igstAmount),
+      'isInterState': serializer.toJson<bool>(isInterState),
+      'partyGstin': serializer.toJson<String?>(partyGstin),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -7818,6 +7958,12 @@ class MeasurementBill extends DataClass implements Insertable<MeasurementBill> {
           double? retentionAmount,
           double? netAmount,
           Value<String?> locationOrDescription = const Value.absent(),
+          double? gstRate,
+          double? cgstAmount,
+          double? sgstAmount,
+          double? igstAmount,
+          bool? isInterState,
+          Value<String?> partyGstin = const Value.absent(),
           DateTime? createdAt}) =>
       MeasurementBill(
         id: id ?? this.id,
@@ -7834,6 +7980,12 @@ class MeasurementBill extends DataClass implements Insertable<MeasurementBill> {
         locationOrDescription: locationOrDescription.present
             ? locationOrDescription.value
             : this.locationOrDescription,
+        gstRate: gstRate ?? this.gstRate,
+        cgstAmount: cgstAmount ?? this.cgstAmount,
+        sgstAmount: sgstAmount ?? this.sgstAmount,
+        igstAmount: igstAmount ?? this.igstAmount,
+        isInterState: isInterState ?? this.isInterState,
+        partyGstin: partyGstin.present ? partyGstin.value : this.partyGstin,
         createdAt: createdAt ?? this.createdAt,
       );
   MeasurementBill copyWithCompanion(MeasurementBillsCompanion data) {
@@ -7863,6 +8015,18 @@ class MeasurementBill extends DataClass implements Insertable<MeasurementBill> {
       locationOrDescription: data.locationOrDescription.present
           ? data.locationOrDescription.value
           : this.locationOrDescription,
+      gstRate: data.gstRate.present ? data.gstRate.value : this.gstRate,
+      cgstAmount:
+          data.cgstAmount.present ? data.cgstAmount.value : this.cgstAmount,
+      sgstAmount:
+          data.sgstAmount.present ? data.sgstAmount.value : this.sgstAmount,
+      igstAmount:
+          data.igstAmount.present ? data.igstAmount.value : this.igstAmount,
+      isInterState: data.isInterState.present
+          ? data.isInterState.value
+          : this.isInterState,
+      partyGstin:
+          data.partyGstin.present ? data.partyGstin.value : this.partyGstin,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -7882,6 +8046,12 @@ class MeasurementBill extends DataClass implements Insertable<MeasurementBill> {
           ..write('retentionAmount: $retentionAmount, ')
           ..write('netAmount: $netAmount, ')
           ..write('locationOrDescription: $locationOrDescription, ')
+          ..write('gstRate: $gstRate, ')
+          ..write('cgstAmount: $cgstAmount, ')
+          ..write('sgstAmount: $sgstAmount, ')
+          ..write('igstAmount: $igstAmount, ')
+          ..write('isInterState: $isInterState, ')
+          ..write('partyGstin: $partyGstin, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -7901,6 +8071,12 @@ class MeasurementBill extends DataClass implements Insertable<MeasurementBill> {
       retentionAmount,
       netAmount,
       locationOrDescription,
+      gstRate,
+      cgstAmount,
+      sgstAmount,
+      igstAmount,
+      isInterState,
+      partyGstin,
       createdAt);
   @override
   bool operator ==(Object other) =>
@@ -7918,6 +8094,12 @@ class MeasurementBill extends DataClass implements Insertable<MeasurementBill> {
           other.retentionAmount == this.retentionAmount &&
           other.netAmount == this.netAmount &&
           other.locationOrDescription == this.locationOrDescription &&
+          other.gstRate == this.gstRate &&
+          other.cgstAmount == this.cgstAmount &&
+          other.sgstAmount == this.sgstAmount &&
+          other.igstAmount == this.igstAmount &&
+          other.isInterState == this.isInterState &&
+          other.partyGstin == this.partyGstin &&
           other.createdAt == this.createdAt);
 }
 
@@ -7934,6 +8116,12 @@ class MeasurementBillsCompanion extends UpdateCompanion<MeasurementBill> {
   final Value<double> retentionAmount;
   final Value<double> netAmount;
   final Value<String?> locationOrDescription;
+  final Value<double> gstRate;
+  final Value<double> cgstAmount;
+  final Value<double> sgstAmount;
+  final Value<double> igstAmount;
+  final Value<bool> isInterState;
+  final Value<String?> partyGstin;
   final Value<DateTime> createdAt;
   const MeasurementBillsCompanion({
     this.id = const Value.absent(),
@@ -7948,6 +8136,12 @@ class MeasurementBillsCompanion extends UpdateCompanion<MeasurementBill> {
     this.retentionAmount = const Value.absent(),
     this.netAmount = const Value.absent(),
     this.locationOrDescription = const Value.absent(),
+    this.gstRate = const Value.absent(),
+    this.cgstAmount = const Value.absent(),
+    this.sgstAmount = const Value.absent(),
+    this.igstAmount = const Value.absent(),
+    this.isInterState = const Value.absent(),
+    this.partyGstin = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   MeasurementBillsCompanion.insert({
@@ -7963,6 +8157,12 @@ class MeasurementBillsCompanion extends UpdateCompanion<MeasurementBill> {
     required double retentionAmount,
     required double netAmount,
     this.locationOrDescription = const Value.absent(),
+    this.gstRate = const Value.absent(),
+    this.cgstAmount = const Value.absent(),
+    this.sgstAmount = const Value.absent(),
+    this.igstAmount = const Value.absent(),
+    this.isInterState = const Value.absent(),
+    this.partyGstin = const Value.absent(),
     this.createdAt = const Value.absent(),
   })  : transactionId = Value(transactionId),
         workOrderId = Value(workOrderId),
@@ -7986,6 +8186,12 @@ class MeasurementBillsCompanion extends UpdateCompanion<MeasurementBill> {
     Expression<double>? retentionAmount,
     Expression<double>? netAmount,
     Expression<String>? locationOrDescription,
+    Expression<double>? gstRate,
+    Expression<double>? cgstAmount,
+    Expression<double>? sgstAmount,
+    Expression<double>? igstAmount,
+    Expression<bool>? isInterState,
+    Expression<String>? partyGstin,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
@@ -8003,6 +8209,12 @@ class MeasurementBillsCompanion extends UpdateCompanion<MeasurementBill> {
       if (netAmount != null) 'net_amount': netAmount,
       if (locationOrDescription != null)
         'location_or_description': locationOrDescription,
+      if (gstRate != null) 'gst_rate': gstRate,
+      if (cgstAmount != null) 'cgst_amount': cgstAmount,
+      if (sgstAmount != null) 'sgst_amount': sgstAmount,
+      if (igstAmount != null) 'igst_amount': igstAmount,
+      if (isInterState != null) 'is_inter_state': isInterState,
+      if (partyGstin != null) 'party_gstin': partyGstin,
       if (createdAt != null) 'created_at': createdAt,
     });
   }
@@ -8020,6 +8232,12 @@ class MeasurementBillsCompanion extends UpdateCompanion<MeasurementBill> {
       Value<double>? retentionAmount,
       Value<double>? netAmount,
       Value<String?>? locationOrDescription,
+      Value<double>? gstRate,
+      Value<double>? cgstAmount,
+      Value<double>? sgstAmount,
+      Value<double>? igstAmount,
+      Value<bool>? isInterState,
+      Value<String?>? partyGstin,
       Value<DateTime>? createdAt}) {
     return MeasurementBillsCompanion(
       id: id ?? this.id,
@@ -8035,6 +8253,12 @@ class MeasurementBillsCompanion extends UpdateCompanion<MeasurementBill> {
       netAmount: netAmount ?? this.netAmount,
       locationOrDescription:
           locationOrDescription ?? this.locationOrDescription,
+      gstRate: gstRate ?? this.gstRate,
+      cgstAmount: cgstAmount ?? this.cgstAmount,
+      sgstAmount: sgstAmount ?? this.sgstAmount,
+      igstAmount: igstAmount ?? this.igstAmount,
+      isInterState: isInterState ?? this.isInterState,
+      partyGstin: partyGstin ?? this.partyGstin,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -8079,6 +8303,24 @@ class MeasurementBillsCompanion extends UpdateCompanion<MeasurementBill> {
       map['location_or_description'] =
           Variable<String>(locationOrDescription.value);
     }
+    if (gstRate.present) {
+      map['gst_rate'] = Variable<double>(gstRate.value);
+    }
+    if (cgstAmount.present) {
+      map['cgst_amount'] = Variable<double>(cgstAmount.value);
+    }
+    if (sgstAmount.present) {
+      map['sgst_amount'] = Variable<double>(sgstAmount.value);
+    }
+    if (igstAmount.present) {
+      map['igst_amount'] = Variable<double>(igstAmount.value);
+    }
+    if (isInterState.present) {
+      map['is_inter_state'] = Variable<bool>(isInterState.value);
+    }
+    if (partyGstin.present) {
+      map['party_gstin'] = Variable<String>(partyGstin.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -8100,6 +8342,12 @@ class MeasurementBillsCompanion extends UpdateCompanion<MeasurementBill> {
           ..write('retentionAmount: $retentionAmount, ')
           ..write('netAmount: $netAmount, ')
           ..write('locationOrDescription: $locationOrDescription, ')
+          ..write('gstRate: $gstRate, ')
+          ..write('cgstAmount: $cgstAmount, ')
+          ..write('sgstAmount: $sgstAmount, ')
+          ..write('igstAmount: $igstAmount, ')
+          ..write('isInterState: $isInterState, ')
+          ..write('partyGstin: $partyGstin, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -14166,6 +14414,625 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   }
 }
 
+class $TransactionGstsTable extends TransactionGsts
+    with TableInfo<$TransactionGstsTable, TransactionGst> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TransactionGstsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _transactionIdMeta =
+      const VerificationMeta('transactionId');
+  @override
+  late final GeneratedColumn<int> transactionId = GeneratedColumn<int>(
+      'transaction_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES transactions (id) ON DELETE CASCADE'));
+  @override
+  late final GeneratedColumnWithTypeConverter<TxnGstKind, String> kind =
+      GeneratedColumn<String>('kind', aliasedName, false,
+              type: DriftSqlType.string, requiredDuringInsert: true)
+          .withConverter<TxnGstKind>($TransactionGstsTable.$converterkind);
+  static const VerificationMeta _taxableAmountMeta =
+      const VerificationMeta('taxableAmount');
+  @override
+  late final GeneratedColumn<double> taxableAmount = GeneratedColumn<double>(
+      'taxable_amount', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _gstRateMeta =
+      const VerificationMeta('gstRate');
+  @override
+  late final GeneratedColumn<double> gstRate = GeneratedColumn<double>(
+      'gst_rate', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _cgstAmountMeta =
+      const VerificationMeta('cgstAmount');
+  @override
+  late final GeneratedColumn<double> cgstAmount = GeneratedColumn<double>(
+      'cgst_amount', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _sgstAmountMeta =
+      const VerificationMeta('sgstAmount');
+  @override
+  late final GeneratedColumn<double> sgstAmount = GeneratedColumn<double>(
+      'sgst_amount', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _igstAmountMeta =
+      const VerificationMeta('igstAmount');
+  @override
+  late final GeneratedColumn<double> igstAmount = GeneratedColumn<double>(
+      'igst_amount', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _isInterStateMeta =
+      const VerificationMeta('isInterState');
+  @override
+  late final GeneratedColumn<bool> isInterState = GeneratedColumn<bool>(
+      'is_inter_state', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_inter_state" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _partyNameMeta =
+      const VerificationMeta('partyName');
+  @override
+  late final GeneratedColumn<String> partyName = GeneratedColumn<String>(
+      'party_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _partyGstinMeta =
+      const VerificationMeta('partyGstin');
+  @override
+  late final GeneratedColumn<String> partyGstin = GeneratedColumn<String>(
+      'party_gstin', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _billNoMeta = const VerificationMeta('billNo');
+  @override
+  late final GeneratedColumn<String> billNo = GeneratedColumn<String>(
+      'bill_no', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        transactionId,
+        kind,
+        taxableAmount,
+        gstRate,
+        cgstAmount,
+        sgstAmount,
+        igstAmount,
+        isInterState,
+        partyName,
+        partyGstin,
+        billNo
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'transaction_gsts';
+  @override
+  VerificationContext validateIntegrity(Insertable<TransactionGst> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('transaction_id')) {
+      context.handle(
+          _transactionIdMeta,
+          transactionId.isAcceptableOrUnknown(
+              data['transaction_id']!, _transactionIdMeta));
+    } else if (isInserting) {
+      context.missing(_transactionIdMeta);
+    }
+    if (data.containsKey('taxable_amount')) {
+      context.handle(
+          _taxableAmountMeta,
+          taxableAmount.isAcceptableOrUnknown(
+              data['taxable_amount']!, _taxableAmountMeta));
+    }
+    if (data.containsKey('gst_rate')) {
+      context.handle(_gstRateMeta,
+          gstRate.isAcceptableOrUnknown(data['gst_rate']!, _gstRateMeta));
+    }
+    if (data.containsKey('cgst_amount')) {
+      context.handle(
+          _cgstAmountMeta,
+          cgstAmount.isAcceptableOrUnknown(
+              data['cgst_amount']!, _cgstAmountMeta));
+    }
+    if (data.containsKey('sgst_amount')) {
+      context.handle(
+          _sgstAmountMeta,
+          sgstAmount.isAcceptableOrUnknown(
+              data['sgst_amount']!, _sgstAmountMeta));
+    }
+    if (data.containsKey('igst_amount')) {
+      context.handle(
+          _igstAmountMeta,
+          igstAmount.isAcceptableOrUnknown(
+              data['igst_amount']!, _igstAmountMeta));
+    }
+    if (data.containsKey('is_inter_state')) {
+      context.handle(
+          _isInterStateMeta,
+          isInterState.isAcceptableOrUnknown(
+              data['is_inter_state']!, _isInterStateMeta));
+    }
+    if (data.containsKey('party_name')) {
+      context.handle(_partyNameMeta,
+          partyName.isAcceptableOrUnknown(data['party_name']!, _partyNameMeta));
+    }
+    if (data.containsKey('party_gstin')) {
+      context.handle(
+          _partyGstinMeta,
+          partyGstin.isAcceptableOrUnknown(
+              data['party_gstin']!, _partyGstinMeta));
+    }
+    if (data.containsKey('bill_no')) {
+      context.handle(_billNoMeta,
+          billNo.isAcceptableOrUnknown(data['bill_no']!, _billNoMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+        {transactionId},
+      ];
+  @override
+  TransactionGst map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TransactionGst(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      transactionId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}transaction_id'])!,
+      kind: $TransactionGstsTable.$converterkind.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}kind'])!),
+      taxableAmount: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}taxable_amount'])!,
+      gstRate: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}gst_rate'])!,
+      cgstAmount: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}cgst_amount'])!,
+      sgstAmount: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}sgst_amount'])!,
+      igstAmount: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}igst_amount'])!,
+      isInterState: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_inter_state'])!,
+      partyName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}party_name']),
+      partyGstin: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}party_gstin']),
+      billNo: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}bill_no']),
+    );
+  }
+
+  @override
+  $TransactionGstsTable createAlias(String alias) {
+    return $TransactionGstsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<TxnGstKind, String, String> $converterkind =
+      const EnumNameConverter<TxnGstKind>(TxnGstKind.values);
+}
+
+class TransactionGst extends DataClass implements Insertable<TransactionGst> {
+  final int id;
+
+  /// One GST detail per transaction.
+  final int transactionId;
+  final TxnGstKind kind;
+  final double taxableAmount;
+
+  /// Total GST rate in % (CGST + SGST, or IGST).
+  final double gstRate;
+  final double cgstAmount;
+  final double sgstAmount;
+  final double igstAmount;
+  final bool isInterState;
+
+  /// Who charged the GST (optional).
+  final String? partyName;
+  final String? partyGstin;
+  final String? billNo;
+  const TransactionGst(
+      {required this.id,
+      required this.transactionId,
+      required this.kind,
+      required this.taxableAmount,
+      required this.gstRate,
+      required this.cgstAmount,
+      required this.sgstAmount,
+      required this.igstAmount,
+      required this.isInterState,
+      this.partyName,
+      this.partyGstin,
+      this.billNo});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['transaction_id'] = Variable<int>(transactionId);
+    {
+      map['kind'] =
+          Variable<String>($TransactionGstsTable.$converterkind.toSql(kind));
+    }
+    map['taxable_amount'] = Variable<double>(taxableAmount);
+    map['gst_rate'] = Variable<double>(gstRate);
+    map['cgst_amount'] = Variable<double>(cgstAmount);
+    map['sgst_amount'] = Variable<double>(sgstAmount);
+    map['igst_amount'] = Variable<double>(igstAmount);
+    map['is_inter_state'] = Variable<bool>(isInterState);
+    if (!nullToAbsent || partyName != null) {
+      map['party_name'] = Variable<String>(partyName);
+    }
+    if (!nullToAbsent || partyGstin != null) {
+      map['party_gstin'] = Variable<String>(partyGstin);
+    }
+    if (!nullToAbsent || billNo != null) {
+      map['bill_no'] = Variable<String>(billNo);
+    }
+    return map;
+  }
+
+  TransactionGstsCompanion toCompanion(bool nullToAbsent) {
+    return TransactionGstsCompanion(
+      id: Value(id),
+      transactionId: Value(transactionId),
+      kind: Value(kind),
+      taxableAmount: Value(taxableAmount),
+      gstRate: Value(gstRate),
+      cgstAmount: Value(cgstAmount),
+      sgstAmount: Value(sgstAmount),
+      igstAmount: Value(igstAmount),
+      isInterState: Value(isInterState),
+      partyName: partyName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(partyName),
+      partyGstin: partyGstin == null && nullToAbsent
+          ? const Value.absent()
+          : Value(partyGstin),
+      billNo:
+          billNo == null && nullToAbsent ? const Value.absent() : Value(billNo),
+    );
+  }
+
+  factory TransactionGst.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TransactionGst(
+      id: serializer.fromJson<int>(json['id']),
+      transactionId: serializer.fromJson<int>(json['transactionId']),
+      kind: $TransactionGstsTable.$converterkind
+          .fromJson(serializer.fromJson<String>(json['kind'])),
+      taxableAmount: serializer.fromJson<double>(json['taxableAmount']),
+      gstRate: serializer.fromJson<double>(json['gstRate']),
+      cgstAmount: serializer.fromJson<double>(json['cgstAmount']),
+      sgstAmount: serializer.fromJson<double>(json['sgstAmount']),
+      igstAmount: serializer.fromJson<double>(json['igstAmount']),
+      isInterState: serializer.fromJson<bool>(json['isInterState']),
+      partyName: serializer.fromJson<String?>(json['partyName']),
+      partyGstin: serializer.fromJson<String?>(json['partyGstin']),
+      billNo: serializer.fromJson<String?>(json['billNo']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'transactionId': serializer.toJson<int>(transactionId),
+      'kind': serializer
+          .toJson<String>($TransactionGstsTable.$converterkind.toJson(kind)),
+      'taxableAmount': serializer.toJson<double>(taxableAmount),
+      'gstRate': serializer.toJson<double>(gstRate),
+      'cgstAmount': serializer.toJson<double>(cgstAmount),
+      'sgstAmount': serializer.toJson<double>(sgstAmount),
+      'igstAmount': serializer.toJson<double>(igstAmount),
+      'isInterState': serializer.toJson<bool>(isInterState),
+      'partyName': serializer.toJson<String?>(partyName),
+      'partyGstin': serializer.toJson<String?>(partyGstin),
+      'billNo': serializer.toJson<String?>(billNo),
+    };
+  }
+
+  TransactionGst copyWith(
+          {int? id,
+          int? transactionId,
+          TxnGstKind? kind,
+          double? taxableAmount,
+          double? gstRate,
+          double? cgstAmount,
+          double? sgstAmount,
+          double? igstAmount,
+          bool? isInterState,
+          Value<String?> partyName = const Value.absent(),
+          Value<String?> partyGstin = const Value.absent(),
+          Value<String?> billNo = const Value.absent()}) =>
+      TransactionGst(
+        id: id ?? this.id,
+        transactionId: transactionId ?? this.transactionId,
+        kind: kind ?? this.kind,
+        taxableAmount: taxableAmount ?? this.taxableAmount,
+        gstRate: gstRate ?? this.gstRate,
+        cgstAmount: cgstAmount ?? this.cgstAmount,
+        sgstAmount: sgstAmount ?? this.sgstAmount,
+        igstAmount: igstAmount ?? this.igstAmount,
+        isInterState: isInterState ?? this.isInterState,
+        partyName: partyName.present ? partyName.value : this.partyName,
+        partyGstin: partyGstin.present ? partyGstin.value : this.partyGstin,
+        billNo: billNo.present ? billNo.value : this.billNo,
+      );
+  TransactionGst copyWithCompanion(TransactionGstsCompanion data) {
+    return TransactionGst(
+      id: data.id.present ? data.id.value : this.id,
+      transactionId: data.transactionId.present
+          ? data.transactionId.value
+          : this.transactionId,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      taxableAmount: data.taxableAmount.present
+          ? data.taxableAmount.value
+          : this.taxableAmount,
+      gstRate: data.gstRate.present ? data.gstRate.value : this.gstRate,
+      cgstAmount:
+          data.cgstAmount.present ? data.cgstAmount.value : this.cgstAmount,
+      sgstAmount:
+          data.sgstAmount.present ? data.sgstAmount.value : this.sgstAmount,
+      igstAmount:
+          data.igstAmount.present ? data.igstAmount.value : this.igstAmount,
+      isInterState: data.isInterState.present
+          ? data.isInterState.value
+          : this.isInterState,
+      partyName: data.partyName.present ? data.partyName.value : this.partyName,
+      partyGstin:
+          data.partyGstin.present ? data.partyGstin.value : this.partyGstin,
+      billNo: data.billNo.present ? data.billNo.value : this.billNo,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransactionGst(')
+          ..write('id: $id, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('kind: $kind, ')
+          ..write('taxableAmount: $taxableAmount, ')
+          ..write('gstRate: $gstRate, ')
+          ..write('cgstAmount: $cgstAmount, ')
+          ..write('sgstAmount: $sgstAmount, ')
+          ..write('igstAmount: $igstAmount, ')
+          ..write('isInterState: $isInterState, ')
+          ..write('partyName: $partyName, ')
+          ..write('partyGstin: $partyGstin, ')
+          ..write('billNo: $billNo')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      transactionId,
+      kind,
+      taxableAmount,
+      gstRate,
+      cgstAmount,
+      sgstAmount,
+      igstAmount,
+      isInterState,
+      partyName,
+      partyGstin,
+      billNo);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TransactionGst &&
+          other.id == this.id &&
+          other.transactionId == this.transactionId &&
+          other.kind == this.kind &&
+          other.taxableAmount == this.taxableAmount &&
+          other.gstRate == this.gstRate &&
+          other.cgstAmount == this.cgstAmount &&
+          other.sgstAmount == this.sgstAmount &&
+          other.igstAmount == this.igstAmount &&
+          other.isInterState == this.isInterState &&
+          other.partyName == this.partyName &&
+          other.partyGstin == this.partyGstin &&
+          other.billNo == this.billNo);
+}
+
+class TransactionGstsCompanion extends UpdateCompanion<TransactionGst> {
+  final Value<int> id;
+  final Value<int> transactionId;
+  final Value<TxnGstKind> kind;
+  final Value<double> taxableAmount;
+  final Value<double> gstRate;
+  final Value<double> cgstAmount;
+  final Value<double> sgstAmount;
+  final Value<double> igstAmount;
+  final Value<bool> isInterState;
+  final Value<String?> partyName;
+  final Value<String?> partyGstin;
+  final Value<String?> billNo;
+  const TransactionGstsCompanion({
+    this.id = const Value.absent(),
+    this.transactionId = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.taxableAmount = const Value.absent(),
+    this.gstRate = const Value.absent(),
+    this.cgstAmount = const Value.absent(),
+    this.sgstAmount = const Value.absent(),
+    this.igstAmount = const Value.absent(),
+    this.isInterState = const Value.absent(),
+    this.partyName = const Value.absent(),
+    this.partyGstin = const Value.absent(),
+    this.billNo = const Value.absent(),
+  });
+  TransactionGstsCompanion.insert({
+    this.id = const Value.absent(),
+    required int transactionId,
+    required TxnGstKind kind,
+    this.taxableAmount = const Value.absent(),
+    this.gstRate = const Value.absent(),
+    this.cgstAmount = const Value.absent(),
+    this.sgstAmount = const Value.absent(),
+    this.igstAmount = const Value.absent(),
+    this.isInterState = const Value.absent(),
+    this.partyName = const Value.absent(),
+    this.partyGstin = const Value.absent(),
+    this.billNo = const Value.absent(),
+  })  : transactionId = Value(transactionId),
+        kind = Value(kind);
+  static Insertable<TransactionGst> custom({
+    Expression<int>? id,
+    Expression<int>? transactionId,
+    Expression<String>? kind,
+    Expression<double>? taxableAmount,
+    Expression<double>? gstRate,
+    Expression<double>? cgstAmount,
+    Expression<double>? sgstAmount,
+    Expression<double>? igstAmount,
+    Expression<bool>? isInterState,
+    Expression<String>? partyName,
+    Expression<String>? partyGstin,
+    Expression<String>? billNo,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (transactionId != null) 'transaction_id': transactionId,
+      if (kind != null) 'kind': kind,
+      if (taxableAmount != null) 'taxable_amount': taxableAmount,
+      if (gstRate != null) 'gst_rate': gstRate,
+      if (cgstAmount != null) 'cgst_amount': cgstAmount,
+      if (sgstAmount != null) 'sgst_amount': sgstAmount,
+      if (igstAmount != null) 'igst_amount': igstAmount,
+      if (isInterState != null) 'is_inter_state': isInterState,
+      if (partyName != null) 'party_name': partyName,
+      if (partyGstin != null) 'party_gstin': partyGstin,
+      if (billNo != null) 'bill_no': billNo,
+    });
+  }
+
+  TransactionGstsCompanion copyWith(
+      {Value<int>? id,
+      Value<int>? transactionId,
+      Value<TxnGstKind>? kind,
+      Value<double>? taxableAmount,
+      Value<double>? gstRate,
+      Value<double>? cgstAmount,
+      Value<double>? sgstAmount,
+      Value<double>? igstAmount,
+      Value<bool>? isInterState,
+      Value<String?>? partyName,
+      Value<String?>? partyGstin,
+      Value<String?>? billNo}) {
+    return TransactionGstsCompanion(
+      id: id ?? this.id,
+      transactionId: transactionId ?? this.transactionId,
+      kind: kind ?? this.kind,
+      taxableAmount: taxableAmount ?? this.taxableAmount,
+      gstRate: gstRate ?? this.gstRate,
+      cgstAmount: cgstAmount ?? this.cgstAmount,
+      sgstAmount: sgstAmount ?? this.sgstAmount,
+      igstAmount: igstAmount ?? this.igstAmount,
+      isInterState: isInterState ?? this.isInterState,
+      partyName: partyName ?? this.partyName,
+      partyGstin: partyGstin ?? this.partyGstin,
+      billNo: billNo ?? this.billNo,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (transactionId.present) {
+      map['transaction_id'] = Variable<int>(transactionId.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(
+          $TransactionGstsTable.$converterkind.toSql(kind.value));
+    }
+    if (taxableAmount.present) {
+      map['taxable_amount'] = Variable<double>(taxableAmount.value);
+    }
+    if (gstRate.present) {
+      map['gst_rate'] = Variable<double>(gstRate.value);
+    }
+    if (cgstAmount.present) {
+      map['cgst_amount'] = Variable<double>(cgstAmount.value);
+    }
+    if (sgstAmount.present) {
+      map['sgst_amount'] = Variable<double>(sgstAmount.value);
+    }
+    if (igstAmount.present) {
+      map['igst_amount'] = Variable<double>(igstAmount.value);
+    }
+    if (isInterState.present) {
+      map['is_inter_state'] = Variable<bool>(isInterState.value);
+    }
+    if (partyName.present) {
+      map['party_name'] = Variable<String>(partyName.value);
+    }
+    if (partyGstin.present) {
+      map['party_gstin'] = Variable<String>(partyGstin.value);
+    }
+    if (billNo.present) {
+      map['bill_no'] = Variable<String>(billNo.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransactionGstsCompanion(')
+          ..write('id: $id, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('kind: $kind, ')
+          ..write('taxableAmount: $taxableAmount, ')
+          ..write('gstRate: $gstRate, ')
+          ..write('cgstAmount: $cgstAmount, ')
+          ..write('sgstAmount: $sgstAmount, ')
+          ..write('igstAmount: $igstAmount, ')
+          ..write('isInterState: $isInterState, ')
+          ..write('partyName: $partyName, ')
+          ..write('partyGstin: $partyGstin, ')
+          ..write('billNo: $billNo')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -14199,6 +15066,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $PettyCashVouchersTable(this);
   late final $ItemDefaultsTable itemDefaults = $ItemDefaultsTable(this);
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
+  late final $TransactionGstsTable transactionGsts =
+      $TransactionGstsTable(this);
   late final ProjectDao projectDao = ProjectDao(this as AppDatabase);
   late final TransactionDao transactionDao =
       TransactionDao(this as AppDatabase);
@@ -14245,7 +15114,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         pettyCashWallets,
         pettyCashVouchers,
         itemDefaults,
-        appSettings
+        appSettings,
+        transactionGsts
       ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
@@ -14409,6 +15279,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
                 limitUpdateKind: UpdateKind.delete),
             result: [
               TableUpdate('petty_cash_vouchers', kind: UpdateKind.update),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('transactions',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('transaction_gsts', kind: UpdateKind.delete),
             ],
           ),
         ],
@@ -18480,6 +19357,23 @@ final class $$TransactionsTableReferences
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: cache));
   }
+
+  static MultiTypedResultKey<$TransactionGstsTable, List<TransactionGst>>
+      _transactionGstsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.transactionGsts,
+              aliasName: $_aliasNameGenerator(
+                  db.transactions.id, db.transactionGsts.transactionId));
+
+  $$TransactionGstsTableProcessedTableManager get transactionGstsRefs {
+    final manager = $$TransactionGstsTableTableManager(
+            $_db, $_db.transactionGsts)
+        .filter((f) => f.transactionId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_transactionGstsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
 }
 
 class $$TransactionsTableFilterComposer
@@ -18784,6 +19678,27 @@ class $$TransactionsTableFilterComposer
             $$PettyCashVouchersTableFilterComposer(
               $db: $db,
               $table: $db.pettyCashVouchers,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> transactionGstsRefs(
+      Expression<bool> Function($$TransactionGstsTableFilterComposer f) f) {
+    final $$TransactionGstsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.transactionGsts,
+        getReferencedColumn: (t) => t.transactionId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionGstsTableFilterComposer(
+              $db: $db,
+              $table: $db.transactionGsts,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -19263,6 +20178,27 @@ class $$TransactionsTableAnnotationComposer
                 ));
     return f(composer);
   }
+
+  Expression<T> transactionGstsRefs<T extends Object>(
+      Expression<T> Function($$TransactionGstsTableAnnotationComposer a) f) {
+    final $$TransactionGstsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.transactionGsts,
+        getReferencedColumn: (t) => t.transactionId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionGstsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.transactionGsts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
 class $$TransactionsTableTableManager extends RootTableManager<
@@ -19289,7 +20225,8 @@ class $$TransactionsTableTableManager extends RootTableManager<
         bool subcontractPaymentsRefs,
         bool clientRaBillsRefs,
         bool clientReceiptsRefs,
-        bool pettyCashVouchersRefs})> {
+        bool pettyCashVouchersRefs,
+        bool transactionGstsRefs})> {
   $$TransactionsTableTableManager(_$AppDatabase db, $TransactionsTable table)
       : super(TableManagerState(
           db: db,
@@ -19391,7 +20328,8 @@ class $$TransactionsTableTableManager extends RootTableManager<
               subcontractPaymentsRefs = false,
               clientRaBillsRefs = false,
               clientReceiptsRefs = false,
-              pettyCashVouchersRefs = false}) {
+              pettyCashVouchersRefs = false,
+              transactionGstsRefs = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
@@ -19401,7 +20339,8 @@ class $$TransactionsTableTableManager extends RootTableManager<
                 if (subcontractPaymentsRefs) db.subcontractPayments,
                 if (clientRaBillsRefs) db.clientRaBills,
                 if (clientReceiptsRefs) db.clientReceipts,
-                if (pettyCashVouchersRefs) db.pettyCashVouchers
+                if (pettyCashVouchersRefs) db.pettyCashVouchers,
+                if (transactionGstsRefs) db.transactionGsts
               ],
               addJoins: <
                   T extends TableManagerState<
@@ -19572,6 +20511,19 @@ class $$TransactionsTableTableManager extends RootTableManager<
                         referencedItemsForCurrentItem:
                             (item, referencedItems) => referencedItems
                                 .where((e) => e.transactionId == item.id),
+                        typedResults: items),
+                  if (transactionGstsRefs)
+                    await $_getPrefetchedData<Transaction, $TransactionsTable,
+                            TransactionGst>(
+                        currentTable: table,
+                        referencedTable: $$TransactionsTableReferences
+                            ._transactionGstsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$TransactionsTableReferences(db, table, p0)
+                                .transactionGstsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.transactionId == item.id),
                         typedResults: items)
                 ];
               },
@@ -19604,7 +20556,8 @@ typedef $$TransactionsTableProcessedTableManager = ProcessedTableManager<
         bool subcontractPaymentsRefs,
         bool clientRaBillsRefs,
         bool clientReceiptsRefs,
-        bool pettyCashVouchersRefs})>;
+        bool pettyCashVouchersRefs,
+        bool transactionGstsRefs})>;
 typedef $$PurchasesTableCreateCompanionBuilder = PurchasesCompanion Function({
   Value<int> id,
   required int transactionId,
@@ -22095,6 +23048,12 @@ typedef $$MeasurementBillsTableCreateCompanionBuilder
   required double retentionAmount,
   required double netAmount,
   Value<String?> locationOrDescription,
+  Value<double> gstRate,
+  Value<double> cgstAmount,
+  Value<double> sgstAmount,
+  Value<double> igstAmount,
+  Value<bool> isInterState,
+  Value<String?> partyGstin,
   Value<DateTime> createdAt,
 });
 typedef $$MeasurementBillsTableUpdateCompanionBuilder
@@ -22111,6 +23070,12 @@ typedef $$MeasurementBillsTableUpdateCompanionBuilder
   Value<double> retentionAmount,
   Value<double> netAmount,
   Value<String?> locationOrDescription,
+  Value<double> gstRate,
+  Value<double> cgstAmount,
+  Value<double> sgstAmount,
+  Value<double> igstAmount,
+  Value<bool> isInterState,
+  Value<String?> partyGstin,
   Value<DateTime> createdAt,
 });
 
@@ -22192,6 +23157,24 @@ class $$MeasurementBillsTableFilterComposer
   ColumnFilters<String> get locationOrDescription => $composableBuilder(
       column: $table.locationOrDescription,
       builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get gstRate => $composableBuilder(
+      column: $table.gstRate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get cgstAmount => $composableBuilder(
+      column: $table.cgstAmount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get sgstAmount => $composableBuilder(
+      column: $table.sgstAmount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get igstAmount => $composableBuilder(
+      column: $table.igstAmount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isInterState => $composableBuilder(
+      column: $table.isInterState, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get partyGstin => $composableBuilder(
+      column: $table.partyGstin, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
@@ -22280,6 +23263,25 @@ class $$MeasurementBillsTableOrderingComposer
       column: $table.locationOrDescription,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<double> get gstRate => $composableBuilder(
+      column: $table.gstRate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get cgstAmount => $composableBuilder(
+      column: $table.cgstAmount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get sgstAmount => $composableBuilder(
+      column: $table.sgstAmount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get igstAmount => $composableBuilder(
+      column: $table.igstAmount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isInterState => $composableBuilder(
+      column: $table.isInterState,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get partyGstin => $composableBuilder(
+      column: $table.partyGstin, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
@@ -22363,6 +23365,24 @@ class $$MeasurementBillsTableAnnotationComposer
   GeneratedColumn<String> get locationOrDescription => $composableBuilder(
       column: $table.locationOrDescription, builder: (column) => column);
 
+  GeneratedColumn<double> get gstRate =>
+      $composableBuilder(column: $table.gstRate, builder: (column) => column);
+
+  GeneratedColumn<double> get cgstAmount => $composableBuilder(
+      column: $table.cgstAmount, builder: (column) => column);
+
+  GeneratedColumn<double> get sgstAmount => $composableBuilder(
+      column: $table.sgstAmount, builder: (column) => column);
+
+  GeneratedColumn<double> get igstAmount => $composableBuilder(
+      column: $table.igstAmount, builder: (column) => column);
+
+  GeneratedColumn<bool> get isInterState => $composableBuilder(
+      column: $table.isInterState, builder: (column) => column);
+
+  GeneratedColumn<String> get partyGstin => $composableBuilder(
+      column: $table.partyGstin, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -22443,6 +23463,12 @@ class $$MeasurementBillsTableTableManager extends RootTableManager<
             Value<double> retentionAmount = const Value.absent(),
             Value<double> netAmount = const Value.absent(),
             Value<String?> locationOrDescription = const Value.absent(),
+            Value<double> gstRate = const Value.absent(),
+            Value<double> cgstAmount = const Value.absent(),
+            Value<double> sgstAmount = const Value.absent(),
+            Value<double> igstAmount = const Value.absent(),
+            Value<bool> isInterState = const Value.absent(),
+            Value<String?> partyGstin = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
           }) =>
               MeasurementBillsCompanion(
@@ -22458,6 +23484,12 @@ class $$MeasurementBillsTableTableManager extends RootTableManager<
             retentionAmount: retentionAmount,
             netAmount: netAmount,
             locationOrDescription: locationOrDescription,
+            gstRate: gstRate,
+            cgstAmount: cgstAmount,
+            sgstAmount: sgstAmount,
+            igstAmount: igstAmount,
+            isInterState: isInterState,
+            partyGstin: partyGstin,
             createdAt: createdAt,
           ),
           createCompanionCallback: ({
@@ -22473,6 +23505,12 @@ class $$MeasurementBillsTableTableManager extends RootTableManager<
             required double retentionAmount,
             required double netAmount,
             Value<String?> locationOrDescription = const Value.absent(),
+            Value<double> gstRate = const Value.absent(),
+            Value<double> cgstAmount = const Value.absent(),
+            Value<double> sgstAmount = const Value.absent(),
+            Value<double> igstAmount = const Value.absent(),
+            Value<bool> isInterState = const Value.absent(),
+            Value<String?> partyGstin = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
           }) =>
               MeasurementBillsCompanion.insert(
@@ -22488,6 +23526,12 @@ class $$MeasurementBillsTableTableManager extends RootTableManager<
             retentionAmount: retentionAmount,
             netAmount: netAmount,
             locationOrDescription: locationOrDescription,
+            gstRate: gstRate,
+            cgstAmount: cgstAmount,
+            sgstAmount: sgstAmount,
+            igstAmount: igstAmount,
+            isInterState: isInterState,
+            partyGstin: partyGstin,
             createdAt: createdAt,
           ),
           withReferenceMapper: (p0) => p0
@@ -27353,6 +28397,387 @@ typedef $$AppSettingsTableProcessedTableManager = ProcessedTableManager<
     (AppSetting, BaseReferences<_$AppDatabase, $AppSettingsTable, AppSetting>),
     AppSetting,
     PrefetchHooks Function()>;
+typedef $$TransactionGstsTableCreateCompanionBuilder = TransactionGstsCompanion
+    Function({
+  Value<int> id,
+  required int transactionId,
+  required TxnGstKind kind,
+  Value<double> taxableAmount,
+  Value<double> gstRate,
+  Value<double> cgstAmount,
+  Value<double> sgstAmount,
+  Value<double> igstAmount,
+  Value<bool> isInterState,
+  Value<String?> partyName,
+  Value<String?> partyGstin,
+  Value<String?> billNo,
+});
+typedef $$TransactionGstsTableUpdateCompanionBuilder = TransactionGstsCompanion
+    Function({
+  Value<int> id,
+  Value<int> transactionId,
+  Value<TxnGstKind> kind,
+  Value<double> taxableAmount,
+  Value<double> gstRate,
+  Value<double> cgstAmount,
+  Value<double> sgstAmount,
+  Value<double> igstAmount,
+  Value<bool> isInterState,
+  Value<String?> partyName,
+  Value<String?> partyGstin,
+  Value<String?> billNo,
+});
+
+final class $$TransactionGstsTableReferences extends BaseReferences<
+    _$AppDatabase, $TransactionGstsTable, TransactionGst> {
+  $$TransactionGstsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $TransactionsTable _transactionIdTable(_$AppDatabase db) =>
+      db.transactions.createAlias($_aliasNameGenerator(
+          db.transactionGsts.transactionId, db.transactions.id));
+
+  $$TransactionsTableProcessedTableManager get transactionId {
+    final $_column = $_itemColumn<int>('transaction_id')!;
+
+    final manager = $$TransactionsTableTableManager($_db, $_db.transactions)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_transactionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$TransactionGstsTableFilterComposer
+    extends Composer<_$AppDatabase, $TransactionGstsTable> {
+  $$TransactionGstsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<TxnGstKind, TxnGstKind, String> get kind =>
+      $composableBuilder(
+          column: $table.kind,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
+  ColumnFilters<double> get taxableAmount => $composableBuilder(
+      column: $table.taxableAmount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get gstRate => $composableBuilder(
+      column: $table.gstRate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get cgstAmount => $composableBuilder(
+      column: $table.cgstAmount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get sgstAmount => $composableBuilder(
+      column: $table.sgstAmount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get igstAmount => $composableBuilder(
+      column: $table.igstAmount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isInterState => $composableBuilder(
+      column: $table.isInterState, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get partyName => $composableBuilder(
+      column: $table.partyName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get partyGstin => $composableBuilder(
+      column: $table.partyGstin, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get billNo => $composableBuilder(
+      column: $table.billNo, builder: (column) => ColumnFilters(column));
+
+  $$TransactionsTableFilterComposer get transactionId {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.transactionId,
+        referencedTable: $db.transactions,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableFilterComposer(
+              $db: $db,
+              $table: $db.transactions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$TransactionGstsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TransactionGstsTable> {
+  $$TransactionGstsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+      column: $table.kind, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get taxableAmount => $composableBuilder(
+      column: $table.taxableAmount,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get gstRate => $composableBuilder(
+      column: $table.gstRate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get cgstAmount => $composableBuilder(
+      column: $table.cgstAmount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get sgstAmount => $composableBuilder(
+      column: $table.sgstAmount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get igstAmount => $composableBuilder(
+      column: $table.igstAmount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isInterState => $composableBuilder(
+      column: $table.isInterState,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get partyName => $composableBuilder(
+      column: $table.partyName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get partyGstin => $composableBuilder(
+      column: $table.partyGstin, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get billNo => $composableBuilder(
+      column: $table.billNo, builder: (column) => ColumnOrderings(column));
+
+  $$TransactionsTableOrderingComposer get transactionId {
+    final $$TransactionsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.transactionId,
+        referencedTable: $db.transactions,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableOrderingComposer(
+              $db: $db,
+              $table: $db.transactions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$TransactionGstsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TransactionGstsTable> {
+  $$TransactionGstsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<TxnGstKind, String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<double> get taxableAmount => $composableBuilder(
+      column: $table.taxableAmount, builder: (column) => column);
+
+  GeneratedColumn<double> get gstRate =>
+      $composableBuilder(column: $table.gstRate, builder: (column) => column);
+
+  GeneratedColumn<double> get cgstAmount => $composableBuilder(
+      column: $table.cgstAmount, builder: (column) => column);
+
+  GeneratedColumn<double> get sgstAmount => $composableBuilder(
+      column: $table.sgstAmount, builder: (column) => column);
+
+  GeneratedColumn<double> get igstAmount => $composableBuilder(
+      column: $table.igstAmount, builder: (column) => column);
+
+  GeneratedColumn<bool> get isInterState => $composableBuilder(
+      column: $table.isInterState, builder: (column) => column);
+
+  GeneratedColumn<String> get partyName =>
+      $composableBuilder(column: $table.partyName, builder: (column) => column);
+
+  GeneratedColumn<String> get partyGstin => $composableBuilder(
+      column: $table.partyGstin, builder: (column) => column);
+
+  GeneratedColumn<String> get billNo =>
+      $composableBuilder(column: $table.billNo, builder: (column) => column);
+
+  $$TransactionsTableAnnotationComposer get transactionId {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.transactionId,
+        referencedTable: $db.transactions,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.transactions,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$TransactionGstsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $TransactionGstsTable,
+    TransactionGst,
+    $$TransactionGstsTableFilterComposer,
+    $$TransactionGstsTableOrderingComposer,
+    $$TransactionGstsTableAnnotationComposer,
+    $$TransactionGstsTableCreateCompanionBuilder,
+    $$TransactionGstsTableUpdateCompanionBuilder,
+    (TransactionGst, $$TransactionGstsTableReferences),
+    TransactionGst,
+    PrefetchHooks Function({bool transactionId})> {
+  $$TransactionGstsTableTableManager(
+      _$AppDatabase db, $TransactionGstsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TransactionGstsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TransactionGstsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TransactionGstsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<int> transactionId = const Value.absent(),
+            Value<TxnGstKind> kind = const Value.absent(),
+            Value<double> taxableAmount = const Value.absent(),
+            Value<double> gstRate = const Value.absent(),
+            Value<double> cgstAmount = const Value.absent(),
+            Value<double> sgstAmount = const Value.absent(),
+            Value<double> igstAmount = const Value.absent(),
+            Value<bool> isInterState = const Value.absent(),
+            Value<String?> partyName = const Value.absent(),
+            Value<String?> partyGstin = const Value.absent(),
+            Value<String?> billNo = const Value.absent(),
+          }) =>
+              TransactionGstsCompanion(
+            id: id,
+            transactionId: transactionId,
+            kind: kind,
+            taxableAmount: taxableAmount,
+            gstRate: gstRate,
+            cgstAmount: cgstAmount,
+            sgstAmount: sgstAmount,
+            igstAmount: igstAmount,
+            isInterState: isInterState,
+            partyName: partyName,
+            partyGstin: partyGstin,
+            billNo: billNo,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required int transactionId,
+            required TxnGstKind kind,
+            Value<double> taxableAmount = const Value.absent(),
+            Value<double> gstRate = const Value.absent(),
+            Value<double> cgstAmount = const Value.absent(),
+            Value<double> sgstAmount = const Value.absent(),
+            Value<double> igstAmount = const Value.absent(),
+            Value<bool> isInterState = const Value.absent(),
+            Value<String?> partyName = const Value.absent(),
+            Value<String?> partyGstin = const Value.absent(),
+            Value<String?> billNo = const Value.absent(),
+          }) =>
+              TransactionGstsCompanion.insert(
+            id: id,
+            transactionId: transactionId,
+            kind: kind,
+            taxableAmount: taxableAmount,
+            gstRate: gstRate,
+            cgstAmount: cgstAmount,
+            sgstAmount: sgstAmount,
+            igstAmount: igstAmount,
+            isInterState: isInterState,
+            partyName: partyName,
+            partyGstin: partyGstin,
+            billNo: billNo,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$TransactionGstsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({transactionId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (transactionId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.transactionId,
+                    referencedTable: $$TransactionGstsTableReferences
+                        ._transactionIdTable(db),
+                    referencedColumn: $$TransactionGstsTableReferences
+                        ._transactionIdTable(db)
+                        .id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$TransactionGstsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $TransactionGstsTable,
+    TransactionGst,
+    $$TransactionGstsTableFilterComposer,
+    $$TransactionGstsTableOrderingComposer,
+    $$TransactionGstsTableAnnotationComposer,
+    $$TransactionGstsTableCreateCompanionBuilder,
+    $$TransactionGstsTableUpdateCompanionBuilder,
+    (TransactionGst, $$TransactionGstsTableReferences),
+    TransactionGst,
+    PrefetchHooks Function({bool transactionId})>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -27405,4 +28830,6 @@ class $AppDatabaseManager {
       $$ItemDefaultsTableTableManager(_db, _db.itemDefaults);
   $$AppSettingsTableTableManager get appSettings =>
       $$AppSettingsTableTableManager(_db, _db.appSettings);
+  $$TransactionGstsTableTableManager get transactionGsts =>
+      $$TransactionGstsTableTableManager(_db, _db.transactionGsts);
 }

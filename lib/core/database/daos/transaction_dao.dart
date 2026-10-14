@@ -3,8 +3,25 @@ import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/tables/transactions_table.dart';
 import 'package:nex_ledger/core/database/tables/projects_table.dart';
+import 'package:nex_ledger/core/utils/simple_gst.dart';
 
 part 'transaction_dao.g.dart';
+
+/// GST detail to store with an expense-type transaction.
+class TxnGstDetail {
+  final TxnGstKind kind;
+  final SimpleGst gst;
+  final String? partyName;
+  final String? partyGstin;
+  final String? billNo;
+  const TxnGstDetail({
+    required this.kind,
+    required this.gst,
+    this.partyName,
+    this.partyGstin,
+    this.billNo,
+  });
+}
 
 /// Combined result for a transaction with its project name.
 class TransactionWithProject {
@@ -97,16 +114,85 @@ class TransactionDao extends DatabaseAccessor<AppDatabase>
   Future<bool> updateTransaction(TransactionsCompanion entry) =>
       update(transactions).replace(entry);
 
-  /// Delete a transaction by id.
-  Future<int> deleteTransaction(int id) =>
-      (delete(transactions)..where((t) => t.id.equals(id))).go();
+  // ─── GST detail (expenses and machinery rent) ─────────────────────────────
+
+  Future<TransactionGst?> getGstDetail(int transactionId) =>
+      (db.select(db.transactionGsts)
+            ..where((g) => g.transactionId.equals(transactionId)))
+          .getSingleOrNull();
+
+  /// Saves (insert or update) the GST split of a transaction. A null detail,
+  /// or one with no GST, removes any existing detail.
+  Future<void> saveGstDetail(int transactionId, TxnGstDetail? detail) async {
+    final existing = await getGstDetail(transactionId);
+    if (detail == null || !detail.gst.hasGst) {
+      if (existing != null) {
+        await (db.delete(db.transactionGsts)
+              ..where((g) => g.transactionId.equals(transactionId)))
+            .go();
+      }
+      return;
+    }
+    String? clean(String? v) {
+      final t = v?.trim();
+      return (t == null || t.isEmpty) ? null : t;
+    }
+
+    final values = TransactionGstsCompanion(
+      kind: Value(detail.kind),
+      taxableAmount: Value(detail.gst.taxable),
+      gstRate: Value(detail.gst.rate),
+      cgstAmount: Value(detail.gst.cgst),
+      sgstAmount: Value(detail.gst.sgst),
+      igstAmount: Value(detail.gst.igst),
+      isInterState: Value(detail.gst.interState),
+      partyName: Value(clean(detail.partyName)),
+      partyGstin: Value(clean(detail.partyGstin)?.toUpperCase()),
+      billNo: Value(clean(detail.billNo)),
+    );
+    if (existing != null) {
+      await (db.update(db.transactionGsts)
+            ..where((g) => g.id.equals(existing.id)))
+          .write(values);
+    } else {
+      await db.into(db.transactionGsts).insert(
+            values.copyWith(transactionId: Value(transactionId)),
+          );
+    }
+  }
+
+  /// Insert a transaction together with its GST detail, atomically.
+  Future<int> insertTransactionWithGst(
+      TransactionsCompanion entry, TxnGstDetail? gst) {
+    return db.transaction(() async {
+      final id = await insertTransaction(entry);
+      await saveGstDetail(id, gst);
+      return id;
+    });
+  }
+
+  /// Replace a transaction and its GST detail, atomically.
+  Future<void> updateTransactionWithGst(
+      TransactionsCompanion entry, TxnGstDetail? gst) {
+    return db.transaction(() async {
+      await updateTransaction(entry);
+      await saveGstDetail(entry.id.value, gst);
+    });
+  }
+
+  /// Delete a transaction by id (and its GST detail, if it has one).
+  Future<int> deleteTransaction(int id) async {
+    await (db.delete(db.transactionGsts)
+          ..where((g) => g.transactionId.equals(id)))
+        .go();
+    return (delete(transactions)..where((t) => t.id.equals(id))).go();
+  }
 
   /// Sum of all cash-affecting amounts (credits - debits) = cash balance.
   /// Credits: income, deposit, depositRecovery. Debits: expense, purchase, purchasePayment, labourPayment, depositRefund, depositPaid.
   Stream<double> watchCashBalance() {
     final balanceExp = CustomExpression<double>(
-      "SUM(CASE WHEN type IN ('income', 'deposit', 'depositRecovery', 'ownerCapital') THEN amount ELSE -amount END)"
-    );
+        "SUM(CASE WHEN type IN ('income', 'deposit', 'depositRecovery', 'ownerCapital') THEN amount ELSE -amount END)");
 
     final query = selectOnly(transactions)
       ..addColumns([balanceExp])

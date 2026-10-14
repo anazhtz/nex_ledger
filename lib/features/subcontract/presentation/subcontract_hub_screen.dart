@@ -89,17 +89,20 @@ class _SubcontractHubScreenState extends ConsumerState<SubcontractHubScreen>
                       label: const Text('Add Contractor'),
                     ),
                     FilledButton.tonalIcon(
-                      onPressed: () => context.push('/subcontracts/payment/new'),
+                      onPressed: () =>
+                          context.push('/subcontracts/payment/new'),
                       icon: Icon(Icons.payments_outlined, size: 16.sp),
                       label: const Text('Record Payment'),
                     ),
                     FilledButton.tonalIcon(
-                      onPressed: () => context.push('/subcontracts/measurement/new'),
+                      onPressed: () =>
+                          context.push('/subcontracts/measurement/new'),
                       icon: Icon(Icons.straighten_rounded, size: 16.sp),
                       label: const Text('Add Measurement Bill'),
                     ),
                     FilledButton.icon(
-                      onPressed: () => context.push('/subcontracts/work-orders/new'),
+                      onPressed: () =>
+                          context.push('/subcontracts/work-orders/new'),
                       icon: Icon(Icons.add, size: 16.sp),
                       label: const Text('New Work Order'),
                     ),
@@ -167,7 +170,8 @@ class _SubcontractHubScreenState extends ConsumerState<SubcontractHubScreen>
                           isExpanded: true,
                           decoration: InputDecoration(
                             labelText: 'Filter by Project',
-                            prefixIcon: Icon(Icons.folder_outlined, size: 18.sp),
+                            prefixIcon:
+                                Icon(Icons.folder_outlined, size: 18.sp),
                             isDense: true,
                             contentPadding: EdgeInsets.symmetric(
                                 horizontal: 10.w, vertical: 8.h),
@@ -361,7 +365,8 @@ class _SubcontractHubScreenState extends ConsumerState<SubcontractHubScreen>
             return DataRow(cells: [
               DataCell(
                 GestureDetector(
-                  onTap: () => context.push('/subcontracts/work-orders/${wo.id}'),
+                  onTap: () =>
+                      context.push('/subcontracts/work-orders/${wo.id}'),
                   child: Text(
                     wo.orderNumber,
                     style: TextStyle(
@@ -410,8 +415,8 @@ class _SubcontractHubScreenState extends ConsumerState<SubcontractHubScreen>
               DataCell(
                 Consumer(
                   builder: (context, ref, _) {
-                    final summaryAsync = ref
-                        .watch(workOrderFinancialSummaryProvider(wo.id));
+                    final summaryAsync =
+                        ref.watch(workOrderFinancialSummaryProvider(wo.id));
                     return summaryAsync.when(
                       loading: () => const SizedBox.shrink(),
                       error: (_, __) => const SizedBox.shrink(),
@@ -531,6 +536,7 @@ class _SubcontractHubScreenState extends ConsumerState<SubcontractHubScreen>
             DataColumn(label: Text('Measured Qty')),
             DataColumn(label: Text('Gross Work (₹)')),
             DataColumn(label: Text('Retention (5%)')),
+            DataColumn(label: Text('GST (₹)')),
             DataColumn(label: Text('Net Billable (₹)')),
             DataColumn(label: Text('Location / Notes')),
           ],
@@ -542,8 +548,8 @@ class _SubcontractHubScreenState extends ConsumerState<SubcontractHubScreen>
                 style: const TextStyle(fontWeight: FontWeight.bold),
               )),
               DataCell(Text(DateFormatter.format(b.date))),
-              DataCell(Text(bDetail.project.name,
-                  overflow: TextOverflow.ellipsis)),
+              DataCell(
+                  Text(bDetail.project.name, overflow: TextOverflow.ellipsis)),
               DataCell(
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -579,6 +585,12 @@ class _SubcontractHubScreenState extends ConsumerState<SubcontractHubScreen>
                 ),
               )),
               DataCell(Text(
+                (b.cgstAmount + b.sgstAmount + b.igstAmount) > 0
+                    ? '+ ${CurrencyFormatter.format(b.cgstAmount + b.sgstAmount + b.igstAmount)} (${b.gstRate % 1 == 0 ? b.gstRate.toInt() : b.gstRate}%)'
+                    : '—',
+                style: const TextStyle(color: Color(0xFF7C3AED)),
+              )),
+              DataCell(Text(
                 CurrencyFormatter.format(b.netAmount),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
@@ -587,7 +599,8 @@ class _SubcontractHubScreenState extends ConsumerState<SubcontractHubScreen>
               )),
               DataCell(Text(
                 b.locationOrDescription ?? '—',
-                style: TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B)),
+                style:
+                    TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B)),
                 overflow: TextOverflow.ellipsis,
               )),
             ]);
@@ -672,7 +685,8 @@ class _SubcontractHubScreenState extends ConsumerState<SubcontractHubScreen>
               )),
               DataCell(Text(
                 p.notes ?? (p.referenceNo ?? '—'),
-                style: TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B)),
+                style:
+                    TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B)),
                 overflow: TextOverflow.ellipsis,
               )),
             ]);

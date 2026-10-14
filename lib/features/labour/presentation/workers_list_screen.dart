@@ -46,7 +46,9 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
       _tradeCtrl.text = trade ?? '';
       _rateCtrl.text = rate?.toStringAsFixed(0) ?? '';
       _otRateCtrl.text = (otRate != null && otRate > 0)
-          ? (otRate % 1 == 0 ? otRate.toInt().toString() : otRate.toStringAsFixed(2))
+          ? (otRate % 1 == 0
+              ? otRate.toInt().toString()
+              : otRate.toStringAsFixed(2))
           : '';
       _showForm = true;
     });
@@ -148,82 +150,91 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
                           DataColumn(label: Text('Worker Name')),
                           DataColumn(label: Text('Trade / Work Type')),
                           DataColumn(
-                              label: Text('Daily Wage Rate (₹)'), numeric: true),
+                              label: Text('Daily Wage Rate (₹)'),
+                              numeric: true),
                           DataColumn(label: Text('Actions')),
                         ],
                         rows: workers.map((w) {
                           return DataRow(
-                            onSelectChanged: (_) =>
-                                context.push('/labour/workers/${w.id}'),
-                            cells: [
-                            DataCell(Text(
-                              w.workerCode ?? '—',
-                              style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF1F5FBF)),
-                            )),
-                            DataCell(GestureDetector(
-                              onTap: () => context.push('/labour/workers/${w.id}'),
-                              child: Text(
-                                w.name,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    decoration: TextDecoration.underline,
-                                    color: Color(0xFF1F5FBF)),
-                              ),
-                            )),
-                            DataCell(Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF1F5F9),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                w.trade ?? 'General Helper',
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                              ),
-                            )),
-                            DataCell(Text(
-                              '₹${w.dailyRate.toStringAsFixed(0)} / day',
-                              style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF059669)),
-                            )),
-                            DataCell(Row(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit_outlined,
-                                      size: 18),
-                                  tooltip: 'Edit',
-                                  onPressed: () => _openForm(
-                                    id: w.id,
-                                    name: w.name,
-                                    code: w.workerCode,
-                                    trade: w.trade,
-                                    rate: w.dailyRate,
-                                    otRate: w.overtimeRate,
+                              onSelectChanged: (_) =>
+                                  context.push('/labour/workers/${w.id}'),
+                              cells: [
+                                DataCell(Text(
+                                  w.workerCode ?? '—',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF1F5FBF)),
+                                )),
+                                DataCell(GestureDetector(
+                                  onTap: () =>
+                                      context.push('/labour/workers/${w.id}'),
+                                  child: Text(
+                                    w.name,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        decoration: TextDecoration.underline,
+                                        color: Color(0xFF1F5FBF)),
                                   ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_outline,
-                                      size: 18),
-                                  tooltip: 'Delete',
-                                  color: theme.colorScheme.error,
-                                  onPressed: () async {
-                                    final confirmed =
-                                        await ConfirmDialog.show(
-                                      context,
-                                      title: 'Delete Worker?',
-                                      message:
-                                          'Delete ${w.name}? Their attendance records will also be removed.',
-                                      confirmLabel: 'Delete',
-                                    );
-                                    if (confirmed) {
-                                      await ref
-                                          .read(labourRepositoryProvider)
-                                          .deleteWorker(w.id);
-                                    }
-                                  },
-                                ),
-                              ],
-                            )),
-                          ]);
+                                )),
+                                DataCell(Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF1F5F9),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    w.trade ?? 'General Helper',
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                )),
+                                DataCell(Text(
+                                  '₹${w.dailyRate.toStringAsFixed(0)} / day',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF059669)),
+                                )),
+                                DataCell(Row(
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit_outlined,
+                                          size: 18),
+                                      tooltip: 'Edit',
+                                      onPressed: () => _openForm(
+                                        id: w.id,
+                                        name: w.name,
+                                        code: w.workerCode,
+                                        trade: w.trade,
+                                        rate: w.dailyRate,
+                                        otRate: w.overtimeRate,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline,
+                                          size: 18),
+                                      tooltip: 'Delete',
+                                      color: theme.colorScheme.error,
+                                      onPressed: () async {
+                                        final confirmed =
+                                            await ConfirmDialog.show(
+                                          context,
+                                          title: 'Delete Worker?',
+                                          message:
+                                              'Delete ${w.name}? Their attendance records will also be removed.',
+                                          confirmLabel: 'Delete',
+                                        );
+                                        if (confirmed) {
+                                          await ref
+                                              .read(labourRepositoryProvider)
+                                              .deleteWorker(w.id);
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                )),
+                              ]);
                         }).toList(),
                       ),
                     ),
@@ -253,14 +264,14 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
                           _editingId != null
                               ? 'Edit Worker Details'
                               : 'New Worker Master',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold),
+                          style: theme.textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _nameCtrl,
-                          decoration:
-                              const InputDecoration(labelText: 'Worker Full Name *'),
+                          decoration: const InputDecoration(
+                              labelText: 'Worker Full Name *'),
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
@@ -272,7 +283,8 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
                         TextFormField(
                           controller: _tradeCtrl,
                           decoration: const InputDecoration(
-                              labelText: 'Trade / Work (e.g. Mason, Helper, Carpenter)'),
+                              labelText:
+                                  'Trade / Work (e.g. Mason, Helper, Carpenter)'),
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
@@ -281,9 +293,8 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
                             labelText: 'Daily Wage Rate (₹) *',
                             prefixText: '₹ ',
                           ),
-                          keyboardType:
-                              const TextInputType.numberWithOptions(
-                                  decimal: true),
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
@@ -294,9 +305,8 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
                             helperText:
                                 'Leave blank to pay overtime at Daily Rate ÷ 8 hours',
                           ),
-                          keyboardType:
-                              const TextInputType.numberWithOptions(
-                                  decimal: true),
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
                         ),
                         const SizedBox(height: 20),
                         Row(

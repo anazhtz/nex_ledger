@@ -248,14 +248,12 @@ class _SummaryTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style: theme.textTheme.labelSmall
-                        ?.copyWith(color: color)),
+                    style: theme.textTheme.labelSmall?.copyWith(color: color)),
                 Text(
                   value,
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: color,
-                    fontWeight:
-                        bold ? FontWeight.w800 : FontWeight.w600,
+                    fontWeight: bold ? FontWeight.w800 : FontWeight.w600,
                   ),
                 ),
               ],
@@ -276,9 +274,7 @@ class _AttendanceTable extends StatelessWidget {
   final Map<int, String> projectMap;
   final Worker worker;
   const _AttendanceTable(
-      {required this.records,
-      required this.projectMap,
-      required this.worker});
+      {required this.records, required this.projectMap, required this.worker});
 
   @override
   Widget build(BuildContext context) {
@@ -381,11 +377,11 @@ class _PaymentHistoryTable extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final totalPaid =
-        payments.fold<double>(0.0, (s, t) => s + t.amount);
+    final totalPaid = payments.fold<double>(0.0, (s, t) => s + t.amount);
 
     return DataTableCard(
-      title: 'Payment History  •  Total: ${CurrencyFormatter.format(totalPaid)}',
+      title:
+          'Payment History  •  Total: ${CurrencyFormatter.format(totalPaid)}',
       emptyMessage: 'No payments recorded yet.',
       columns: const [
         DataColumn(label: Text('Date')),
@@ -494,8 +490,7 @@ class _PaymentHistoryTable extends ConsumerWidget {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style:
-                FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
             child: const Text('Delete Payment'),
           ),
         ],
@@ -544,7 +539,8 @@ class _Badge extends StatelessWidget {
       decoration:
           BoxDecoration(color: bg, borderRadius: BorderRadius.circular(4)),
       child: Text(text,
-          style: TextStyle(fontSize: 11, color: fg, fontWeight: FontWeight.w600)),
+          style:
+              TextStyle(fontSize: 11, color: fg, fontWeight: FontWeight.w600)),
     );
   }
 }

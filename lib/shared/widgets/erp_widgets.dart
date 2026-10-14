@@ -43,8 +43,8 @@ class ErpPageHeader extends StatelessWidget {
                   child: Text(
                     subtitle!,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        fontSize: 12.sp, color: AppTheme.textMuted),
+                    style:
+                        TextStyle(fontSize: 12.sp, color: AppTheme.textMuted),
                   ),
                 ),
             ],
@@ -225,7 +225,8 @@ class ErpColumns extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, c) {
       if (c.maxWidth < collapseBelow) {
-        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: children);
+        return Column(
+            crossAxisAlignment: CrossAxisAlignment.start, children: children);
       }
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,8 +319,8 @@ class ErpActionBar extends StatelessWidget {
           SizedBox(width: 10.w),
           FilledButton(
             onPressed: loading ? null : onSaveAndClose,
-            style: FilledButton.styleFrom(
-                backgroundColor: AppTheme.successGreen),
+            style:
+                FilledButton.styleFrom(backgroundColor: AppTheme.successGreen),
             child: loading
                 ? SizedBox(
                     width: 18.r,

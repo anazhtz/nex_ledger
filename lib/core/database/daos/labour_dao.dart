@@ -182,7 +182,8 @@ class LabourDao extends DatabaseAccessor<AppDatabase> with _$LabourDaoMixin {
       totalPaid += t.amount;
     }
 
-    final amountDue = (allTimeEarned - totalPaid) > 0 ? (allTimeEarned - totalPaid) : 0.0;
+    final amountDue =
+        (allTimeEarned - totalPaid) > 0 ? (allTimeEarned - totalPaid) : 0.0;
 
     return WorkerPaymentSummary(
       worker: worker,
@@ -234,8 +235,7 @@ class LabourDao extends DatabaseAccessor<AppDatabase> with _$LabourDaoMixin {
   Stream<List<Transaction>> watchWorkerPayments(int workerId) =>
       (select(db.transactions)
             ..where((t) => t.workerId.equals(workerId))
-            ..where(
-                (t) => t.type.equals(TransactionType.labourPayment.name))
+            ..where((t) => t.type.equals(TransactionType.labourPayment.name))
             ..orderBy([(t) => OrderingTerm.desc(t.date)]))
           .watch();
 }

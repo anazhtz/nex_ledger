@@ -14,7 +14,8 @@ class EquipmentFormScreen extends ConsumerStatefulWidget {
   const EquipmentFormScreen({super.key, this.equipmentId});
 
   @override
-  ConsumerState<EquipmentFormScreen> createState() => _EquipmentFormScreenState();
+  ConsumerState<EquipmentFormScreen> createState() =>
+      _EquipmentFormScreenState();
 }
 
 class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
@@ -57,7 +58,8 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
   }
 
   void _loadEquipment() async {
-    final eqWithDetails = await ref.read(singleEquipmentProvider(widget.equipmentId!).future);
+    final eqWithDetails =
+        await ref.read(singleEquipmentProvider(widget.equipmentId!).future);
     if (eqWithDetails == null || !mounted) return;
 
     final eq = eqWithDetails.equipment;
@@ -70,7 +72,8 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
     _status = eq.status;
     _selectedVendorId = eq.vendorId;
     _selectedProjectId = eq.currentProjectId;
-    _rateCtrl.text = eq.standardRate > 0 ? eq.standardRate.toStringAsFixed(0) : '';
+    _rateCtrl.text =
+        eq.standardRate > 0 ? eq.standardRate.toStringAsFixed(0) : '';
     _operatorNameCtrl.text = eq.operatorName ?? '';
     _operatorContactCtrl.text = eq.operatorContact ?? '';
     _notesCtrl.text = eq.notes ?? '';
@@ -82,7 +85,8 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
 
     setState(() => _loading = true);
     try {
-      final rate = double.tryParse(_rateCtrl.text.trim().replaceAll(',', '')) ?? 0.0;
+      final rate =
+          double.tryParse(_rateCtrl.text.trim().replaceAll(',', '')) ?? 0.0;
       final repo = ref.read(equipmentRepositoryProvider);
 
       if (_isEditing) {
@@ -92,15 +96,22 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
           assetOrRegNumber: _assetNumCtrl.text.trim(),
           category: _selectedCategory,
           ownership: _ownership,
-          vendorId: _ownership == EquipmentOwnership.rented ? _selectedVendorId : null,
+          vendorId: _ownership == EquipmentOwnership.rented
+              ? _selectedVendorId
+              : null,
           currentProjectId: _selectedProjectId,
           rentalBasis: _rentalBasis,
           standardRate: rate,
           fuelPolicy: _fuelPolicy,
-          operatorName: _operatorNameCtrl.text.trim().isNotEmpty ? _operatorNameCtrl.text.trim() : null,
-          operatorContact: _operatorContactCtrl.text.trim().isNotEmpty ? _operatorContactCtrl.text.trim() : null,
+          operatorName: _operatorNameCtrl.text.trim().isNotEmpty
+              ? _operatorNameCtrl.text.trim()
+              : null,
+          operatorContact: _operatorContactCtrl.text.trim().isNotEmpty
+              ? _operatorContactCtrl.text.trim()
+              : null,
           status: _status,
-          notes: _notesCtrl.text.trim().isNotEmpty ? _notesCtrl.text.trim() : null,
+          notes:
+              _notesCtrl.text.trim().isNotEmpty ? _notesCtrl.text.trim() : null,
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -119,15 +130,21 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
         assetOrRegNumber: _assetNumCtrl.text.trim(),
         category: _selectedCategory,
         ownership: _ownership,
-        vendorId: _ownership == EquipmentOwnership.rented ? _selectedVendorId : null,
+        vendorId:
+            _ownership == EquipmentOwnership.rented ? _selectedVendorId : null,
         currentProjectId: _selectedProjectId,
         rentalBasis: _rentalBasis,
         standardRate: rate,
         fuelPolicy: _fuelPolicy,
-        operatorName: _operatorNameCtrl.text.trim().isNotEmpty ? _operatorNameCtrl.text.trim() : null,
-        operatorContact: _operatorContactCtrl.text.trim().isNotEmpty ? _operatorContactCtrl.text.trim() : null,
+        operatorName: _operatorNameCtrl.text.trim().isNotEmpty
+            ? _operatorNameCtrl.text.trim()
+            : null,
+        operatorContact: _operatorContactCtrl.text.trim().isNotEmpty
+            ? _operatorContactCtrl.text.trim()
+            : null,
         status: _status,
-        notes: _notesCtrl.text.trim().isNotEmpty ? _notesCtrl.text.trim() : null,
+        notes:
+            _notesCtrl.text.trim().isNotEmpty ? _notesCtrl.text.trim() : null,
       );
 
       if (mounted) {
@@ -142,7 +159,8 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
+          SnackBar(
+              content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
         );
       }
     } finally {
@@ -160,7 +178,8 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
       bindings: {
         const SingleActivator(LogicalKeyboardKey.enter, control: true): _submit,
         const SingleActivator(LogicalKeyboardKey.enter, meta: true): _submit,
-        const SingleActivator(LogicalKeyboardKey.escape): () => context.go('/equipment'),
+        const SingleActivator(LogicalKeyboardKey.escape): () =>
+            context.go('/equipment'),
       },
       child: Scaffold(
         backgroundColor: theme.colorScheme.surfaceContainerLowest,
@@ -195,7 +214,9 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    _isEditing ? 'Edit Machinery / Equipment' : 'Add Machinery & Equipment to Fleet',
+                                    _isEditing
+                                        ? 'Edit Machinery / Equipment'
+                                        : 'Add Machinery & Equipment to Fleet',
                                     style: TextStyle(
                                       fontSize: 18.sp,
                                       fontWeight: FontWeight.bold,
@@ -239,8 +260,12 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                                   selectedColor: const Color(0xFF2563EB),
                                   labelStyle: TextStyle(
                                     fontSize: 11.sp,
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                    color: isSelected ? Colors.white : const Color(0xFF334155),
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : const Color(0xFF334155),
                                   ),
                                   onSelected: (selected) {
                                     if (selected) {
@@ -269,9 +294,12 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                                 decoration: const InputDecoration(
                                   labelText: 'Machinery Name / Model *',
                                   hintText: 'e.g. JCB 3DX Super Backhoe Loader',
-                                  prefixIcon: Icon(Icons.precision_manufacturing_outlined),
+                                  prefixIcon: Icon(
+                                      Icons.precision_manufacturing_outlined),
                                 ),
-                                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                                validator: (v) => v == null || v.trim().isEmpty
+                                    ? 'Required'
+                                    : null,
                               ),
                             ),
                             SizedBox(width: 14.w),
@@ -284,7 +312,9 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                                   hintText: 'e.g. KA-04-MB-8899',
                                   prefixIcon: Icon(Icons.pin_outlined),
                                 ),
-                                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                                validator: (v) => v == null || v.trim().isEmpty
+                                    ? 'Required'
+                                    : null,
                               ),
                             ),
                           ],
@@ -305,7 +335,8 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                           segments: const [
                             ButtonSegment(
                               value: EquipmentOwnership.rented,
-                              label: Text('Rented / Leased (Third-Party Vendor)'),
+                              label:
+                                  Text('Rented / Leased (Third-Party Vendor)'),
                               icon: Icon(Icons.car_rental, size: 16),
                             ),
                             ButtonSegment(
@@ -315,7 +346,8 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                             ),
                           ],
                           selected: {_ownership},
-                          onSelectionChanged: (set) => setState(() => _ownership = set.first),
+                          onSelectionChanged: (set) =>
+                              setState(() => _ownership = set.first),
                         ),
                         SizedBox(height: 14.h),
 
@@ -334,19 +366,25 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                               items: [
                                 const DropdownMenuItem(
                                   value: null,
-                                  child: Text('— Select Rental Supplier —', overflow: TextOverflow.ellipsis),
+                                  child: Text('— Select Rental Supplier —',
+                                      overflow: TextOverflow.ellipsis),
                                 ),
                                 ...vendors.map(
                                   (v) => DropdownMenuItem(
                                     value: v.id,
                                     child: Text(
-                                        v.contact != null ? '${v.name} (${v.contact})' : v.name,
+                                        v.contact != null
+                                            ? '${v.name} (${v.contact})'
+                                            : v.name,
                                         overflow: TextOverflow.ellipsis),
                                   ),
                                 ),
                               ],
-                              onChanged: (v) => setState(() => _selectedVendorId = v),
-                              validator: (v) => _ownership == EquipmentOwnership.rented && v == null
+                              onChanged: (v) =>
+                                  setState(() => _selectedVendorId = v),
+                              validator: (v) => _ownership ==
+                                          EquipmentOwnership.rented &&
+                                      v == null
                                   ? 'Vendor is required for rented machinery'
                                   : null,
                             ),
@@ -363,28 +401,34 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                                 loading: () => const LinearProgressIndicator(),
                                 error: (e, _) => Text('Error: $e'),
                                 data: (projects) {
-                                  final validProjects =
-                                      projects.where((p) => p.type == ProjectType.project).toList();
+                                  final validProjects = projects
+                                      .where(
+                                          (p) => p.type == ProjectType.project)
+                                      .toList();
                                   return DropdownButtonFormField<int?>(
                                     value: _selectedProjectId,
                                     isExpanded: true,
                                     decoration: const InputDecoration(
-                                      labelText: 'Current Assigned Project Site',
+                                      labelText:
+                                          'Current Assigned Project Site',
                                       prefixIcon: Icon(Icons.folder_outlined),
                                     ),
                                     items: [
                                       const DropdownMenuItem(
                                         value: null,
-                                        child: Text('— Unassigned / In Yard —', overflow: TextOverflow.ellipsis),
+                                        child: Text('— Unassigned / In Yard —',
+                                            overflow: TextOverflow.ellipsis),
                                       ),
                                       ...validProjects.map(
                                         (p) => DropdownMenuItem(
                                           value: p.id,
-                                          child: Text('${p.code} — ${p.name}', overflow: TextOverflow.ellipsis),
+                                          child: Text('${p.code} — ${p.name}',
+                                              overflow: TextOverflow.ellipsis),
                                         ),
                                       ),
                                     ],
-                                    onChanged: (v) => setState(() => _selectedProjectId = v),
+                                    onChanged: (v) =>
+                                        setState(() => _selectedProjectId = v),
                                   );
                                 },
                               ),
@@ -403,7 +447,8 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                                     .map(
                                       (s) => DropdownMenuItem(
                                         value: s,
-                                        child: Text(s.displayName, overflow: TextOverflow.ellipsis),
+                                        child: Text(s.displayName,
+                                            overflow: TextOverflow.ellipsis),
                                       ),
                                     )
                                     .toList(),
@@ -421,7 +466,8 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                           children: [
                             Expanded(
                               flex: 3,
-                              child: DropdownButtonFormField<EquipmentRentalBasis>(
+                              child:
+                                  DropdownButtonFormField<EquipmentRentalBasis>(
                                 value: _rentalBasis,
                                 isExpanded: true,
                                 decoration: const InputDecoration(
@@ -432,12 +478,14 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                                     .map(
                                       (b) => DropdownMenuItem(
                                         value: b,
-                                        child: Text(b.displayName, overflow: TextOverflow.ellipsis),
+                                        child: Text(b.displayName,
+                                            overflow: TextOverflow.ellipsis),
                                       ),
                                     )
                                     .toList(),
                                 onChanged: (v) {
-                                  if (v != null) setState(() => _rentalBasis = v);
+                                  if (v != null)
+                                    setState(() => _rentalBasis = v);
                                 },
                               ),
                             ),
@@ -447,12 +495,17 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                               child: TextFormField(
                                 controller: _rateCtrl,
                                 decoration: InputDecoration(
-                                  labelText: 'Agreed Rate (₹ / ${_rentalBasis.unitLabel}) *',
+                                  labelText:
+                                      'Agreed Rate (₹ / ${_rentalBasis.unitLabel}) *',
                                   hintText: '1200',
                                   prefixText: '₹ ',
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
+                                validator: (v) => v == null || v.trim().isEmpty
+                                    ? 'Required'
+                                    : null,
                               ),
                             ),
                           ],
@@ -466,13 +519,15 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                           decoration: const InputDecoration(
                             labelText: 'Diesel / Fuel Policy *',
                             prefixIcon: Icon(Icons.local_gas_station_outlined),
-                            helperText: 'Select who supplies diesel (Contractor diesel will be deducted from vendor bills)',
+                            helperText:
+                                'Select who supplies diesel (Contractor diesel will be deducted from vendor bills)',
                           ),
                           items: EquipmentFuelPolicy.values
                               .map(
                                 (p) => DropdownMenuItem(
                                   value: p,
-                                  child: Text(p.displayName, overflow: TextOverflow.ellipsis),
+                                  child: Text(p.displayName,
+                                      overflow: TextOverflow.ellipsis),
                                 ),
                               )
                               .toList(),
@@ -516,7 +571,8 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                           maxLines: 2,
                           decoration: const InputDecoration(
                             labelText: 'Notes / Machine Specs',
-                            hintText: 'e.g. Hydraulic rock breaker attachment included, 2024 model',
+                            hintText:
+                                'e.g. Hydraulic rock breaker attachment included, 2024 model',
                             prefixIcon: Icon(Icons.notes_outlined),
                           ),
                         ),
@@ -538,10 +594,13 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                                   ? SizedBox(
                                       width: 16.sp,
                                       height: 16.sp,
-                                      child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                      child: const CircularProgressIndicator(
+                                          strokeWidth: 2, color: Colors.white),
                                     )
                                   : const Icon(Icons.check, size: 18),
-                              label: Text(_isEditing ? 'Update Equipment' : 'Save Equipment to Fleet'),
+                              label: Text(_isEditing
+                                  ? 'Update Equipment'
+                                  : 'Save Equipment to Fleet'),
                             ),
                           ],
                         ),

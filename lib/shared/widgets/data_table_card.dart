@@ -53,7 +53,8 @@ class DataTableCard extends StatelessWidget {
             final double spaceForGaps =
                 targetWidth - totalContentWidth - totalMargins;
             if (spaceForGaps > 0) {
-              computedSpacing = (spaceForGaps / (numCols - 1)).clamp(16.w, 32.w);
+              computedSpacing =
+                  (spaceForGaps / (numCols - 1)).clamp(16.w, 32.w);
             }
           }
 

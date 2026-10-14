@@ -21,7 +21,8 @@ class BudgetWarningBanner extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<BudgetWarningBanner> createState() => _BudgetWarningBannerState();
+  ConsumerState<BudgetWarningBanner> createState() =>
+      _BudgetWarningBannerState();
 }
 
 class _BudgetWarningBannerState extends ConsumerState<BudgetWarningBanner> {
@@ -52,11 +53,12 @@ class _BudgetWarningBannerState extends ConsumerState<BudgetWarningBanner> {
 
     setState(() => _evaluating = true);
     try {
-      final res = await ref.read(projectBudgetRepositoryProvider).evaluateBudgetImpact(
-            projectId: widget.projectId!,
-            costHead: widget.costHead,
-            newAmount: widget.addedAmount,
-          );
+      final res =
+          await ref.read(projectBudgetRepositoryProvider).evaluateBudgetImpact(
+                projectId: widget.projectId!,
+                costHead: widget.costHead,
+                newAmount: widget.addedAmount,
+              );
       if (mounted) {
         setState(() {
           _alertResult = res;
@@ -87,19 +89,22 @@ class _BudgetWarningBannerState extends ConsumerState<BudgetWarningBanner> {
         ),
         child: Row(
           children: [
-            Icon(Icons.lightbulb_outline, size: 16.sp, color: const Color(0xFF64748B)),
+            Icon(Icons.lightbulb_outline,
+                size: 16.sp, color: const Color(0xFF64748B)),
             SizedBox(width: 8.w),
             Expanded(
               child: Text(
                 'No ${widget.costHead.displayName} budget configured for this project.',
-                style: TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B)),
+                style:
+                    TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B)),
               ),
             ),
             TextButton(
               onPressed: () {
                 showDialog(
                   context: context,
-                  builder: (_) => SetProjectBudgetDialog(projectId: widget.projectId!),
+                  builder: (_) =>
+                      SetProjectBudgetDialog(projectId: widget.projectId!),
                 ).then((_) => _evaluate());
               },
               child: Text(
@@ -125,7 +130,8 @@ class _BudgetWarningBannerState extends ConsumerState<BudgetWarningBanner> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.warning_amber_rounded, size: 22.sp, color: const Color(0xFFDC2626)),
+            Icon(Icons.warning_amber_rounded,
+                size: 22.sp, color: const Color(0xFFDC2626)),
             SizedBox(width: 10.w),
             Expanded(
               child: Column(
@@ -143,12 +149,16 @@ class _BudgetWarningBannerState extends ConsumerState<BudgetWarningBanner> {
                   SizedBox(height: 2.h),
                   Text(
                     'This entry pushes ${widget.costHead.displayName} to ${result.projectedUtilizationPct.toStringAsFixed(1)}% of budget (Cost Overrun of ${CurrencyFormatter.format(result.overrunAmount)}!).',
-                    style: TextStyle(fontSize: 11.sp, color: const Color(0xFFB91C1C)),
+                    style: TextStyle(
+                        fontSize: 11.sp, color: const Color(0xFFB91C1C)),
                   ),
                   SizedBox(height: 4.h),
                   Text(
                     'Allocated Budget: ${CurrencyFormatter.format(result.allocatedBudget)} • Current Spent: ${CurrencyFormatter.format(result.currentSpent)} • Projected: ${CurrencyFormatter.format(result.projectedSpent)}',
-                    style: TextStyle(fontSize: 10.sp, color: const Color(0xFF7F1D1D), fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                        fontSize: 10.sp,
+                        color: const Color(0xFF7F1D1D),
+                        fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
@@ -172,7 +182,8 @@ class _BudgetWarningBannerState extends ConsumerState<BudgetWarningBanner> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.info_outline_rounded, size: 20.sp, color: const Color(0xFFD97706)),
+            Icon(Icons.info_outline_rounded,
+                size: 20.sp, color: const Color(0xFFD97706)),
             SizedBox(width: 10.w),
             Expanded(
               child: Column(
@@ -189,12 +200,16 @@ class _BudgetWarningBannerState extends ConsumerState<BudgetWarningBanner> {
                   SizedBox(height: 2.h),
                   Text(
                     'This entry will utilize ${result.projectedUtilizationPct.toStringAsFixed(1)}% of allocated ${widget.costHead.displayName} budget (${CurrencyFormatter.format(remaining)} remaining).',
-                    style: TextStyle(fontSize: 11.sp, color: const Color(0xFFB45309)),
+                    style: TextStyle(
+                        fontSize: 11.sp, color: const Color(0xFFB45309)),
                   ),
                   SizedBox(height: 4.h),
                   Text(
                     'Allocated: ${CurrencyFormatter.format(result.allocatedBudget)} • Projected Spent: ${CurrencyFormatter.format(result.projectedSpent)}',
-                    style: TextStyle(fontSize: 10.sp, color: const Color(0xFF78350F), fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                        fontSize: 10.sp,
+                        color: const Color(0xFF78350F),
+                        fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
@@ -216,12 +231,16 @@ class _BudgetWarningBannerState extends ConsumerState<BudgetWarningBanner> {
       ),
       child: Row(
         children: [
-          Icon(Icons.check_circle_outline, size: 16.sp, color: const Color(0xFF16A34A)),
+          Icon(Icons.check_circle_outline,
+              size: 16.sp, color: const Color(0xFF16A34A)),
           SizedBox(width: 8.w),
           Expanded(
             child: Text(
               '${widget.costHead.displayName} Budget: ${CurrencyFormatter.format(result.projectedSpent)} / ${CurrencyFormatter.format(result.allocatedBudget)} (${result.projectedUtilizationPct.toStringAsFixed(1)}% used • ${CurrencyFormatter.format(remaining)} remaining)',
-              style: TextStyle(fontSize: 11.sp, color: const Color(0xFF15803D), fontWeight: FontWeight.w500),
+              style: TextStyle(
+                  fontSize: 11.sp,
+                  color: const Color(0xFF15803D),
+                  fontWeight: FontWeight.w500),
             ),
           ),
         ],

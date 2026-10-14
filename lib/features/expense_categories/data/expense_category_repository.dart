@@ -36,6 +36,5 @@ class ExpenseCategoryRepository {
 
   /// Soft-delete a custom category.
   /// Throws if the category is a built-in default.
-  Future<void> deleteCustomCategory(int id) =>
-      _dao.softDeleteCategory(id);
+  Future<void> deleteCustomCategory(int id) => _dao.softDeleteCategory(id);
 }

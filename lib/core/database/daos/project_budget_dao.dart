@@ -12,7 +12,8 @@ class CostHeadVariance {
   final BudgetCostHead costHead;
   final double allocatedBudget;
   final double actualSpent;
-  final double variance; // allocatedBudget - actualSpent (positive = savings, negative = overrun)
+  final double
+      variance; // allocatedBudget - actualSpent (positive = savings, negative = overrun)
   final double utilizationPercentage; // (actualSpent / allocatedBudget) * 100
   final double alertThresholdPercentage;
   final BudgetHealthStatus status;
@@ -30,8 +31,10 @@ class CostHeadVariance {
   bool get isOverBudget => status == BudgetHealthStatus.overBudget;
   bool get isWarning => status == BudgetHealthStatus.warning;
   bool get isConfigured => allocatedBudget > 0;
-  double get overrunAmount => actualSpent > allocatedBudget ? actualSpent - allocatedBudget : 0.0;
-  double get remainingBudget => allocatedBudget > actualSpent ? allocatedBudget - actualSpent : 0.0;
+  double get overrunAmount =>
+      actualSpent > allocatedBudget ? actualSpent - allocatedBudget : 0.0;
+  double get remainingBudget =>
+      allocatedBudget > actualSpent ? allocatedBudget - actualSpent : 0.0;
 }
 
 /// Consolidated Budget vs Actual summary for a project
@@ -58,8 +61,11 @@ class ProjectBudgetSummary {
     required this.warningCategoriesCount,
   });
 
-  bool get isOverBudget => overallStatus == BudgetHealthStatus.overBudget || overBudgetCategoriesCount > 0;
-  bool get isWarning => overallStatus == BudgetHealthStatus.warning || warningCategoriesCount > 0;
+  bool get isOverBudget =>
+      overallStatus == BudgetHealthStatus.overBudget ||
+      overBudgetCategoriesCount > 0;
+  bool get isWarning =>
+      overallStatus == BudgetHealthStatus.warning || warningCategoriesCount > 0;
 }
 
 /// Portfolio-wide Budget Metrics across all active projects
@@ -136,11 +142,13 @@ class ProjectBudgetDao extends DatabaseAccessor<AppDatabase>
     String? notes,
   }) async {
     final existing = await (select(projectBudgets)
-          ..where((b) => b.projectId.equals(projectId) & b.costHead.equalsValue(costHead)))
+          ..where((b) =>
+              b.projectId.equals(projectId) & b.costHead.equalsValue(costHead)))
         .getSingleOrNull();
 
     if (existing != null) {
-      await (update(projectBudgets)..where((b) => b.id.equals(existing.id))).write(
+      await (update(projectBudgets)..where((b) => b.id.equals(existing.id)))
+          .write(
         ProjectBudgetsCompanion(
           allocatedAmount: Value(allocatedAmount),
           alertThresholdPercentage: Value(alertThresholdPercentage),
@@ -202,7 +210,8 @@ class ProjectBudgetDao extends DatabaseAccessor<AppDatabase>
 
   /// Delete all budgets for a project
   Future<int> deleteBudgetsForProject(int projectId) {
-    return (delete(projectBudgets)..where((b) => b.projectId.equals(projectId))).go();
+    return (delete(projectBudgets)..where((b) => b.projectId.equals(projectId)))
+        .go();
   }
 
   /// Watch comprehensive Budget vs Actual variance summary for a project
@@ -211,12 +220,17 @@ class ProjectBudgetDao extends DatabaseAccessor<AppDatabase>
       'SELECT 1',
       readsFrom: {projectBudgets, projects, transactions},
     ).watch().asyncMap((_) async {
-      final project = await (select(projects)..where((p) => p.id.equals(projectId))).getSingleOrNull();
+      final project = await (select(projects)
+            ..where((p) => p.id.equals(projectId)))
+          .getSingleOrNull();
       if (project == null) return null;
 
-      final budgetRows = await (select(projectBudgets)..where((b) => b.projectId.equals(projectId))).get();
+      final budgetRows = await (select(projectBudgets)
+            ..where((b) => b.projectId.equals(projectId)))
+          .get();
       final pnlTxns = await (select(transactions)
-            ..where((t) => t.projectId.equals(projectId) & t.affectsPnl.equals(true)))
+            ..where((t) =>
+                t.projectId.equals(projectId) & t.affectsPnl.equals(true)))
           .get();
 
       return _calculateProjectSummary(project, budgetRows, pnlTxns);
@@ -235,7 +249,9 @@ class ProjectBudgetDao extends DatabaseAccessor<AppDatabase>
           .get();
 
       final allBudgets = await select(projectBudgets).get();
-      final allPnlTxns = await (select(transactions)..where((t) => t.affectsPnl.equals(true))).get();
+      final allPnlTxns = await (select(transactions)
+            ..where((t) => t.affectsPnl.equals(true)))
+          .get();
 
       final budgetMap = <int, List<ProjectBudget>>{};
       for (final b in allBudgets) {
@@ -281,7 +297,8 @@ class ProjectBudgetDao extends DatabaseAccessor<AppDatabase>
         }
       }
 
-      final utilizationPct = totalBudget > 0 ? (totalActual / totalBudget) * 100 : 0.0;
+      final utilizationPct =
+          totalBudget > 0 ? (totalActual / totalBudget) * 100 : 0.0;
 
       return BudgetPortfolioMetrics(
         totalPortfolioBudget: totalBudget,
@@ -304,12 +321,15 @@ class ProjectBudgetDao extends DatabaseAccessor<AppDatabase>
     required double newAmount,
   }) async {
     final budgetRow = await (select(projectBudgets)
-          ..where((b) => b.projectId.equals(projectId) & b.costHead.equalsValue(costHead)))
+          ..where((b) =>
+              b.projectId.equals(projectId) & b.costHead.equalsValue(costHead)))
         .getSingleOrNull();
 
     // Overall total budget fallback
     final overallBudgetRow = await (select(projectBudgets)
-          ..where((b) => b.projectId.equals(projectId) & b.costHead.equalsValue(BudgetCostHead.overallTotal)))
+          ..where((b) =>
+              b.projectId.equals(projectId) &
+              b.costHead.equalsValue(BudgetCostHead.overallTotal)))
         .getSingleOrNull();
 
     final allocated = budgetRow?.allocatedAmount ?? 0.0;
@@ -317,7 +337,8 @@ class ProjectBudgetDao extends DatabaseAccessor<AppDatabase>
 
     // Get current spent for this cost head
     final pnlTxns = await (select(transactions)
-          ..where((t) => t.projectId.equals(projectId) & t.affectsPnl.equals(true)))
+          ..where(
+              (t) => t.projectId.equals(projectId) & t.affectsPnl.equals(true)))
         .get();
 
     double currentSpent = 0.0;
@@ -348,9 +369,11 @@ class ProjectBudgetDao extends DatabaseAccessor<AppDatabase>
         warningMessage =
             'BUDGET CAUTION: Adding this entry will utilize ${projectedPct.toStringAsFixed(1)}% of allocated ${costHead.displayName} budget (${(allocated - projectedSpent).toStringAsFixed(0)} remaining).';
       }
-    } else if (overallBudgetRow != null && overallBudgetRow.allocatedAmount > 0) {
+    } else if (overallBudgetRow != null &&
+        overallBudgetRow.allocatedAmount > 0) {
       // Evaluate against overall project budget if head budget not set
-      final totalProjectSpent = pnlTxns.fold<double>(0.0, (sum, t) => sum + t.amount);
+      final totalProjectSpent =
+          pnlTxns.fold<double>(0.0, (sum, t) => sum + t.amount);
       final projectedTotal = totalProjectSpent + newAmount;
       final overallAlloc = overallBudgetRow.allocatedAmount;
       final overallProjPct = (projectedTotal / overallAlloc) * 100;
@@ -368,7 +391,8 @@ class ProjectBudgetDao extends DatabaseAccessor<AppDatabase>
     }
 
     return BudgetAlertResult(
-      hasBudget: hasBudget || (overallBudgetRow != null && overallBudgetRow.allocatedAmount > 0),
+      hasBudget: hasBudget ||
+          (overallBudgetRow != null && overallBudgetRow.allocatedAmount > 0),
       costHead: costHead,
       allocatedBudget: allocated,
       currentSpent: currentSpent,
@@ -420,7 +444,8 @@ class ProjectBudgetDao extends DatabaseAccessor<AppDatabase>
       }
     }
 
-    final totalActualCost = materialsSpent + labourSpent + subcontractSpent + overheadSpent;
+    final totalActualCost =
+        materialsSpent + labourSpent + subcontractSpent + overheadSpent;
 
     final costHeadConfigs = [
       (BudgetCostHead.materials, materialsSpent),
@@ -471,13 +496,15 @@ class ProjectBudgetDao extends DatabaseAccessor<AppDatabase>
 
     // Overall total budget: either explicit overallTotal row or sum of heads
     final explicitOverall = budgetByHead[BudgetCostHead.overallTotal];
-    final totalAllocated = explicitOverall != null && explicitOverall.allocatedAmount > 0
-        ? explicitOverall.allocatedAmount
-        : sumAllocatedCostHeads;
+    final totalAllocated =
+        explicitOverall != null && explicitOverall.allocatedAmount > 0
+            ? explicitOverall.allocatedAmount
+            : sumAllocatedCostHeads;
 
     final overallThreshold = explicitOverall?.alertThresholdPercentage ?? 85.0;
     final netVariance = totalAllocated - totalActualCost;
-    final overallUtilPct = totalAllocated > 0 ? (totalActualCost / totalAllocated) * 100 : 0.0;
+    final overallUtilPct =
+        totalAllocated > 0 ? (totalActualCost / totalAllocated) * 100 : 0.0;
 
     BudgetHealthStatus overallStatus;
     if (totalAllocated <= 0) {
@@ -505,17 +532,16 @@ class ProjectBudgetDao extends DatabaseAccessor<AppDatabase>
 
   bool _matchesCostHead(Transaction t, BudgetCostHead head) {
     return switch (head) {
-      BudgetCostHead.materials =>
-        t.type == TransactionType.purchase || t.type == TransactionType.stockAllocation,
+      BudgetCostHead.materials => t.type == TransactionType.purchase ||
+          t.type == TransactionType.stockAllocation,
       BudgetCostHead.labour => t.type == TransactionType.labourPayment,
       BudgetCostHead.subcontract => t.type == TransactionType.subcontractBill,
       BudgetCostHead.equipmentOverhead => t.type == TransactionType.expense,
-      BudgetCostHead.overallTotal =>
-        t.type == TransactionType.purchase ||
-            t.type == TransactionType.stockAllocation ||
-            t.type == TransactionType.labourPayment ||
-            t.type == TransactionType.subcontractBill ||
-            t.type == TransactionType.expense,
+      BudgetCostHead.overallTotal => t.type == TransactionType.purchase ||
+          t.type == TransactionType.stockAllocation ||
+          t.type == TransactionType.labourPayment ||
+          t.type == TransactionType.subcontractBill ||
+          t.type == TransactionType.expense,
     };
   }
 }

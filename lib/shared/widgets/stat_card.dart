@@ -57,7 +57,8 @@ class StatCard extends StatelessWidget {
                   const Spacer(),
                   if (onTap != null)
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEAF1FB),
                         borderRadius: BorderRadius.circular(8.r),
@@ -65,7 +66,8 @@ class StatCard extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.search_rounded, size: 12.sp, color: const Color(0xFF1F5FBF)),
+                          Icon(Icons.search_rounded,
+                              size: 12.sp, color: const Color(0xFF1F5FBF)),
                           SizedBox(width: 4.w),
                           Text(
                             'Breakdown',

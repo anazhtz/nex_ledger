@@ -30,7 +30,8 @@ class _ProjectBudgetVarianceHubScreenState
     super.dispose();
   }
 
-  Future<void> _exportBudgetReportToCsv(List<ProjectBudgetSummary> summaries) async {
+  Future<void> _exportBudgetReportToCsv(
+      List<ProjectBudgetSummary> summaries) async {
     try {
       final buffer = StringBuffer();
       buffer.writeln(
@@ -63,7 +64,8 @@ class _ProjectBudgetVarianceHubScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Export failed: $e'), backgroundColor: Colors.red),
         );
       }
     }
@@ -72,7 +74,8 @@ class _ProjectBudgetVarianceHubScreenState
   @override
   Widget build(BuildContext context) {
     final metricsAsync = ref.watch(budgetPortfolioMetricsProvider);
-    final filteredSummariesAsync = ref.watch(filteredProjectBudgetSummariesProvider);
+    final filteredSummariesAsync =
+        ref.watch(filteredProjectBudgetSummariesProvider);
     final projectsAsync = ref.watch(projectListProvider);
     final selectedFilterProject = ref.watch(projectBudgetFilterProvider);
     final theme = Theme.of(context);
@@ -129,7 +132,8 @@ class _ProjectBudgetVarianceHubScreenState
                       error: (_, __) => const SizedBox.shrink(),
                     ),
                     FilledButton.icon(
-                      onPressed: () => _showProjectSelectorForBudgetDialog(context),
+                      onPressed: () =>
+                          _showProjectSelectorForBudgetDialog(context),
                       icon: Icon(Icons.tune_rounded, size: 16.sp),
                       label: const Text('Set / Edit Project Budgets'),
                     ),
@@ -188,7 +192,8 @@ class _ProjectBudgetVarianceHubScreenState
                           isExpanded: true,
                           decoration: InputDecoration(
                             labelText: 'Filter by Project',
-                            prefixIcon: Icon(Icons.folder_outlined, size: 18.sp),
+                            prefixIcon:
+                                Icon(Icons.folder_outlined, size: 18.sp),
                             isDense: true,
                             contentPadding: EdgeInsets.symmetric(
                                 horizontal: 10.w, vertical: 8.h),
@@ -223,7 +228,8 @@ class _ProjectBudgetVarianceHubScreenState
             Expanded(
               child: filteredSummariesAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Center(child: Text('Error loading budgets: $e')),
+                error: (e, _) =>
+                    Center(child: Text('Error loading budgets: $e')),
                 data: (summaries) {
                   if (summaries.isEmpty) {
                     return Center(
@@ -282,7 +288,8 @@ class _ProjectBudgetVarianceHubScreenState
                   child: _buildKpiCard(
                     title: 'Total Allocated Budgets',
                     value: CurrencyFormatter.format(m.totalPortfolioBudget),
-                    subtitle: '${m.budgetedProjectsCount} of ${m.totalProjectsCount} projects budgeted',
+                    subtitle:
+                        '${m.budgetedProjectsCount} of ${m.totalProjectsCount} projects budgeted',
                     icon: Icons.account_balance_wallet_rounded,
                     color: const Color(0xFF3B82F6),
                     bgColor: const Color(0xFFEFF6FF),
@@ -293,8 +300,10 @@ class _ProjectBudgetVarianceHubScreenState
                   width: cardWidth,
                   child: _buildKpiCard(
                     title: 'Actual Costs Incurred',
-                    value: CurrencyFormatter.format(m.totalPortfolioActualSpent),
-                    subtitle: '${m.portfolioUtilizationPercentage.toStringAsFixed(1)}% total utilized',
+                    value:
+                        CurrencyFormatter.format(m.totalPortfolioActualSpent),
+                    subtitle:
+                        '${m.portfolioUtilizationPercentage.toStringAsFixed(1)}% total utilized',
                     icon: Icons.receipt_long_rounded,
                     color: const Color(0xFF6366F1),
                     bgColor: const Color(0xFFEAF1FB),
@@ -306,7 +315,9 @@ class _ProjectBudgetVarianceHubScreenState
                   child: _buildKpiCard(
                     title: 'Net Budget Variance',
                     value: CurrencyFormatter.format(m.netPortfolioVariance),
-                    subtitle: m.netPortfolioVariance >= 0 ? 'Portfolio Surplus' : 'Portfolio Deficit (Overrun)',
+                    subtitle: m.netPortfolioVariance >= 0
+                        ? 'Portfolio Surplus'
+                        : 'Portfolio Deficit (Overrun)',
                     icon: m.netPortfolioVariance >= 0
                         ? Icons.savings_rounded
                         : Icons.warning_amber_rounded,
@@ -323,8 +334,10 @@ class _ProjectBudgetVarianceHubScreenState
                   width: cardWidth,
                   child: _buildKpiCard(
                     title: 'Budget Risk Status',
-                    value: '${m.overBudgetProjectsCount} Overrun | ${m.warningProjectsCount} Caution',
-                    subtitle: '${m.healthyProjectsCount} projects healthy & on track',
+                    value:
+                        '${m.overBudgetProjectsCount} Overrun | ${m.warningProjectsCount} Caution',
+                    subtitle:
+                        '${m.healthyProjectsCount} projects healthy & on track',
                     icon: m.overBudgetProjectsCount > 0
                         ? Icons.report_problem_rounded
                         : Icons.check_circle_rounded,
@@ -430,7 +443,8 @@ class _ProjectBudgetVarianceHubScreenState
     } else if (isOverBudget) {
       statusColor = const Color(0xFFDC2626);
       statusBgColor = const Color(0xFFFEF2F2);
-      statusLabel = 'OVER BUDGET (${s.overBudgetCategoriesCount} heads overrun)';
+      statusLabel =
+          'OVER BUDGET (${s.overBudgetCategoriesCount} heads overrun)';
       statusIcon = Icons.warning_amber_rounded;
     } else if (isWarning) {
       statusColor = const Color(0xFFD97706);
@@ -475,7 +489,8 @@ class _ProjectBudgetVarianceHubScreenState
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEFF6FF),
                         borderRadius: BorderRadius.circular(6.r),
@@ -499,7 +514,8 @@ class _ProjectBudgetVarianceHubScreenState
                     ),
                     Text(
                       '• Client: ${p.clientName ?? 'Direct Client'}',
-                      style: TextStyle(fontSize: 12.sp, color: const Color(0xFF64748B)),
+                      style: TextStyle(
+                          fontSize: 12.sp, color: const Color(0xFF64748B)),
                     ),
                   ],
                 ),
@@ -508,7 +524,8 @@ class _ProjectBudgetVarianceHubScreenState
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: statusBgColor,
                         borderRadius: BorderRadius.circular(20.r),
@@ -535,14 +552,16 @@ class _ProjectBudgetVarianceHubScreenState
                       icon: Icon(Icons.edit_outlined, size: 14.sp),
                       label: Text(hasBudget ? 'Edit Budgets' : '+ Set Budget'),
                       style: OutlinedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 6.h),
                         textStyle: TextStyle(fontSize: 11.sp),
                       ),
                     ),
                     IconButton(
                       onPressed: () => context.go('/reports/project-pnl'),
                       tooltip: 'View Project P&L',
-                      icon: Icon(Icons.analytics_outlined, size: 18.sp, color: const Color(0xFF1F5FBF)),
+                      icon: Icon(Icons.analytics_outlined,
+                          size: 18.sp, color: const Color(0xFF1F5FBF)),
                     ),
                   ],
                 ),
@@ -572,16 +591,22 @@ class _ProjectBudgetVarianceHubScreenState
                       _buildSummaryMetric(
                         'Actual Cost Spent',
                         CurrencyFormatter.format(s.totalActualCost),
-                        isOverBudget ? const Color(0xFFDC2626) : const Color(0xFF1E293B),
+                        isOverBudget
+                            ? const Color(0xFFDC2626)
+                            : const Color(0xFF1E293B),
                       ),
                       _buildSummaryMetric(
                         'Net Variance',
                         CurrencyFormatter.format(s.netVariance),
-                        s.netVariance >= 0 ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                        s.netVariance >= 0
+                            ? const Color(0xFF16A34A)
+                            : const Color(0xFFDC2626),
                       ),
                       _buildSummaryMetric(
                         'Budget Utilization',
-                        hasBudget ? '${s.overallUtilizationPercentage.toStringAsFixed(1)}%' : 'N/A',
+                        hasBudget
+                            ? '${s.overallUtilizationPercentage.toStringAsFixed(1)}%'
+                            : 'N/A',
                         statusColor,
                       ),
                     ],
@@ -590,7 +615,10 @@ class _ProjectBudgetVarianceHubScreenState
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4.r),
                     child: LinearProgressIndicator(
-                      value: hasBudget ? (s.overallUtilizationPercentage / 100).clamp(0.0, 1.0) : 0.0,
+                      value: hasBudget
+                          ? (s.overallUtilizationPercentage / 100)
+                              .clamp(0.0, 1.0)
+                          : 0.0,
                       backgroundColor: const Color(0xFFE2E8F0),
                       valueColor: AlwaysStoppedAnimation<Color>(
                         s.overallUtilizationPercentage >= 100.0
@@ -639,30 +667,43 @@ class _ProjectBudgetVarianceHubScreenState
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(_getHeadIcon(head.costHead), size: 16.sp, color: const Color(0xFF64748B)),
+                          Icon(_getHeadIcon(head.costHead),
+                              size: 16.sp, color: const Color(0xFF64748B)),
                           SizedBox(width: 8.w),
-                          Text(head.costHead.displayName, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12.sp)),
+                          Text(head.costHead.displayName,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12.sp)),
                         ],
                       ),
                     ),
                     DataCell(Text(
-                      head.isConfigured ? CurrencyFormatter.format(head.allocatedBudget) : '— (Not set)',
-                      style: TextStyle(fontSize: 12.sp, color: const Color(0xFF334155)),
+                      head.isConfigured
+                          ? CurrencyFormatter.format(head.allocatedBudget)
+                          : '— (Not set)',
+                      style: TextStyle(
+                          fontSize: 12.sp, color: const Color(0xFF334155)),
                     )),
                     DataCell(Text(
                       CurrencyFormatter.format(head.actualSpent),
                       style: TextStyle(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.bold,
-                        color: headOver ? const Color(0xFFDC2626) : const Color(0xFF0F172A),
+                        color: headOver
+                            ? const Color(0xFFDC2626)
+                            : const Color(0xFF0F172A),
                       ),
                     )),
                     DataCell(Text(
-                      head.isConfigured ? CurrencyFormatter.format(head.variance) : '—',
+                      head.isConfigured
+                          ? CurrencyFormatter.format(head.variance)
+                          : '—',
                       style: TextStyle(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.bold,
-                        color: head.variance >= 0 ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                        color: head.variance >= 0
+                            ? const Color(0xFF16A34A)
+                            : const Color(0xFFDC2626),
                       ),
                     )),
                     DataCell(
@@ -673,16 +714,24 @@ class _ProjectBudgetVarianceHubScreenState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              head.isConfigured ? '${headUtil.toStringAsFixed(1)}%' : 'N/A',
-                              style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.bold, color: hColor),
+                              head.isConfigured
+                                  ? '${headUtil.toStringAsFixed(1)}%'
+                                  : 'N/A',
+                              style: TextStyle(
+                                  fontSize: 11.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: hColor),
                             ),
                             SizedBox(height: 2.h),
                             ClipRRect(
                               borderRadius: BorderRadius.circular(3.r),
                               child: LinearProgressIndicator(
-                                value: head.isConfigured ? (headUtil / 100).clamp(0.0, 1.0) : 0.0,
+                                value: head.isConfigured
+                                    ? (headUtil / 100).clamp(0.0, 1.0)
+                                    : 0.0,
                                 backgroundColor: const Color(0xFFE2E8F0),
-                                valueColor: AlwaysStoppedAnimation<Color>(hColor),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(hColor),
                                 minHeight: 4.h,
                               ),
                             ),
@@ -692,14 +741,20 @@ class _ProjectBudgetVarianceHubScreenState
                     ),
                     DataCell(
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 3.h),
                         decoration: BoxDecoration(
                           color: hColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                         child: Text(
-                          head.isConfigured ? head.status.displayName : 'Unbudgeted',
-                          style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.bold, color: hColor),
+                          head.isConfigured
+                              ? head.status.displayName
+                              : 'Unbudgeted',
+                          style: TextStyle(
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.bold,
+                              color: hColor),
                         ),
                       ),
                     ),
@@ -717,11 +772,13 @@ class _ProjectBudgetVarianceHubScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: TextStyle(fontSize: 10.sp, color: const Color(0xFF64748B))),
+        Text(title,
+            style: TextStyle(fontSize: 10.sp, color: const Color(0xFF64748B))),
         SizedBox(height: 2.h),
         Text(
           value,
-          style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: color),
+          style: TextStyle(
+              fontSize: 13.sp, fontWeight: FontWeight.bold, color: color),
         ),
       ],
     );
@@ -748,10 +805,12 @@ class _ProjectBudgetVarianceHubScreenState
     final projects = await ref.read(projectListProvider.future);
     if (!mounted) return;
 
-    final validProjects = projects.where((p) => p.type == ProjectType.project).toList();
+    final validProjects =
+        projects.where((p) => p.type == ProjectType.project).toList();
     if (validProjects.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No active projects available to set budgets.')),
+        const SnackBar(
+            content: Text('No active projects available to set budgets.')),
       );
       return;
     }
@@ -766,7 +825,8 @@ class _ProjectBudgetVarianceHubScreenState
                     Navigator.of(ctx).pop();
                     _openBudgetDialog(context, p.id);
                   },
-                  child: Text('${p.code} — ${p.name} (${p.clientName ?? 'Direct Client'})'),
+                  child: Text(
+                      '${p.code} — ${p.name} (${p.clientName ?? 'Direct Client'})'),
                 ))
             .toList(),
       ),

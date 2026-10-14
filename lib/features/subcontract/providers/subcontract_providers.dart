@@ -18,7 +18,9 @@ final subcontractorListProvider = StreamProvider<List<Subcontractor>>((ref) {
 
 final subcontractorSummariesProvider =
     StreamProvider<List<SubcontractorSummary>>((ref) {
-  return ref.watch(subcontractRepositoryProvider).watchAllSubcontractorSummaries();
+  return ref
+      .watch(subcontractRepositoryProvider)
+      .watchAllSubcontractorSummaries();
 });
 
 final subcontractorByIdProvider =
@@ -69,10 +71,12 @@ final workOrderFinancialSummaryProvider =
 // ─── Measurement Bills & Payments Providers ───────────────────────────────────
 
 final measurementBillsListProvider =
-    StreamProvider.family<List<MeasurementBillDetail>, int?>((ref, workOrderId) {
+    StreamProvider.family<List<MeasurementBillDetail>, int?>(
+        (ref, workOrderId) {
   final explicitProject = ref.watch(subcontractProjectFilterProvider);
   final globalProject = ref.watch(selectedProjectIdProvider);
-  final projectId = workOrderId == null ? (explicitProject ?? globalProject) : null;
+  final projectId =
+      workOrderId == null ? (explicitProject ?? globalProject) : null;
   final repo = ref.watch(subcontractRepositoryProvider);
 
   return repo.watchMeasurementBills(
@@ -82,7 +86,8 @@ final measurementBillsListProvider =
 });
 
 final subcontractPaymentsListProvider =
-    StreamProvider.family<List<SubcontractPaymentDetail>, int?>((ref, subcontractorId) {
+    StreamProvider.family<List<SubcontractPaymentDetail>, int?>(
+        (ref, subcontractorId) {
   final repo = ref.watch(subcontractRepositoryProvider);
   return repo.watchSubcontractPayments(subcontractorId: subcontractorId);
 });

@@ -35,8 +35,7 @@ final depositProjectFilterProvider = StateProvider<int?>((ref) => null);
 /// Filter deposits by DepositType (null for all).
 final depositTypeFilterProvider = StateProvider<DepositType?>((ref) => null);
 
-final filteredDepositListProvider =
-    StreamProvider<List<DepositDetail>>((ref) {
+final filteredDepositListProvider = StreamProvider<List<DepositDetail>>((ref) {
   final explicitProjectId = ref.watch(depositProjectFilterProvider);
   final globalProjectId = ref.watch(selectedProjectIdProvider);
   final typeFilter = ref.watch(depositTypeFilterProvider);

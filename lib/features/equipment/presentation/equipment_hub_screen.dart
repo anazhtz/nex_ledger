@@ -67,7 +67,8 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Export failed: $e'), backgroundColor: Colors.red),
         );
       }
     }
@@ -122,7 +123,9 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
                   children: [
                     OutlinedButton.icon(
                       onPressed: () {
-                        final logs = ref.read(allEquipmentLogsProvider).valueOrNull ?? [];
+                        final logs =
+                            ref.read(allEquipmentLogsProvider).valueOrNull ??
+                                [];
                         if (logs.isNotEmpty) _exportEquipmentLogsToCsv(logs);
                       },
                       icon: Icon(Icons.file_download_outlined, size: 16.sp),
@@ -165,8 +168,12 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
                 unselectedLabelColor: const Color(0xFF64748B),
                 indicatorColor: const Color(0xFF2563EB),
                 tabs: const [
-                  Tab(icon: Icon(Icons.precision_manufacturing_outlined), text: 'Machinery Fleet'),
-                  Tab(icon: Icon(Icons.view_timeline_outlined), text: 'Daily Logbook & Timesheets'),
+                  Tab(
+                      icon: Icon(Icons.precision_manufacturing_outlined),
+                      text: 'Machinery Fleet'),
+                  Tab(
+                      icon: Icon(Icons.view_timeline_outlined),
+                      text: 'Daily Logbook & Timesheets'),
                 ],
               ),
             ),
@@ -208,7 +215,8 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
                   child: _buildKpiCard(
                     title: 'Total Machinery Fleet',
                     value: '${m.totalMachineryCount} Units',
-                    subtitle: '${m.rentedCount} Rented • ${m.ownedCount} Company Owned',
+                    subtitle:
+                        '${m.rentedCount} Rented • ${m.ownedCount} Company Owned',
                     icon: Icons.precision_manufacturing_rounded,
                     color: const Color(0xFF3B82F6),
                     bgColor: const Color(0xFFEFF6FF),
@@ -232,7 +240,8 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
                   child: _buildKpiCard(
                     title: 'Total Logged Usage',
                     value: '${m.totalLoggedUnits.toStringAsFixed(1)} Units',
-                    subtitle: 'Gross Rental: ${CurrencyFormatter.format(m.totalGrossRentalIncurred)}',
+                    subtitle:
+                        'Gross Rental: ${CurrencyFormatter.format(m.totalGrossRentalIncurred)}',
                     icon: Icons.access_time_rounded,
                     color: const Color(0xFF6366F1),
                     bgColor: const Color(0xFFEAF1FB),
@@ -244,7 +253,8 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
                   child: _buildKpiCard(
                     title: 'Diesel Deducted from Bills',
                     value: CurrencyFormatter.format(m.totalFuelDeducted),
-                    subtitle: 'Net Payable: ${CurrencyFormatter.format(m.totalNetRentalPayable)}',
+                    subtitle:
+                        'Net Payable: ${CurrencyFormatter.format(m.totalNetRentalPayable)}',
                     icon: Icons.local_gas_station_rounded,
                     color: const Color(0xFFD97706),
                     bgColor: const Color(0xFFFFFBEB),
@@ -354,10 +364,12 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
                       hintText: 'Search machinery, reg #, vendor...',
                       prefixIcon: Icon(Icons.search, size: 18.sp),
                       isDense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                      contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12.w, vertical: 10.h),
                     ),
-                    onChanged: (v) =>
-                        ref.read(equipmentSearchQueryProvider.notifier).state = v,
+                    onChanged: (v) => ref
+                        .read(equipmentSearchQueryProvider.notifier)
+                        .state = v,
                   ),
                 ),
                 projectsAsync.when(
@@ -372,22 +384,26 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
                         labelText: 'Filter by Project',
                         prefixIcon: Icon(Icons.folder_outlined, size: 18.sp),
                         isDense: true,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                        contentPadding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 8.h),
                       ),
                       items: [
                         const DropdownMenuItem(
                           value: null,
-                          child: Text('All Sites / Yard', overflow: TextOverflow.ellipsis),
+                          child: Text('All Sites / Yard',
+                              overflow: TextOverflow.ellipsis),
                         ),
                         ...projects.map(
                           (p) => DropdownMenuItem(
                             value: p.id,
-                            child: Text('${p.code} — ${p.name}', overflow: TextOverflow.ellipsis),
+                            child: Text('${p.code} — ${p.name}',
+                                overflow: TextOverflow.ellipsis),
                           ),
                         ),
                       ],
-                      onChanged: (v) =>
-                          ref.read(equipmentFilterProjectProvider.notifier).state = v,
+                      onChanged: (v) => ref
+                          .read(equipmentFilterProjectProvider.notifier)
+                          .state = v,
                     ),
                   ),
                 ),
@@ -408,10 +424,14 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.precision_manufacturing_outlined, size: 48.sp, color: const Color(0xFF94A3B8)),
+                      Icon(Icons.precision_manufacturing_outlined,
+                          size: 48.sp, color: const Color(0xFF94A3B8)),
                       SizedBox(height: 12.h),
                       Text('No machinery records found.',
-                          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: const Color(0xFF64748B))),
+                          style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF64748B))),
                       SizedBox(height: 8.h),
                       FilledButton.tonal(
                         onPressed: () => context.go('/equipment/new'),
@@ -450,35 +470,48 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(eq.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp)),
+                            Text(eq.name,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13.sp)),
                             Text('Reg: ${eq.assetOrRegNumber}',
-                                style: TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B))),
+                                style: TextStyle(
+                                    fontSize: 11.sp,
+                                    color: const Color(0xFF64748B))),
                           ],
                         ),
                       ),
-                      DataCell(Text(eq.category, style: TextStyle(fontSize: 12.sp))),
+                      DataCell(
+                          Text(eq.category, style: TextStyle(fontSize: 12.sp))),
                       DataCell(
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(eq.ownership.displayName,
-                                style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w600)),
+                                style: TextStyle(
+                                    fontSize: 11.sp,
+                                    fontWeight: FontWeight.w600)),
                             if (item.vendor != null)
                               Text('Vendor: ${item.vendor!.name}',
-                                  style: TextStyle(fontSize: 10.sp, color: const Color(0xFF64748B))),
+                                  style: TextStyle(
+                                      fontSize: 10.sp,
+                                      color: const Color(0xFF64748B))),
                           ],
                         ),
                       ),
                       DataCell(
                         Text(
                           '${CurrencyFormatter.format(eq.standardRate)} / ${eq.rentalBasis.unitLabel}',
-                          style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                              fontSize: 12.sp, fontWeight: FontWeight.w600),
                         ),
                       ),
                       DataCell(
                         Text(
-                          item.project != null ? '${item.project!.code} — ${item.project!.name}' : 'Yard / Idle',
+                          item.project != null
+                              ? '${item.project!.code} — ${item.project!.name}'
+                              : 'Yard / Idle',
                           style: TextStyle(fontSize: 11.sp),
                         ),
                       ),
@@ -487,23 +520,34 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('${item.totalLoggedUnits.toStringAsFixed(1)} ${eq.rentalBasis.unitLabel} logged',
-                                style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w600)),
-                            Text('Net: ${CurrencyFormatter.format(item.totalNetCost)}',
-                                style: TextStyle(fontSize: 11.sp, color: const Color(0xFF2563EB), fontWeight: FontWeight.bold)),
+                            Text(
+                                '${item.totalLoggedUnits.toStringAsFixed(1)} ${eq.rentalBasis.unitLabel} logged',
+                                style: TextStyle(
+                                    fontSize: 11.sp,
+                                    fontWeight: FontWeight.w600)),
+                            Text(
+                                'Net: ${CurrencyFormatter.format(item.totalNetCost)}',
+                                style: TextStyle(
+                                    fontSize: 11.sp,
+                                    color: const Color(0xFF2563EB),
+                                    fontWeight: FontWeight.bold)),
                           ],
                         ),
                       ),
                       DataCell(
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.w, vertical: 3.h),
                           decoration: BoxDecoration(
                             color: statusColor.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           child: Text(
                             eq.status.displayName,
-                            style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.bold, color: statusColor),
+                            style: TextStyle(
+                                fontSize: 10.sp,
+                                fontWeight: FontWeight.bold,
+                                color: statusColor),
                           ),
                         ),
                       ),
@@ -512,14 +556,18 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: Icon(Icons.speed_outlined, size: 16.sp, color: const Color(0xFF2563EB)),
+                              icon: Icon(Icons.speed_outlined,
+                                  size: 16.sp, color: const Color(0xFF2563EB)),
                               tooltip: 'Log Usage Sheet',
-                              onPressed: () => context.go('/equipment/logs/new?equipmentId=${eq.id}&projectId=${eq.currentProjectId ?? ''}'),
+                              onPressed: () => context.go(
+                                  '/equipment/logs/new?equipmentId=${eq.id}&projectId=${eq.currentProjectId ?? ''}'),
                             ),
                             IconButton(
-                              icon: Icon(Icons.edit_outlined, size: 16.sp, color: const Color(0xFF64748B)),
+                              icon: Icon(Icons.edit_outlined,
+                                  size: 16.sp, color: const Color(0xFF64748B)),
                               tooltip: 'Edit Machine',
-                              onPressed: () => context.go('/equipment/${eq.id}/edit'),
+                              onPressed: () =>
+                                  context.go('/equipment/${eq.id}/edit'),
                             ),
                           ],
                         ),
@@ -566,10 +614,12 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
                       hintText: 'Search logs, task, operator...',
                       prefixIcon: Icon(Icons.search, size: 18.sp),
                       isDense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                      contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12.w, vertical: 10.h),
                     ),
-                    onChanged: (v) =>
-                        ref.read(equipmentLogsSearchQueryProvider.notifier).state = v,
+                    onChanged: (v) => ref
+                        .read(equipmentLogsSearchQueryProvider.notifier)
+                        .state = v,
                   ),
                 ),
                 projectsAsync.when(
@@ -584,22 +634,26 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
                         labelText: 'Filter by Project',
                         prefixIcon: Icon(Icons.folder_outlined, size: 18.sp),
                         isDense: true,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                        contentPadding: EdgeInsets.symmetric(
+                            horizontal: 10.w, vertical: 8.h),
                       ),
                       items: [
                         const DropdownMenuItem(
                           value: null,
-                          child: Text('All Project Sites', overflow: TextOverflow.ellipsis),
+                          child: Text('All Project Sites',
+                              overflow: TextOverflow.ellipsis),
                         ),
                         ...projects.map(
                           (p) => DropdownMenuItem(
                             value: p.id,
-                            child: Text('${p.code} — ${p.name}', overflow: TextOverflow.ellipsis),
+                            child: Text('${p.code} — ${p.name}',
+                                overflow: TextOverflow.ellipsis),
                           ),
                         ),
                       ],
-                      onChanged: (v) =>
-                          ref.read(equipmentLogsFilterProjectProvider.notifier).state = v,
+                      onChanged: (v) => ref
+                          .read(equipmentLogsFilterProjectProvider.notifier)
+                          .state = v,
                     ),
                   ),
                 ),
@@ -620,10 +674,14 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.view_timeline_outlined, size: 48.sp, color: const Color(0xFF94A3B8)),
+                      Icon(Icons.view_timeline_outlined,
+                          size: 48.sp, color: const Color(0xFF94A3B8)),
                       SizedBox(height: 12.h),
                       Text('No daily machinery usage logs found.',
-                          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: const Color(0xFF64748B))),
+                          style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF64748B))),
                       SizedBox(height: 8.h),
                       FilledButton.tonal(
                         onPressed: () => context.go('/equipment/logs/new'),
@@ -657,9 +715,14 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(DateFormatter.format(log.logDate),
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.sp)),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12.sp)),
                             Text('${l.project.code}',
-                                style: TextStyle(fontSize: 11.sp, color: const Color(0xFF2563EB), fontWeight: FontWeight.w600)),
+                                style: TextStyle(
+                                    fontSize: 11.sp,
+                                    color: const Color(0xFF2563EB),
+                                    fontWeight: FontWeight.w600)),
                           ],
                         ),
                       ),
@@ -668,44 +731,68 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(l.equipment.name, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12.sp)),
+                            Text(l.equipment.name,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12.sp)),
                             Text(l.equipment.assetOrRegNumber,
-                                style: TextStyle(fontSize: 10.sp, color: const Color(0xFF64748B))),
+                                style: TextStyle(
+                                    fontSize: 10.sp,
+                                    color: const Color(0xFF64748B))),
                           ],
                         ),
                       ),
                       DataCell(
                         Text('${log.startReading} → ${log.endReading}',
-                            style: TextStyle(fontSize: 11.sp, fontFamily: 'monospace')),
+                            style: TextStyle(
+                                fontSize: 11.sp, fontFamily: 'monospace')),
                       ),
                       DataCell(
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('${log.billableUnits.toStringAsFixed(1)} ${l.equipment.rentalBasis.unitLabel}',
-                                style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold)),
+                            Text(
+                                '${log.billableUnits.toStringAsFixed(1)} ${l.equipment.rentalBasis.unitLabel}',
+                                style: TextStyle(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.bold)),
                             if (log.breakdownUnits > 0)
-                              Text('Idle: ${log.breakdownUnits.toStringAsFixed(1)}',
-                                  style: TextStyle(fontSize: 10.sp, color: Colors.orange.shade900)),
+                              Text(
+                                  'Idle: ${log.breakdownUnits.toStringAsFixed(1)}',
+                                  style: TextStyle(
+                                      fontSize: 10.sp,
+                                      color: Colors.orange.shade900)),
                           ],
                         ),
                       ),
-                      DataCell(Text(CurrencyFormatter.format(log.grossRentalCost),
-                          style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600))),
+                      DataCell(Text(
+                          CurrencyFormatter.format(log.grossRentalCost),
+                          style: TextStyle(
+                              fontSize: 12.sp, fontWeight: FontWeight.w600))),
                       DataCell(
                         log.fuelCostDeduction > 0
                             ? Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text('- ${CurrencyFormatter.format(log.fuelCostDeduction)}',
-                                      style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.bold, color: Colors.amber.shade900)),
-                                  Text('${log.fuelLitresIssued.toStringAsFixed(1)} Ltrs diesel',
-                                      style: TextStyle(fontSize: 10.sp, color: const Color(0xFF64748B))),
+                                  Text(
+                                      '- ${CurrencyFormatter.format(log.fuelCostDeduction)}',
+                                      style: TextStyle(
+                                          fontSize: 11.sp,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.amber.shade900)),
+                                  Text(
+                                      '${log.fuelLitresIssued.toStringAsFixed(1)} Ltrs diesel',
+                                      style: TextStyle(
+                                          fontSize: 10.sp,
+                                          color: const Color(0xFF64748B))),
                                 ],
                               )
-                            : Text('—', style: TextStyle(fontSize: 12.sp, color: const Color(0xFF94A3B8))),
+                            : Text('—',
+                                style: TextStyle(
+                                    fontSize: 12.sp,
+                                    color: const Color(0xFF94A3B8))),
                       ),
                       DataCell(Text(
                         CurrencyFormatter.format(log.netPayableAmount),
@@ -730,14 +817,18 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: Icon(Icons.edit_outlined, size: 16.sp, color: const Color(0xFF64748B)),
+                              icon: Icon(Icons.edit_outlined,
+                                  size: 16.sp, color: const Color(0xFF64748B)),
                               tooltip: 'Edit Log',
-                              onPressed: () => context.go('/equipment/logs/${log.id}/edit'),
+                              onPressed: () =>
+                                  context.go('/equipment/logs/${log.id}/edit'),
                             ),
                             IconButton(
-                              icon: Icon(Icons.delete_outline, size: 16.sp, color: const Color(0xFFEF4444)),
+                              icon: Icon(Icons.delete_outline,
+                                  size: 16.sp, color: const Color(0xFFEF4444)),
                               tooltip: 'Delete Log',
-                              onPressed: () => _confirmDeleteLog(context, log.id),
+                              onPressed: () =>
+                                  _confirmDeleteLog(context, log.id),
                             ),
                           ],
                         ),
@@ -758,11 +849,15 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete Daily Usage Log?'),
-        content: const Text('Are you sure you want to delete this machine log record?'),
+        content: const Text(
+            'Are you sure you want to delete this machine log record?'),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel')),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFEF4444)),
+            style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFEF4444)),
             onPressed: () async {
               Navigator.of(ctx).pop();
               await ref.read(equipmentRepositoryProvider).deleteDailyLog(logId);

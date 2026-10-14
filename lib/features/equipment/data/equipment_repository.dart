@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:nex_ledger/core/utils/simple_gst.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/daos/equipment_dao.dart';
@@ -189,6 +190,10 @@ class EquipmentRepository {
 
   // ─── Equipment Payment & PnL Settlement ───────────────────────────────────
 
+  /// Settles machinery rent as an expense.
+  ///
+  /// GST is optional. With [gstRate] above zero, [paymentAmount] is the rent
+  /// BEFORE GST and the amount posted is [paymentAmount] + GST.
   Future<int> recordEquipmentRentalPayment({
     required int projectId,
     required int equipmentId,
@@ -198,24 +203,37 @@ class EquipmentRepository {
     int? bankAccountId,
     String? narration,
     String? referenceNo,
+    double gstRate = 0.0,
+    bool interState = false,
+    String? partyName,
+    String? partyGstin,
   }) async {
-    return _db.transaction(() async {
-      final txnId = await _txnDao.insertTransaction(
-        TransactionsCompanion.insert(
-          projectId: projectId,
-          type: TransactionType.expense,
-          amount: paymentAmount,
-          date: paymentDate,
-          paymentMode: Value(paymentMode),
-          bankAccountId: Value(bankAccountId),
-          narration: Value(narration ?? 'Machinery & Equipment Rental Settlement'),
-          referenceNo: Value(referenceNo),
-          affectsPnl: const Value(true),
-          affectsCash: const Value(true),
-        ),
-      );
-      return txnId;
-    });
+    final gst = calcSimpleGst(
+        taxable: paymentAmount, rate: gstRate, interState: interState);
+    return _txnDao.insertTransactionWithGst(
+      TransactionsCompanion.insert(
+        projectId: projectId,
+        type: TransactionType.expense,
+        amount: gst.hasGst ? gst.total : paymentAmount,
+        date: paymentDate,
+        paymentMode: Value(paymentMode),
+        bankAccountId: Value(bankAccountId),
+        narration:
+            Value(narration ?? 'Machinery & Equipment Rental Settlement'),
+        referenceNo: Value(referenceNo),
+        affectsPnl: const Value(true),
+        affectsCash: const Value(true),
+      ),
+      gst.hasGst
+          ? TxnGstDetail(
+              kind: TxnGstKind.equipment,
+              gst: gst,
+              partyName: partyName,
+              partyGstin: partyGstin,
+              billNo: referenceNo,
+            )
+          : null,
+    );
   }
 
   // ─── Reactive Streams ─────────────────────────────────────────────────────

@@ -84,12 +84,15 @@ class KeyboardShortcutsDialog extends StatelessWidget {
               _buildShortcutRow('Alt + Y', 'Go to Daily Day-Book Sheet'),
               _buildShortcutRow('Alt + R', 'Go to Reports & P&L'),
               _buildShortcutRow('Alt + S', 'Go to Settings'),
-              _buildShortcutRow('Ctrl + L / Cmd + L', 'Lock Financial Ledger (PIN Lock)'),
+              _buildShortcutRow(
+                  'Ctrl + L / Cmd + L', 'Lock Financial Ledger (PIN Lock)'),
               SizedBox(height: 16.h),
               _buildCategoryHeader('📝 Form Commands'),
-              _buildShortcutRow('Ctrl + Enter / Cmd + Enter', 'Save & Submit Form immediately'),
+              _buildShortcutRow('Ctrl + Enter / Cmd + Enter',
+                  'Save & Submit Form immediately'),
               _buildShortcutRow('Escape', 'Cancel / Close Modal'),
-              _buildShortcutRow('Tab / Shift + Tab', 'Jump Next / Previous Field'),
+              _buildShortcutRow(
+                  'Tab / Shift + Tab', 'Jump Next / Previous Field'),
               _buildShortcutRow('F1', 'Open Shortcuts Guide Modal'),
             ],
           ),

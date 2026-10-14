@@ -71,15 +71,15 @@ class _ClientReceiptFormScreenState
 
     if (_amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid positive receipt amount.')),
+        const SnackBar(
+            content: Text('Please enter a valid positive receipt amount.')),
       );
       return;
     }
 
     if (_selectedPaymentMode == PaymentMode.bank &&
         _selectedBankAccountId == null) {
-      final accounts =
-          await ref.read(bankAccountsListProvider.future);
+      final accounts = await ref.read(bankAccountsListProvider.future);
       if (accounts.isNotEmpty) {
         _selectedBankAccountId = accounts.first.id;
       }
@@ -112,7 +112,8 @@ class _ClientReceiptFormScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
+          SnackBar(
+              content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
         );
       }
     } finally {
@@ -191,8 +192,8 @@ class _ClientReceiptFormScreenState
 
                         // ─── Project Selector ────────────────────────────────
                         projectsAsync.when(
-                          loading: () => const Center(
-                              child: LinearProgressIndicator()),
+                          loading: () =>
+                              const Center(child: LinearProgressIndicator()),
                           error: (e, _) => Text('Error loading projects: $e'),
                           data: (projects) {
                             final validProjects = projects
@@ -201,8 +202,8 @@ class _ClientReceiptFormScreenState
 
                             return DropdownButtonFormField<int>(
                               isExpanded: true,
-                              value: validProjects.any(
-                                      (p) => p.id == _selectedProjectId)
+                              value: validProjects
+                                      .any((p) => p.id == _selectedProjectId)
                                   ? _selectedProjectId
                                   : null,
                               decoration: const InputDecoration(
@@ -242,7 +243,8 @@ class _ClientReceiptFormScreenState
                           error: (_, __) => const SizedBox.shrink(),
                           data: (bills) {
                             return DropdownButtonFormField<int?>(
-                              value: bills.any((b) => b.bill.id == _selectedRaBillId)
+                              value: bills.any(
+                                      (b) => b.bill.id == _selectedRaBillId)
                                   ? _selectedRaBillId
                                   : null,
                               isExpanded: true,
@@ -341,7 +343,8 @@ class _ClientReceiptFormScreenState
                                     const TextInputType.numberWithOptions(
                                         decimal: true),
                                 validator: (v) {
-                                  if (v == null || v.trim().isEmpty) return 'Required';
+                                  if (v == null || v.trim().isEmpty)
+                                    return 'Required';
                                   final num =
                                       double.tryParse(v.replaceAll(',', ''));
                                   if (num == null || num <= 0) return 'Invalid';
@@ -409,8 +412,8 @@ class _ClientReceiptFormScreenState
                                   error: (_, __) => const SizedBox.shrink(),
                                   data: (accounts) {
                                     return DropdownButtonFormField<int>(
-                                      value: accounts.any(
-                                              (a) => a.id == _selectedBankAccountId)
+                                      value: accounts.any((a) =>
+                                              a.id == _selectedBankAccountId)
                                           ? _selectedBankAccountId
                                           : (accounts.isNotEmpty
                                               ? accounts.first.id
@@ -418,8 +421,8 @@ class _ClientReceiptFormScreenState
                                       isExpanded: true,
                                       decoration: const InputDecoration(
                                         labelText: 'Receiving Bank Account *',
-                                        prefixIcon:
-                                            Icon(Icons.account_balance_outlined),
+                                        prefixIcon: Icon(
+                                            Icons.account_balance_outlined),
                                       ),
                                       items: accounts
                                           .map((a) => DropdownMenuItem(
@@ -463,7 +466,8 @@ class _ClientReceiptFormScreenState
                           controller: _notesCtrl,
                           decoration: const InputDecoration(
                             labelText: 'Receipt Notes',
-                            hintText: 'e.g. Payment for RA Bill 01 via HDFC transfer',
+                            hintText:
+                                'e.g. Payment for RA Bill 01 via HDFC transfer',
                             prefixIcon: Icon(Icons.note_alt_outlined),
                           ),
                         ),
@@ -519,7 +523,8 @@ class _ClientReceiptFormScreenState
                                       ),
                                     )
                                   : const Icon(Icons.check, size: 18),
-                              label: const Text('Record Client Receipt (Ctrl+Enter)'),
+                              label: const Text(
+                                  'Record Client Receipt (Ctrl+Enter)'),
                             ),
                           ],
                         ),

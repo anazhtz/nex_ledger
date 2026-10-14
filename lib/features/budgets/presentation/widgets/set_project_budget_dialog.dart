@@ -11,10 +11,12 @@ class SetProjectBudgetDialog extends ConsumerStatefulWidget {
   const SetProjectBudgetDialog({super.key, required this.projectId});
 
   @override
-  ConsumerState<SetProjectBudgetDialog> createState() => _SetProjectBudgetDialogState();
+  ConsumerState<SetProjectBudgetDialog> createState() =>
+      _SetProjectBudgetDialogState();
 }
 
-class _SetProjectBudgetDialogState extends ConsumerState<SetProjectBudgetDialog> {
+class _SetProjectBudgetDialogState
+    extends ConsumerState<SetProjectBudgetDialog> {
   final _formKey = GlobalKey<FormState>();
   final _materialsCtrl = TextEditingController();
   final _labourCtrl = TextEditingController();
@@ -38,13 +40,16 @@ class _SetProjectBudgetDialogState extends ConsumerState<SetProjectBudgetDialog>
     if (_initialized) return;
     _initialized = true;
 
-    final existingBudgets =
-        await ref.read(projectBudgetRepositoryProvider).watchBudgetsForProject(widget.projectId).first;
+    final existingBudgets = await ref
+        .read(projectBudgetRepositoryProvider)
+        .watchBudgetsForProject(widget.projectId)
+        .first;
 
     if (!mounted) return;
 
     for (final b in existingBudgets) {
-      final amountStr = b.allocatedAmount > 0 ? b.allocatedAmount.toStringAsFixed(0) : '';
+      final amountStr =
+          b.allocatedAmount > 0 ? b.allocatedAmount.toStringAsFixed(0) : '';
       switch (b.costHead) {
         case BudgetCostHead.materials:
           _materialsCtrl.text = amountStr;
@@ -71,7 +76,10 @@ class _SetProjectBudgetDialogState extends ConsumerState<SetProjectBudgetDialog>
   }
 
   double get _totalBudgeted =>
-      _parse(_materialsCtrl) + _parse(_labourCtrl) + _parse(_subcontractCtrl) + _parse(_overheadCtrl);
+      _parse(_materialsCtrl) +
+      _parse(_labourCtrl) +
+      _parse(_subcontractCtrl) +
+      _parse(_overheadCtrl);
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -104,7 +112,8 @@ class _SetProjectBudgetDialogState extends ConsumerState<SetProjectBudgetDialog>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
+          SnackBar(
+              content: Text('Error: $e'), backgroundColor: Colors.red.shade700),
         );
       }
     } finally {
@@ -166,7 +175,9 @@ class _SetProjectBudgetDialogState extends ConsumerState<SetProjectBudgetDialog>
                                 );
                                 return Text(
                                   '${p.code} — ${p.name} (Client: ${p.clientName ?? 'Direct Client'})',
-                                  style: TextStyle(fontSize: 12.sp, color: const Color(0xFF64748B)),
+                                  style: TextStyle(
+                                      fontSize: 12.sp,
+                                      color: const Color(0xFF64748B)),
                                   overflow: TextOverflow.ellipsis,
                                 );
                               },
@@ -191,28 +202,39 @@ class _SetProjectBudgetDialogState extends ConsumerState<SetProjectBudgetDialog>
                         (item) => item.id == widget.projectId,
                         orElse: () => projects.first,
                       );
-                      if (p.clientContractValue <= 0) return const SizedBox.shrink();
+                      if (p.clientContractValue <= 0)
+                        return const SizedBox.shrink();
 
                       final contractVal = p.clientContractValue;
                       final targetProfit = contractVal - _totalBudgeted;
-                      final targetMarginPct = contractVal > 0 ? (targetProfit / contractVal) * 100 : 0.0;
+                      final targetMarginPct = contractVal > 0
+                          ? (targetProfit / contractVal) * 100
+                          : 0.0;
                       final isPositive = targetProfit >= 0;
 
                       return Container(
                         margin: EdgeInsets.only(bottom: 16.h),
                         padding: EdgeInsets.all(12.r),
                         decoration: BoxDecoration(
-                          color: isPositive ? const Color(0xFFF0FDF4) : const Color(0xFFFEF2F2),
+                          color: isPositive
+                              ? const Color(0xFFF0FDF4)
+                              : const Color(0xFFFEF2F2),
                           borderRadius: BorderRadius.circular(10.r),
                           border: Border.all(
-                            color: isPositive ? const Color(0xFFBBF7D0) : const Color(0xFFFECACA),
+                            color: isPositive
+                                ? const Color(0xFFBBF7D0)
+                                : const Color(0xFFFECACA),
                           ),
                         ),
                         child: Row(
                           children: [
                             Icon(
-                              isPositive ? Icons.trending_up_rounded : Icons.trending_down_rounded,
-                              color: isPositive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                              isPositive
+                                  ? Icons.trending_up_rounded
+                                  : Icons.trending_down_rounded,
+                              color: isPositive
+                                  ? const Color(0xFF16A34A)
+                                  : const Color(0xFFDC2626),
                               size: 20.sp,
                             ),
                             SizedBox(width: 10.w),
@@ -225,7 +247,9 @@ class _SetProjectBudgetDialogState extends ConsumerState<SetProjectBudgetDialog>
                                     style: TextStyle(
                                       fontSize: 12.sp,
                                       fontWeight: FontWeight.bold,
-                                      color: isPositive ? const Color(0xFF14532D) : const Color(0xFF7F1D1D),
+                                      color: isPositive
+                                          ? const Color(0xFF14532D)
+                                          : const Color(0xFF7F1D1D),
                                     ),
                                   ),
                                   SizedBox(height: 2.h),
@@ -233,7 +257,9 @@ class _SetProjectBudgetDialogState extends ConsumerState<SetProjectBudgetDialog>
                                     'Total Budgeted Cost: ${CurrencyFormatter.format(_totalBudgeted)} • Target Profit: ${CurrencyFormatter.format(targetProfit)} (${targetMarginPct.toStringAsFixed(1)}% Gross Margin)',
                                     style: TextStyle(
                                       fontSize: 11.sp,
-                                      color: isPositive ? const Color(0xFF166534) : const Color(0xFF991B1B),
+                                      color: isPositive
+                                          ? const Color(0xFF166534)
+                                          : const Color(0xFF991B1B),
                                     ),
                                   ),
                                 ],
@@ -251,7 +277,8 @@ class _SetProjectBudgetDialogState extends ConsumerState<SetProjectBudgetDialog>
                     hint: 'e.g. 3500000',
                     icon: Icons.inventory_2_outlined,
                     controller: _materialsCtrl,
-                    subtitle: 'Cement, Steel, Sand, Bricks, Tiles, Electrical, Plumbing materials',
+                    subtitle:
+                        'Cement, Steel, Sand, Bricks, Tiles, Electrical, Plumbing materials',
                   ),
                   SizedBox(height: 12.h),
 
@@ -260,7 +287,8 @@ class _SetProjectBudgetDialogState extends ConsumerState<SetProjectBudgetDialog>
                     hint: 'e.g. 1200000',
                     icon: Icons.groups_outlined,
                     controller: _labourCtrl,
-                    subtitle: 'Daily attendance wages, mason/carpenter/helper payouts',
+                    subtitle:
+                        'Daily attendance wages, mason/carpenter/helper payouts',
                   ),
                   SizedBox(height: 12.h),
 
@@ -269,7 +297,8 @@ class _SetProjectBudgetDialogState extends ConsumerState<SetProjectBudgetDialog>
                     hint: 'e.g. 1800000',
                     icon: Icons.engineering_outlined,
                     controller: _subcontractCtrl,
-                    subtitle: 'Work orders, shuttering, plastering, earthwork contracts',
+                    subtitle:
+                        'Work orders, shuttering, plastering, earthwork contracts',
                   ),
                   SizedBox(height: 12.h),
 
@@ -278,7 +307,8 @@ class _SetProjectBudgetDialogState extends ConsumerState<SetProjectBudgetDialog>
                     hint: 'e.g. 500000',
                     icon: Icons.local_shipping_outlined,
                     controller: _overheadCtrl,
-                    subtitle: 'Machinery rental (JCB/Crane), diesel, transport, site office expenses',
+                    subtitle:
+                        'Machinery rental (JCB/Crane), diesel, transport, site office expenses',
                   ),
                   SizedBox(height: 14.h),
 
@@ -286,15 +316,18 @@ class _SetProjectBudgetDialogState extends ConsumerState<SetProjectBudgetDialog>
                   TextFormField(
                     controller: _thresholdCtrl,
                     decoration: const InputDecoration(
-                      labelText: 'Caution Alert Threshold % (Amber Warning Trigger)',
+                      labelText:
+                          'Caution Alert Threshold % (Amber Warning Trigger)',
                       hintText: '85',
                       suffixText: '%',
                       prefixIcon: Icon(Icons.notifications_active_outlined),
                     ),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                     validator: (v) {
                       final val = double.tryParse(v ?? '');
-                      if (val == null || val <= 0 || val > 100) return 'Enter 1-100%';
+                      if (val == null || val <= 0 || val > 100)
+                        return 'Enter 1-100%';
                       return null;
                     },
                   ),
@@ -303,7 +336,8 @@ class _SetProjectBudgetDialogState extends ConsumerState<SetProjectBudgetDialog>
                   // ─── Total Summary Card ──────────────────────────────────
                   Container(
                     width: double.infinity,
-                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(10.r),
@@ -317,7 +351,9 @@ class _SetProjectBudgetDialogState extends ConsumerState<SetProjectBudgetDialog>
                           children: [
                             Text(
                               'Total Target Cost Budget:',
-                              style: TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B)),
+                              style: TextStyle(
+                                  fontSize: 11.sp,
+                                  color: const Color(0xFF64748B)),
                             ),
                             Text(
                               CurrencyFormatter.format(_totalBudgeted),
@@ -353,7 +389,8 @@ class _SetProjectBudgetDialogState extends ConsumerState<SetProjectBudgetDialog>
                             ? SizedBox(
                                 width: 16.sp,
                                 height: 16.sp,
-                                child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                child: const CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white),
                               )
                             : const Icon(Icons.check, size: 18),
                         label: const Text('Save Budget Allocations'),

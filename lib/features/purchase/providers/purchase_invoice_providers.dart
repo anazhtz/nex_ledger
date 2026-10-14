@@ -3,6 +3,7 @@ import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/database_provider.dart';
 import 'package:nex_ledger/core/utils/gst_utils.dart';
 import 'package:nex_ledger/features/purchase/data/purchase_invoice_repository.dart';
+import 'package:nex_ledger/features/reports/data/input_gst.dart';
 
 final purchaseInvoiceRepositoryProvider =
     Provider<PurchaseInvoiceRepository>((ref) {
@@ -38,4 +39,10 @@ final companyStateCodeProvider = Provider<String?>((ref) {
   final gstin = ref.watch(companyGstinProvider).asData?.value;
   final chosen = ref.watch(companyStateSettingProvider).asData?.value;
   return GstUtils.stateCodeOf(gstin) ?? chosen;
+});
+
+/// Every bill that carries GST (purchases, subcontract, machinery rent,
+/// expenses) for the Input GST report.
+final inputGstEntriesProvider = StreamProvider<List<InputGstEntry>>((ref) {
+  return InputGstRepository(ref.watch(appDatabaseProvider)).watchEntries();
 });

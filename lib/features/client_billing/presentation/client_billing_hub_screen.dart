@@ -89,12 +89,14 @@ class _ClientBillingHubScreenState extends ConsumerState<ClientBillingHubScreen>
                       label: const Text('Contract Setup'),
                     ),
                     FilledButton.tonalIcon(
-                      onPressed: () => context.push('/client-billing/receipt/new'),
+                      onPressed: () =>
+                          context.push('/client-billing/receipt/new'),
                       icon: Icon(Icons.payments_outlined, size: 16.sp),
                       label: const Text('Record Client Receipt'),
                     ),
                     FilledButton.icon(
-                      onPressed: () => context.push('/client-billing/ra-bills/new'),
+                      onPressed: () =>
+                          context.push('/client-billing/ra-bills/new'),
                       icon: Icon(Icons.add_chart_rounded, size: 16.sp),
                       label: const Text('Raise Client RA Bill'),
                     ),
@@ -160,7 +162,8 @@ class _ClientBillingHubScreenState extends ConsumerState<ClientBillingHubScreen>
                           isExpanded: true,
                           decoration: InputDecoration(
                             labelText: 'Filter by Project',
-                            prefixIcon: Icon(Icons.folder_outlined, size: 18.sp),
+                            prefixIcon:
+                                Icon(Icons.folder_outlined, size: 18.sp),
                             isDense: true,
                             contentPadding: EdgeInsets.symmetric(
                                 horizontal: 10.w, vertical: 8.h),
@@ -263,7 +266,8 @@ class _ClientBillingHubScreenState extends ConsumerState<ClientBillingHubScreen>
                   width: cardWidth,
                   child: _buildKpiCard(
                     title: 'Retention Held by Client',
-                    value: CurrencyFormatter.format(m.totalRetentionHeldByClient),
+                    value:
+                        CurrencyFormatter.format(m.totalRetentionHeldByClient),
                     subtitle: '5% Defect liability asset',
                     icon: Icons.lock_clock_rounded,
                     color: const Color(0xFFF59E0B),
@@ -468,7 +472,8 @@ class _ClientBillingHubScreenState extends ConsumerState<ClientBillingHubScreen>
               )),
               DataCell(Text(
                 CurrencyFormatter.format(s.unbilledContractValue),
-                style: TextStyle(fontSize: 12.sp, color: const Color(0xFF64748B)),
+                style:
+                    TextStyle(fontSize: 12.sp, color: const Color(0xFF64748B)),
               )),
               DataCell(
                 Row(
@@ -795,7 +800,8 @@ class _ClientBillingHubScreenState extends ConsumerState<ClientBillingHubScreen>
                           keyboardType: const TextInputType.numberWithOptions(
                               decimal: true),
                           validator: (v) {
-                            if (v == null || v.trim().isEmpty) return 'Required';
+                            if (v == null || v.trim().isEmpty)
+                              return 'Required';
                             final num =
                                 double.tryParse(v.replaceAll(',', '').trim());
                             if (num == null || num <= 0) return 'Invalid';
@@ -855,8 +861,8 @@ class _ClientBillingHubScreenState extends ConsumerState<ClientBillingHubScreen>
           FilledButton(
             onPressed: () async {
               if (!formKey.currentState!.validate()) return;
-              final contractVal = double.parse(
-                  contractValCtrl.text.replaceAll(',', '').trim());
+              final contractVal =
+                  double.parse(contractValCtrl.text.replaceAll(',', '').trim());
               final retentionPct = double.tryParse(
                       retentionPctCtrl.text.replaceAll(',', '').trim()) ??
                   5.0;

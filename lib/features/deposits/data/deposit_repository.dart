@@ -109,7 +109,8 @@ class DepositRepository {
           amount: recoveredAmount,
           paymentMode: Value(paymentMode),
           bankAccountId: Value(bankAccountId),
-          narration: Value(narration ?? 'Security deposit recovered / received back from Govt/Client'),
+          narration: Value(narration ??
+              'Security deposit recovered / received back from Govt/Client'),
           referenceNo: Value(referenceNo),
         ),
       );
@@ -185,10 +186,11 @@ class DepositRepository {
           date: date,
           type: TransactionType.depositAdjustment,
           affectsPnl: const Value(true), // This IS income now
-          affectsCash: const Value(false), // CRITICAL: money was received earlier, adjusting does NOT move cash
+          affectsCash: const Value(
+              false), // CRITICAL: money was received earlier, adjusting does NOT move cash
           amount: adjustedAmount,
-          narration: Value(
-              narration ?? 'Deposit adjusted to income${adjustmentReference != null ? ' - $adjustmentReference' : ''}'),
+          narration: Value(narration ??
+              'Deposit adjusted to income${adjustmentReference != null ? ' - $adjustmentReference' : ''}'),
           referenceNo: Value(adjustmentReference),
         ),
       );
@@ -248,8 +250,11 @@ class DepositRepository {
     final deposit = await _depositDao.getDepositById(depositId);
     if (deposit == null) return;
     await _db.transaction(() async {
-      await (_db.delete(_db.deposits)..where((d) => d.id.equals(depositId))).go();
-      await (_db.delete(_db.transactions)..where((t) => t.id.equals(deposit.transactionId))).go();
+      await (_db.delete(_db.deposits)..where((d) => d.id.equals(depositId)))
+          .go();
+      await (_db.delete(_db.transactions)
+            ..where((t) => t.id.equals(deposit.transactionId)))
+          .go();
     });
   }
 }

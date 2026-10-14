@@ -2,7 +2,8 @@ import 'package:drift/drift.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 
-export 'package:nex_ledger/core/database/app_database.dart' show WorkerPaymentSummary;
+export 'package:nex_ledger/core/database/app_database.dart'
+    show WorkerPaymentSummary;
 
 class LabourRepository {
   final LabourDao _labourDao;
@@ -69,7 +70,8 @@ class LabourRepository {
         AttendanceCompanion.insert(
           workerId: workerId,
           projectId: projectId,
-          date: DateTime(date.year, date.month, date.day, 12), // noon, no TZ drift
+          date: DateTime(
+              date.year, date.month, date.day, 12), // noon, no TZ drift
           status: status,
           overtimeHours: Value(overtimeHours),
         ),

@@ -5,8 +5,10 @@ import 'projects_table.dart';
 @DataClassName('EquipmentLog')
 class EquipmentLogs extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get equipmentId => integer().references(Equipments, #id, onDelete: KeyAction.cascade)();
-  IntColumn get projectId => integer().references(Projects, #id, onDelete: KeyAction.cascade)();
+  IntColumn get equipmentId =>
+      integer().references(Equipments, #id, onDelete: KeyAction.cascade)();
+  IntColumn get projectId =>
+      integer().references(Projects, #id, onDelete: KeyAction.cascade)();
   DateTimeColumn get logDate => dateTime()();
   RealColumn get startReading => real().withDefault(const Constant(0.0))();
   RealColumn get endReading => real().withDefault(const Constant(0.0))();
@@ -21,7 +23,8 @@ class EquipmentLogs extends Table {
   RealColumn get netPayableAmount => real().withDefault(const Constant(0.0))();
   TextColumn get workDescription => text().withLength(min: 1, max: 255)();
   TextColumn get operatorName => text().nullable()();
-  BoolColumn get supervisorVerified => boolean().withDefault(const Constant(false))();
+  BoolColumn get supervisorVerified =>
+      boolean().withDefault(const Constant(false))();
   TextColumn get notes => text().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }

@@ -51,6 +51,25 @@ const List<ReportGroup> kReportGroups = [
     color: Color(0xFF1F5FBF),
     entries: [
       ReportEntry(
+        icon: Icons.receipt_rounded,
+        title: 'Input GST by Project',
+        description:
+            'GST you paid on purchases, subcontractor bills, machinery rent and expenses, added up for each project. Excel for your accountant.',
+        route: '/reports/input-gst',
+        keywords: [
+          'gst',
+          'input gst',
+          'input tax credit',
+          'itc',
+          'tax paid',
+          'cgst',
+          'sgst',
+          'igst',
+          'project',
+          'accountant'
+        ],
+      ),
+      ReportEntry(
         icon: Icons.assessment_rounded,
         title: 'Project P&L',
         description: 'Income, costs and profit for one project.',

@@ -15,17 +15,20 @@ class Transactions extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get projectId =>
       integer().references(Projects, #id, onDelete: KeyAction.restrict)();
-  IntColumn get workerId =>
-      integer().nullable().references(Workers, #id, onDelete: KeyAction.restrict)();
+  IntColumn get workerId => integer()
+      .nullable()
+      .references(Workers, #id, onDelete: KeyAction.restrict)();
 
   /// Optional expense category — only set for type=expense entries.
   /// setNull on delete so existing transactions survive category removal.
-  IntColumn get expenseCategoryId =>
-      integer().nullable().references(ExpenseCategories, #id, onDelete: KeyAction.setNull)();
+  IntColumn get expenseCategoryId => integer()
+      .nullable()
+      .references(ExpenseCategories, #id, onDelete: KeyAction.setNull)();
 
   /// Optional Bank Account reference — indicates which bank account or cash drawer held this money.
-  IntColumn get bankAccountId =>
-      integer().nullable().references(BankAccounts, #id, onDelete: KeyAction.setNull)();
+  IntColumn get bankAccountId => integer()
+      .nullable()
+      .references(BankAccounts, #id, onDelete: KeyAction.setNull)();
 
   /// The GST purchase invoice this row belongs to (the bill rows and the
   /// payments made against it). Null for everything else.
@@ -35,8 +38,9 @@ class Transactions extends Table {
 
   /// Optional investor / partner — set on ownerCapital and drawings entries.
   /// setNull on delete so history survives if an investor row is removed.
-  IntColumn get investorId =>
-      integer().nullable().references(Investors, #id, onDelete: KeyAction.setNull)();
+  IntColumn get investorId => integer()
+      .nullable()
+      .references(Investors, #id, onDelete: KeyAction.setNull)();
 
   DateTimeColumn get date => dateTime()();
   TextColumn get type => textEnum<TransactionType>()();

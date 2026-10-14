@@ -11,14 +11,19 @@ import 'package:nex_ledger/core/utils/number_to_words.dart';
 class PdfReceiptService {
   PdfReceiptService._();
 
-  static final PdfColor _primaryColor = PdfColor.fromInt(0xFF1E3A8A); // Deep Blue
+  static final PdfColor _primaryColor =
+      PdfColor.fromInt(0xFF1E3A8A); // Deep Blue
   static final PdfColor _accentColor = PdfColor.fromInt(0xFF0D9488); // Teal
-  static final PdfColor _darkNeutral = PdfColor.fromInt(0xFF0F172A); // Slate 900
-  static final PdfColor _mutedNeutral = PdfColor.fromInt(0xFF64748B); // Slate 500
+  static final PdfColor _darkNeutral =
+      PdfColor.fromInt(0xFF0F172A); // Slate 900
+  static final PdfColor _mutedNeutral =
+      PdfColor.fromInt(0xFF64748B); // Slate 500
   static final PdfColor _lightBg = PdfColor.fromInt(0xFFF8FAFC); // Slate 50
-  static final PdfColor _borderColor = PdfColor.fromInt(0xFFCBD5E1); // Slate 300
+  static final PdfColor _borderColor =
+      PdfColor.fromInt(0xFFCBD5E1); // Slate 300
 
-  static final NumberFormat _inrFormatter = NumberFormat('#,##,##0.00', 'en_IN');
+  static final NumberFormat _inrFormatter =
+      NumberFormat('#,##,##0.00', 'en_IN');
 
   static String _formatInr(double amount) {
     return 'Rs. ${_inrFormatter.format(amount)}';
@@ -436,7 +441,8 @@ class PdfReceiptService {
     String? firmName,
   }) async {
     final pdf = pw.Document(title: 'Payment Voucher - #$transactionId');
-    final voucherNo = voucherRef ?? 'VCH-${date.year}${date.month.toString().padLeft(2, '0')}-${transactionId.toString().padLeft(4, '0')}';
+    final voucherNo = voucherRef ??
+        'VCH-${date.year}${date.month.toString().padLeft(2, '0')}-${transactionId.toString().padLeft(4, '0')}';
     final amountWords = NumberToWordsIndian.convert(amount);
 
     pdf.addPage(
@@ -712,12 +718,16 @@ class PdfReceiptService {
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text('Voucher #: ${voucher.voucherNumber ?? 'PC-${voucher.id}'}',
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
+                  pw.Text(
+                      'Voucher #: ${voucher.voucherNumber ?? 'PC-${voucher.id}'}',
+                      style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold, fontSize: 10)),
                   pw.Text('Date: ${DateFormatter.format(voucher.date)}',
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
+                      style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold, fontSize: 10)),
                   pw.Text('Supervisor: $supervisorName',
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
+                      style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold, fontSize: 10)),
                 ],
               ),
               pw.SizedBox(height: 14),
@@ -804,7 +814,8 @@ class PdfReceiptService {
                 children: [
                   _sigBox('Supervisor Signature ($supervisorName)'),
                   pw.SizedBox(width: 16),
-                  _sigBox('Verified By (${voucher.verifiedBy ?? 'Accountant'})'),
+                  _sigBox(
+                      'Verified By (${voucher.verifiedBy ?? 'Accountant'})'),
                   pw.SizedBox(width: 16),
                   _sigBox('Passed / Project Manager'),
                 ],
@@ -874,9 +885,7 @@ class PdfReceiptService {
         padding: const pw.EdgeInsets.all(6),
         decoration: pw.BoxDecoration(
           border: pw.Border.all(
-              color: _borderColor,
-              style: pw.BorderStyle.dashed,
-              width: 0.8),
+              color: _borderColor, style: pw.BorderStyle.dashed, width: 0.8),
           borderRadius: pw.BorderRadius.circular(4),
         ),
         child: pw.Column(
@@ -888,7 +897,8 @@ class PdfReceiptService {
               textAlign: pw.TextAlign.center,
             ),
             pw.Text('Sign Above',
-                style: const pw.TextStyle(fontSize: 6, color: PdfColors.grey500)),
+                style:
+                    const pw.TextStyle(fontSize: 6, color: PdfColors.grey500)),
           ],
         ),
       ),

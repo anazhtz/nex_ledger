@@ -110,13 +110,13 @@ class SubcontractDao extends DatabaseAccessor<AppDatabase>
   // ─── Subcontractors Master ──────────────────────────────────────────────────
 
   Stream<List<Subcontractor>> watchAllSubcontractors() {
-    return (select(subcontractors)
-          ..orderBy([(s) => OrderingTerm.asc(s.name)]))
+    return (select(subcontractors)..orderBy([(s) => OrderingTerm.asc(s.name)]))
         .watch();
   }
 
   Future<Subcontractor?> getSubcontractorById(int id) {
-    return (select(subcontractors)..where((s) => s.id.equals(id))).getSingleOrNull();
+    return (select(subcontractors)..where((s) => s.id.equals(id)))
+        .getSingleOrNull();
   }
 
   Future<int> insertSubcontractor(SubcontractorsCompanion entry) =>
@@ -169,7 +169,8 @@ class SubcontractDao extends DatabaseAccessor<AppDatabase>
       innerJoin(projects, projects.id.equalsExp(workOrders.projectId)),
       innerJoin(subcontractors,
           subcontractors.id.equalsExp(workOrders.subcontractorId)),
-    ])..where(workOrders.id.equals(id));
+    ])
+      ..where(workOrders.id.equals(id));
 
     final row = await query.getSingleOrNull();
     if (row == null) return null;
@@ -196,7 +197,8 @@ class SubcontractDao extends DatabaseAccessor<AppDatabase>
     int? projectId,
   }) {
     final query = select(measurementBills).join([
-      innerJoin(workOrders, workOrders.id.equalsExp(measurementBills.workOrderId)),
+      innerJoin(
+          workOrders, workOrders.id.equalsExp(measurementBills.workOrderId)),
       innerJoin(transactions,
           transactions.id.equalsExp(measurementBills.transactionId)),
       innerJoin(projects, projects.id.equalsExp(workOrders.projectId)),
@@ -228,13 +230,15 @@ class SubcontractDao extends DatabaseAccessor<AppDatabase>
 
   Future<MeasurementBillDetail?> getMeasurementBillById(int id) async {
     final query = select(measurementBills).join([
-      innerJoin(workOrders, workOrders.id.equalsExp(measurementBills.workOrderId)),
+      innerJoin(
+          workOrders, workOrders.id.equalsExp(measurementBills.workOrderId)),
       innerJoin(transactions,
           transactions.id.equalsExp(measurementBills.transactionId)),
       innerJoin(projects, projects.id.equalsExp(workOrders.projectId)),
       innerJoin(subcontractors,
           subcontractors.id.equalsExp(workOrders.subcontractorId)),
-    ])..where(measurementBills.id.equals(id));
+    ])
+      ..where(measurementBills.id.equals(id));
 
     final row = await query.getSingleOrNull();
     if (row == null) return null;
@@ -259,8 +263,8 @@ class SubcontractDao extends DatabaseAccessor<AppDatabase>
           transactions.id.equalsExp(subcontractPayments.transactionId)),
       innerJoin(subcontractors,
           subcontractors.id.equalsExp(subcontractPayments.subcontractorId)),
-      leftOuterJoin(workOrders,
-          workOrders.id.equalsExp(subcontractPayments.workOrderId)),
+      leftOuterJoin(
+          workOrders, workOrders.id.equalsExp(subcontractPayments.workOrderId)),
       leftOuterJoin(bankAccounts,
           bankAccounts.id.equalsExp(subcontractPayments.bankAccountId)),
     ]);
@@ -292,12 +296,14 @@ class SubcontractDao extends DatabaseAccessor<AppDatabase>
 
   // ─── Work Order Financial Progress Stream ───────────────────────────────────
 
-  Stream<WorkOrderFinancialSummary?> watchWorkOrderFinancialSummary(int workOrderId) {
+  Stream<WorkOrderFinancialSummary?> watchWorkOrderFinancialSummary(
+      int workOrderId) {
     return customSelect(
       'SELECT 1',
       readsFrom: {workOrders, measurementBills, subcontractPayments},
     ).watch().asyncMap((_) async {
-      final wo = await (select(workOrders)..where((w) => w.id.equals(workOrderId)))
+      final wo = await (select(workOrders)
+            ..where((w) => w.id.equals(workOrderId)))
           .getSingleOrNull();
       if (wo == null) return null;
 
@@ -312,14 +318,17 @@ class SubcontractDao extends DatabaseAccessor<AppDatabase>
       double totalQty = 0.0;
       double totalGross = 0.0;
       double totalRetention = 0.0;
+      double totalGst = 0.0;
 
       for (final b in bills) {
         totalQty += b.measuredQuantity;
         totalGross += b.grossAmount;
         totalRetention += b.retentionAmount;
+        totalGst += b.cgstAmount + b.sgstAmount + b.igstAmount;
       }
 
-      final totalNet = totalGross - totalRetention;
+      // GST is paid in full with the bill; only the bill value is retained.
+      final totalNet = totalGross - totalRetention + totalGst;
 
       double totalPaid = 0.0;
       for (final p in payments) {
@@ -351,7 +360,12 @@ class SubcontractDao extends DatabaseAccessor<AppDatabase>
   Stream<List<SubcontractorSummary>> watchAllSubcontractorSummaries() {
     return customSelect(
       'SELECT 1',
-      readsFrom: {subcontractors, workOrders, measurementBills, subcontractPayments},
+      readsFrom: {
+        subcontractors,
+        workOrders,
+        measurementBills,
+        subcontractPayments
+      },
     ).watch().asyncMap((_) async {
       final subs = await (select(subcontractors)
             ..orderBy([(s) => OrderingTerm.asc(s.name)]))
@@ -363,13 +377,16 @@ class SubcontractDao extends DatabaseAccessor<AppDatabase>
               ..where((w) => w.subcontractorId.equals(sub.id)))
             .get();
 
-        final activeWos = wos.where((w) => w.status == WorkOrderStatus.active).length;
-        final totalContract = wos.fold<double>(0.0, (sum, w) => sum + w.contractAmount);
+        final activeWos =
+            wos.where((w) => w.status == WorkOrderStatus.active).length;
+        final totalContract =
+            wos.fold<double>(0.0, (sum, w) => sum + w.contractAmount);
 
         final woIds = wos.map((w) => w.id).toList();
 
         double totalGross = 0.0;
         double totalRetention = 0.0;
+        double totalGst = 0.0;
 
         if (woIds.isNotEmpty) {
           final bills = await (select(measurementBills)
@@ -378,16 +395,19 @@ class SubcontractDao extends DatabaseAccessor<AppDatabase>
           for (final b in bills) {
             totalGross += b.grossAmount;
             totalRetention += b.retentionAmount;
+            totalGst += b.cgstAmount + b.sgstAmount + b.igstAmount;
           }
         }
 
-        final totalNet = totalGross - totalRetention;
+        // GST is paid in full with the bill; only the bill value is retained.
+        final totalNet = totalGross - totalRetention + totalGst;
 
         final payments = await (select(subcontractPayments)
               ..where((p) => p.subcontractorId.equals(sub.id)))
             .get();
 
-        final totalPaid = payments.fold<double>(0.0, (sum, p) => sum + p.amount);
+        final totalPaid =
+            payments.fold<double>(0.0, (sum, p) => sum + p.amount);
         final currentDue = (totalNet - totalPaid).clamp(0.0, double.infinity);
 
         results.add(SubcontractorSummary(

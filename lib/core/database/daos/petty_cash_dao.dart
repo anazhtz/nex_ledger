@@ -69,7 +69,8 @@ class PettyCashPortfolioMetrics {
   BankAccounts,
   Transactions,
 ])
-class PettyCashDao extends DatabaseAccessor<AppDatabase> with _$PettyCashDaoMixin {
+class PettyCashDao extends DatabaseAccessor<AppDatabase>
+    with _$PettyCashDaoMixin {
   PettyCashDao(super.db);
 
   // ─── Wallet Operations ─────────────────────────────────────────────────────
@@ -141,7 +142,9 @@ class PettyCashDao extends DatabaseAccessor<AppDatabase> with _$PettyCashDaoMixi
 
         return PettyCashWalletSummary(
           wallet: w,
-          assignedProject: w.assignedProjectId != null ? projectMap[w.assignedProjectId] : null,
+          assignedProject: w.assignedProjectId != null
+              ? projectMap[w.assignedProjectId]
+              : null,
           totalAdvancesReceived: advances,
           totalExpensesClaimed: expenses,
           totalCashReturned: returned,
@@ -173,13 +176,16 @@ class PettyCashDao extends DatabaseAccessor<AppDatabase> with _$PettyCashDaoMixi
       readsFrom: {pettyCashVouchers, pettyCashWallets, projects, bankAccounts},
     ).watch().asyncMap((_) async {
       final query = select(pettyCashVouchers)
-        ..orderBy([(v) => OrderingTerm.desc(v.date), (v) => OrderingTerm.desc(v.id)]);
+        ..orderBy(
+            [(v) => OrderingTerm.desc(v.date), (v) => OrderingTerm.desc(v.id)]);
 
       if (walletId != null) query.where((v) => v.walletId.equals(walletId));
       if (projectId != null) query.where((v) => v.projectId.equals(projectId));
       if (type != null) query.where((v) => v.type.equalsValue(type));
-      if (fromDate != null) query.where((v) => v.date.isBiggerOrEqualValue(fromDate));
-      if (toDate != null) query.where((v) => v.date.isSmallerOrEqualValue(toDate));
+      if (fromDate != null)
+        query.where((v) => v.date.isBiggerOrEqualValue(fromDate));
+      if (toDate != null)
+        query.where((v) => v.date.isSmallerOrEqualValue(toDate));
 
       final vouchers = await query.get();
 
@@ -201,7 +207,8 @@ class PettyCashDao extends DatabaseAccessor<AppDatabase> with _$PettyCashDaoMixi
             voucher: v,
             wallet: w,
             project: p,
-            bankAccount: v.bankAccountId != null ? accountMap[v.bankAccountId] : null,
+            bankAccount:
+                v.bankAccountId != null ? accountMap[v.bankAccountId] : null,
           ));
         }
       }

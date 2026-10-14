@@ -25,8 +25,7 @@ final equipmentLogsSearchQueryProvider = StateProvider<String>((ref) => '');
 
 // ─── Streams ────────────────────────────────────────────────────────────────
 
-final allEquipmentsProvider =
-    StreamProvider<List<EquipmentWithDetails>>((ref) {
+final allEquipmentsProvider = StreamProvider<List<EquipmentWithDetails>>((ref) {
   final repo = ref.watch(equipmentRepositoryProvider);
   return repo.watchAllEquipments();
 });
@@ -62,7 +61,8 @@ final filteredEquipmentsProvider =
 
   return allAsync.whenData((list) {
     return list.where((item) {
-      if (filterProject != null && item.equipment.currentProjectId != filterProject) {
+      if (filterProject != null &&
+          item.equipment.currentProjectId != filterProject) {
         return false;
       }
       if (filterCat != null && item.equipment.category != filterCat) {
@@ -70,10 +70,14 @@ final filteredEquipmentsProvider =
       }
       if (search.isNotEmpty) {
         final matchesName = item.equipment.name.toLowerCase().contains(search);
-        final matchesAsset = item.equipment.assetOrRegNumber.toLowerCase().contains(search);
-        final matchesVendor = (item.vendor?.name ?? '').toLowerCase().contains(search);
-        final matchesProject = (item.project?.name ?? '').toLowerCase().contains(search);
-        if (!matchesName && !matchesAsset && !matchesVendor && !matchesProject) return false;
+        final matchesAsset =
+            item.equipment.assetOrRegNumber.toLowerCase().contains(search);
+        final matchesVendor =
+            (item.vendor?.name ?? '').toLowerCase().contains(search);
+        final matchesProject =
+            (item.project?.name ?? '').toLowerCase().contains(search);
+        if (!matchesName && !matchesAsset && !matchesVendor && !matchesProject)
+          return false;
       }
       return true;
     }).toList();
@@ -83,15 +87,18 @@ final filteredEquipmentsProvider =
 final filteredEquipmentLogsProvider =
     Provider<AsyncValue<List<EquipmentLogDetail>>>((ref) {
   final allLogsAsync = ref.watch(allEquipmentLogsProvider);
-  final search = ref.watch(equipmentLogsSearchQueryProvider).trim().toLowerCase();
+  final search =
+      ref.watch(equipmentLogsSearchQueryProvider).trim().toLowerCase();
 
   return allLogsAsync.whenData((logs) {
     if (search.isEmpty) return logs;
     return logs.where((l) {
       final matchesEq = l.equipment.name.toLowerCase().contains(search);
-      final matchesReg = l.equipment.assetOrRegNumber.toLowerCase().contains(search);
+      final matchesReg =
+          l.equipment.assetOrRegNumber.toLowerCase().contains(search);
       final matchesDesc = l.log.workDescription.toLowerCase().contains(search);
-      final matchesOp = (l.log.operatorName ?? '').toLowerCase().contains(search);
+      final matchesOp =
+          (l.log.operatorName ?? '').toLowerCase().contains(search);
       return matchesEq || matchesReg || matchesDesc || matchesOp;
     }).toList();
   });

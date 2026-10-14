@@ -69,8 +69,10 @@ class EquipmentFleetMetrics {
   });
 }
 
-@DriftAccessor(tables: [Equipments, EquipmentLogs, Projects, Vendors, Transactions])
-class EquipmentDao extends DatabaseAccessor<AppDatabase> with _$EquipmentDaoMixin {
+@DriftAccessor(
+    tables: [Equipments, EquipmentLogs, Projects, Vendors, Transactions])
+class EquipmentDao extends DatabaseAccessor<AppDatabase>
+    with _$EquipmentDaoMixin {
   EquipmentDao(super.db);
 
   // ─── Equipment CRUD ────────────────────────────────────────────────────────
@@ -121,15 +123,21 @@ class EquipmentDao extends DatabaseAccessor<AppDatabase> with _$EquipmentDaoMixi
 
       return allEquipments.map((e) {
         final logs = logMap[e.id] ?? [];
-        final totalUnits = logs.fold<double>(0.0, (sum, l) => sum + l.billableUnits);
-        final totalGross = logs.fold<double>(0.0, (sum, l) => sum + l.grossRentalCost);
-        final totalFuel = logs.fold<double>(0.0, (sum, l) => sum + l.fuelCostDeduction);
-        final totalNet = logs.fold<double>(0.0, (sum, l) => sum + l.netPayableAmount);
+        final totalUnits =
+            logs.fold<double>(0.0, (sum, l) => sum + l.billableUnits);
+        final totalGross =
+            logs.fold<double>(0.0, (sum, l) => sum + l.grossRentalCost);
+        final totalFuel =
+            logs.fold<double>(0.0, (sum, l) => sum + l.fuelCostDeduction);
+        final totalNet =
+            logs.fold<double>(0.0, (sum, l) => sum + l.netPayableAmount);
 
         return EquipmentWithDetails(
           equipment: e,
           vendor: e.vendorId != null ? vendorMap[e.vendorId] : null,
-          project: e.currentProjectId != null ? projectMap[e.currentProjectId] : null,
+          project: e.currentProjectId != null
+              ? projectMap[e.currentProjectId]
+              : null,
           totalLoggedUnits: totalUnits,
           totalGrossRentalCost: totalGross,
           totalFuelDeduction: totalFuel,
@@ -160,7 +168,10 @@ class EquipmentDao extends DatabaseAccessor<AppDatabase> with _$EquipmentDaoMixi
       readsFrom: {equipmentLogs, equipments, projects, vendors},
     ).watch().asyncMap((_) async {
       final query = select(equipmentLogs)
-        ..orderBy([(l) => OrderingTerm.desc(l.logDate), (l) => OrderingTerm.desc(l.id)]);
+        ..orderBy([
+          (l) => OrderingTerm.desc(l.logDate),
+          (l) => OrderingTerm.desc(l.id)
+        ]);
 
       if (projectId != null) {
         query.where((l) => l.projectId.equals(projectId));
@@ -213,14 +224,23 @@ class EquipmentDao extends DatabaseAccessor<AppDatabase> with _$EquipmentDaoMixi
       final allLogs = await select(equipmentLogs).get();
 
       final totalMachinery = allEquipments.length;
-      final activeOnSite = allEquipments.where((e) => e.status == EquipmentStatus.active).length;
-      final rentedCount = allEquipments.where((e) => e.ownership == EquipmentOwnership.rented).length;
-      final ownedCount = allEquipments.where((e) => e.ownership == EquipmentOwnership.owned).length;
+      final activeOnSite =
+          allEquipments.where((e) => e.status == EquipmentStatus.active).length;
+      final rentedCount = allEquipments
+          .where((e) => e.ownership == EquipmentOwnership.rented)
+          .length;
+      final ownedCount = allEquipments
+          .where((e) => e.ownership == EquipmentOwnership.owned)
+          .length;
 
-      final totalUnits = allLogs.fold<double>(0.0, (sum, l) => sum + l.billableUnits);
-      final totalGross = allLogs.fold<double>(0.0, (sum, l) => sum + l.grossRentalCost);
-      final totalFuel = allLogs.fold<double>(0.0, (sum, l) => sum + l.fuelCostDeduction);
-      final totalNet = allLogs.fold<double>(0.0, (sum, l) => sum + l.netPayableAmount);
+      final totalUnits =
+          allLogs.fold<double>(0.0, (sum, l) => sum + l.billableUnits);
+      final totalGross =
+          allLogs.fold<double>(0.0, (sum, l) => sum + l.grossRentalCost);
+      final totalFuel =
+          allLogs.fold<double>(0.0, (sum, l) => sum + l.fuelCostDeduction);
+      final totalNet =
+          allLogs.fold<double>(0.0, (sum, l) => sum + l.netPayableAmount);
 
       return EquipmentFleetMetrics(
         totalMachineryCount: totalMachinery,

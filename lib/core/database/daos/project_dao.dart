@@ -6,8 +6,7 @@ import 'package:nex_ledger/core/database/tables/projects_table.dart';
 part 'project_dao.g.dart';
 
 @DriftAccessor(tables: [Projects])
-class ProjectDao extends DatabaseAccessor<AppDatabase>
-    with _$ProjectDaoMixin {
+class ProjectDao extends DatabaseAccessor<AppDatabase> with _$ProjectDaoMixin {
   ProjectDao(super.db);
 
   /// Stream of all projects ordered by creation date desc.
@@ -16,11 +15,10 @@ class ProjectDao extends DatabaseAccessor<AppDatabase>
           .watch();
 
   /// Stream of active projects only.
-  Stream<List<Project>> watchActiveProjects() =>
-      (select(projects)
-            ..where((p) => p.status.equalsValue(ProjectStatus.active))
-            ..orderBy([(p) => OrderingTerm.asc(p.name)]))
-          .watch();
+  Stream<List<Project>> watchActiveProjects() => (select(projects)
+        ..where((p) => p.status.equalsValue(ProjectStatus.active))
+        ..orderBy([(p) => OrderingTerm.asc(p.name)]))
+      .watch();
 
   /// One-off read of all projects (for export/reports).
   Future<List<Project>> getAllProjects() => select(projects).get();
@@ -42,9 +40,9 @@ class ProjectDao extends DatabaseAccessor<AppDatabase>
       update(projects).replace(entry);
 
   /// Soft-delete by setting status to closed (no hard deletes for audit trail).
-  Future<int> closeProject(int id) => (update(projects)
-        ..where((p) => p.id.equals(id)))
-      .write(const ProjectsCompanion(status: Value(ProjectStatus.closed)));
+  Future<int> closeProject(int id) =>
+      (update(projects)..where((p) => p.id.equals(id)))
+          .write(const ProjectsCompanion(status: Value(ProjectStatus.closed)));
 
   /// Hard delete — only used in tests / admin.
   Future<int> deleteProject(int id) =>

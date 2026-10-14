@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:nex_ledger/core/utils/simple_gst.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 
@@ -172,6 +173,12 @@ class SubcontractRepository {
   /// - Posts `Transaction(type: subcontractBill, affectsPnl: true, affectsCash: false)`
   /// - Records MeasurementBill with retention deduction
   /// - Project P&L recognizes the cost; Cash is untouched.
+  ///
+  /// GST is optional. With [gstRate] above zero, GST is charged on the bill
+  /// value (measured quantity × rate):
+  ///  * the cost posted to P&L is the bill value + GST,
+  ///  * retention is held on the bill value only (not on the GST),
+  ///  * the amount payable to the subcontractor = bill value − retention + GST.
   Future<int> recordMeasurementBill({
     required int workOrderId,
     required String billNumber,
@@ -180,6 +187,9 @@ class SubcontractRepository {
     required double unitRate,
     double retentionPercentage = 5.0,
     String? locationOrDescription,
+    double gstRate = 0.0,
+    bool interState = false,
+    String? partyGstin,
   }) async {
     final woDetail = await _subcontractDao.getWorkOrderDetailById(workOrderId);
     if (woDetail == null) {
@@ -188,7 +198,10 @@ class SubcontractRepository {
 
     final grossAmount = measuredQuantity * unitRate;
     final retentionAmount = grossAmount * (retentionPercentage / 100.0);
-    final netAmount = grossAmount - retentionAmount;
+    final gst = calcSimpleGst(
+        taxable: grossAmount, rate: gstRate, interState: interState);
+    final gstAmount = gst.hasGst ? gst.gst : 0.0;
+    final netAmount = grossAmount - retentionAmount + gstAmount;
 
     return _db.transaction(() async {
       final txnId = await _transactionDao.insertTransaction(
@@ -197,8 +210,9 @@ class SubcontractRepository {
           date: date,
           type: TransactionType.subcontractBill,
           affectsPnl: const Value(true), // Cost hits project P&L immediately
-          affectsCash: const Value(false), // No physical cash out at measurement certification
-          amount: grossAmount,
+          affectsCash: const Value(
+              false), // No physical cash out at measurement certification
+          amount: grossAmount + gstAmount, // bill value + GST
           narration: Value(
             'RA Bill $billNumber: ${woDetail.workOrder.title} (${woDetail.subcontractor.name}) - $measuredQuantity ${woDetail.workOrder.unit}',
           ),
@@ -219,6 +233,15 @@ class SubcontractRepository {
               retentionAmount: retentionAmount,
               netAmount: netAmount,
               locationOrDescription: Value(locationOrDescription?.trim()),
+              gstRate: Value(gst.hasGst ? gst.rate : 0.0),
+              cgstAmount: Value(gst.hasGst ? gst.cgst : 0.0),
+              sgstAmount: Value(gst.hasGst ? gst.sgst : 0.0),
+              igstAmount: Value(gst.hasGst ? gst.igst : 0.0),
+              isInterState: Value(gst.hasGst && interState),
+              partyGstin: Value(
+                  gst.hasGst && (partyGstin ?? '').trim().isNotEmpty
+                      ? partyGstin!.trim().toUpperCase()
+                      : null),
             ),
           );
     });
@@ -262,7 +285,8 @@ class SubcontractRepository {
           projectId: projectId,
           date: paymentDate,
           type: TransactionType.subcontractPayment,
-          affectsPnl: const Value(false), // P&L already recognized by measurement bills
+          affectsPnl:
+              const Value(false), // P&L already recognized by measurement bills
           affectsCash: const Value(true), // moves cash out
           amount: amount,
           paymentMode: Value(paymentMode),

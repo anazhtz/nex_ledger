@@ -81,9 +81,7 @@ class ClientPortfolioMetrics {
 
 final clientPortfolioMetricsProvider =
     StreamProvider<ClientPortfolioMetrics>((ref) {
-  return ref
-      .watch(projectRevenueSummariesProvider.stream)
-      .map((summaries) {
+  return ref.watch(projectRevenueSummariesProvider.stream).map((summaries) {
     double totalContract = 0.0;
     double totalGross = 0.0;
     double totalRetention = 0.0;

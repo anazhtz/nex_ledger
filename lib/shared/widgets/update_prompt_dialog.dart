@@ -156,14 +156,10 @@ class _VersionTag extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: isNew
-            ? const Color(0xFFECFDF5)
-            : const Color(0xFFF1F5F9),
+        color: isNew ? const Color(0xFFECFDF5) : const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: isNew
-              ? const Color(0xFFA7F3D0)
-              : const Color(0xFFCBD5E1),
+          color: isNew ? const Color(0xFFA7F3D0) : const Color(0xFFCBD5E1),
         ),
       ),
       child: Text(

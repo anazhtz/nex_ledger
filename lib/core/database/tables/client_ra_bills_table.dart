@@ -15,7 +15,8 @@ class ClientRaBills extends Table {
   TextColumn get stageOrDescription => text().withLength(min: 1, max: 500)();
 
   RealColumn get grossAmount => real()();
-  RealColumn get retentionPercentage => real().withDefault(const Constant(5.0))();
+  RealColumn get retentionPercentage =>
+      real().withDefault(const Constant(5.0))();
   RealColumn get retentionAmount => real().withDefault(const Constant(0.0))();
   RealColumn get advanceDeduction => real().withDefault(const Constant(0.0))();
   RealColumn get taxOrTdsDeduction => real().withDefault(const Constant(0.0))();

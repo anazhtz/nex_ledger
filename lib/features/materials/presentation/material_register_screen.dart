@@ -65,8 +65,7 @@ class _MaterialRegisterScreenState
     setState(() => _exporting = true);
     try {
       final dateRange = ref.read(materialDateRangeProvider);
-      final filePath =
-          await ExcelExportService.exportMaterialQuantityStatement(
+      final filePath = await ExcelExportService.exportMaterialQuantityStatement(
         summary: summary,
         dateRange: dateRange,
       );
@@ -204,8 +203,7 @@ class _MaterialRegisterScreenState
                           )),
                           DataCell(Text(
                             CurrencyFormatter.format(del.transaction.amount),
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           )),
                           DataCell(GestureDetector(
                             onTap: () {
@@ -248,7 +246,8 @@ class _MaterialRegisterScreenState
                               tooltip: 'Edit Purchase Bill',
                               onPressed: () {
                                 Navigator.of(dialogCtx).pop();
-                                context.push('/purchases/${del.purchase.id}/edit');
+                                context
+                                    .push('/purchases/${del.purchase.id}/edit');
                               },
                             ),
                           ),
@@ -397,7 +396,8 @@ class _MaterialRegisterScreenState
                                     strokeWidth: 2),
                               )
                             : const Icon(Icons.table_view_rounded, size: 16),
-                        label: Text(_exporting ? 'Exporting...' : 'Export Excel'),
+                        label:
+                            Text(_exporting ? 'Exporting...' : 'Export Excel'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF059669),
                           side: const BorderSide(color: Color(0xFF6EE7B7)),
@@ -481,7 +481,8 @@ class _MaterialRegisterScreenState
                           ],
                           onChanged: (pId) {
                             ref
-                                .read(materialSelectedProjectIdProvider.notifier)
+                                .read(
+                                    materialSelectedProjectIdProvider.notifier)
                                 .state = pId;
                           },
                         ),
@@ -507,12 +508,12 @@ class _MaterialRegisterScreenState
                             child: Text('All Categories',
                                 overflow: TextOverflow.ellipsis),
                           ),
-                          ...kStandardMaterialCategories.map((cat) =>
-                              DropdownMenuItem<String?>(
-                                value: cat.name,
-                                child: Text(cat.name,
-                                    overflow: TextOverflow.ellipsis),
-                              )),
+                          ...kStandardMaterialCategories
+                              .map((cat) => DropdownMenuItem<String?>(
+                                    value: cat.name,
+                                    child: Text(cat.name,
+                                        overflow: TextOverflow.ellipsis),
+                                  )),
                         ],
                         onChanged: (cat) {
                           ref
@@ -536,8 +537,8 @@ class _MaterialRegisterScreenState
                                   onPressed: () {
                                     _searchCtrl.clear();
                                     ref
-                                        .read(
-                                            materialSearchQueryProvider.notifier)
+                                        .read(materialSearchQueryProvider
+                                            .notifier)
                                         .state = '';
                                   },
                                 )
@@ -546,9 +547,8 @@ class _MaterialRegisterScreenState
                               horizontal: 12, vertical: 10),
                         ),
                         onChanged: (val) {
-                          ref
-                              .read(materialSearchQueryProvider.notifier)
-                              .state = val;
+                          ref.read(materialSearchQueryProvider.notifier).state =
+                              val;
                         },
                       ),
                     ),
@@ -647,7 +647,8 @@ class _MaterialRegisterScreenState
                           ),
                           StatCard(
                             label: 'Distinct Items',
-                            value: '${summary.totalDistinctItemsCount} Materials',
+                            value:
+                                '${summary.totalDistinctItemsCount} Materials',
                             icon: Icons.inventory_2_outlined,
                             iconColor: const Color(0xFF7C3AED),
                           ),
@@ -782,8 +783,8 @@ class _MaterialRegisterScreenState
                             decoration: BoxDecoration(
                               color: const Color(0xFFF8FAFC),
                               borderRadius: BorderRadius.circular(6.r),
-                              border: Border.all(
-                                  color: const Color(0xFFE2E8F0)),
+                              border:
+                                  Border.all(color: const Color(0xFFE2E8F0)),
                             ),
                             child: Text(
                               '${item.inwardCount} bills',
@@ -800,7 +801,8 @@ class _MaterialRegisterScreenState
                             children: [
                               Text(
                                 item.lastDeliveryDate != null
-                                    ? DateFormatter.format(item.lastDeliveryDate!)
+                                    ? DateFormatter.format(
+                                        item.lastDeliveryDate!)
                                     : '—',
                                 style: TextStyle(
                                   fontSize: 11.sp,

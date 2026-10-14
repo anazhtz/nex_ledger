@@ -19,7 +19,8 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
   final _narrationCtrl = TextEditingController();
   final _refCtrl = TextEditingController();
 
-  DepositType _depositType = DepositType.paid; // Default to Deposit Paid (To Govt/Client)
+  DepositType _depositType =
+      DepositType.paid; // Default to Deposit Paid (To Govt/Client)
   int? _selectedProject;
   PaymentMode? _paymentMode;
   DateTime _date = DateTime.now();
@@ -65,11 +66,9 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
               date: _date,
               amount: double.parse(_amountCtrl.text),
               paymentMode: _paymentMode,
-              narration: _narrationCtrl.text.isNotEmpty
-                  ? _narrationCtrl.text
-                  : null,
-              referenceNo:
-                  _refCtrl.text.isNotEmpty ? _refCtrl.text : null,
+              narration:
+                  _narrationCtrl.text.isNotEmpty ? _narrationCtrl.text : null,
+              referenceNo: _refCtrl.text.isNotEmpty ? _refCtrl.text : null,
             );
       } else {
         await ref.read(depositRepositoryProvider).receiveDeposit(
@@ -77,11 +76,9 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
               date: _date,
               amount: double.parse(_amountCtrl.text),
               paymentMode: _paymentMode,
-              narration: _narrationCtrl.text.isNotEmpty
-                  ? _narrationCtrl.text
-                  : null,
-              referenceNo:
-                  _refCtrl.text.isNotEmpty ? _refCtrl.text : null,
+              narration:
+                  _narrationCtrl.text.isNotEmpty ? _narrationCtrl.text : null,
+              referenceNo: _refCtrl.text.isNotEmpty ? _refCtrl.text : null,
             );
       }
       if (mounted) context.go('/deposits');
@@ -155,23 +152,20 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
             const SizedBox(height: 12),
 
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: isPaid ? Colors.blue.shade50 : Colors.orange.shade50,
                 border: Border.all(
-                    color: isPaid
-                        ? Colors.blue.shade200
-                        : Colors.orange.shade200),
+                    color:
+                        isPaid ? Colors.blue.shade200 : Colors.orange.shade200),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.info_outline,
-                    color: isPaid
-                        ? Colors.blue.shade700
-                        : Colors.orange.shade700,
+                    color:
+                        isPaid ? Colors.blue.shade700 : Colors.orange.shade700,
                     size: 18,
                   ),
                   const SizedBox(width: 10),
@@ -207,8 +201,10 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
                           loading: () => const SizedBox.shrink(),
                           error: (_, __) => const SizedBox.shrink(),
                           data: (projects) {
-                            final globalId = ref.watch(selectedProjectIdProvider);
-                            return _buildProjectSelector(projects, globalId, theme);
+                            final globalId =
+                                ref.watch(selectedProjectIdProvider);
+                            return _buildProjectSelector(
+                                projects, globalId, theme);
                           },
                         ),
                         const SizedBox(height: 16),
@@ -244,8 +240,7 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
                                     const TextInputType.numberWithOptions(
                                         decimal: true),
                                 validator: (v) {
-                                  if (v == null || v.isEmpty)
-                                    return 'Required';
+                                  if (v == null || v.isEmpty) return 'Required';
                                   if (double.tryParse(v) == null)
                                     return 'Invalid';
                                   return null;
@@ -258,20 +253,22 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
                         DropdownButtonFormField<PaymentMode?>(
                           value: _paymentMode,
                           isExpanded: true,
-                          decoration: const InputDecoration(
-                              labelText: 'Payment Mode'),
+                          decoration:
+                              const InputDecoration(labelText: 'Payment Mode'),
                           items: [
                             const DropdownMenuItem(
-                                value: null, child: Text('— Select —', overflow: TextOverflow.ellipsis)),
+                                value: null,
+                                child: Text('— Select —',
+                                    overflow: TextOverflow.ellipsis)),
                             ...kSelectablePaymentModes.map(
                               (m) => DropdownMenuItem(
                                 value: m,
-                                child: Text(m.displayName, overflow: TextOverflow.ellipsis),
+                                child: Text(m.displayName,
+                                    overflow: TextOverflow.ellipsis),
                               ),
                             ),
                           ],
-                          onChanged: (v) =>
-                              setState(() => _paymentMode = v),
+                          onChanged: (v) => setState(() => _paymentMode = v),
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
@@ -285,8 +282,8 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _narrationCtrl,
-                          decoration:
-                              const InputDecoration(labelText: 'Narration / Remarks'),
+                          decoration: const InputDecoration(
+                              labelText: 'Narration / Remarks'),
                           maxLines: 2,
                         ),
                         const SizedBox(height: 24),
@@ -330,8 +327,7 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
   Widget _buildProjectSelector(
       List<Project> projects, int? globalId, ThemeData theme) {
     if (globalId != null) {
-      final activeProject =
-          projects.where((p) => p.id == globalId).firstOrNull;
+      final activeProject = projects.where((p) => p.id == globalId).firstOrNull;
       if (activeProject != null) {
         _selectedProject = activeProject.id;
         return Container(
@@ -369,8 +365,7 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
               ),
               const SizedBox(width: 8),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(4),
@@ -393,8 +388,7 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
     return DropdownButtonFormField<int>(
       value: _selectedProject,
       isExpanded: true,
-      decoration:
-          const InputDecoration(labelText: 'Select Target Project *'),
+      decoration: const InputDecoration(labelText: 'Select Target Project *'),
       items: projects
           .map((p) => DropdownMenuItem(
                 value: p.id,

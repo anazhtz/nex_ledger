@@ -122,7 +122,8 @@ class BankAccountsScreen extends ConsumerWidget {
                           valueColor: liq.totalLiquidity < 0
                               ? Colors.red.shade700
                               : const Color(0xFF059669),
-                          subtitle: 'Available liquid funds across all accounts',
+                          subtitle:
+                              'Available liquid funds across all accounts',
                         ),
                       ),
                       SizedBox(width: 16.w),
@@ -164,9 +165,9 @@ class BankAccountsScreen extends ConsumerWidget {
 
             // Accounts Table
             accountsAsync.when(
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('Error loading accounts: $e')),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) =>
+                  Center(child: Text('Error loading accounts: $e')),
               data: (list) => DataTableCard(
                 title: 'All Cash Drawers & Bank Accounts',
                 emptyMessage:
@@ -206,7 +207,8 @@ class BankAccountsScreen extends ConsumerWidget {
                             children: [
                               Text(
                                 acc.accountName,
-                                style: const TextStyle(fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600),
                               ),
                               if (acc.isDefault)
                                 Container(
@@ -365,7 +367,8 @@ class BankAccountsScreen extends ConsumerWidget {
                   SwitchListTile(
                     value: isCash,
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Is this a Cash in Hand / Petty Cash Drawer?'),
+                    title: const Text(
+                        'Is this a Cash in Hand / Petty Cash Drawer?'),
                     subtitle: Text(
                       isCash
                           ? 'Physical cash drawer (no bank account number required)'
@@ -378,8 +381,12 @@ class BankAccountsScreen extends ConsumerWidget {
                   TextField(
                     controller: nameCtrl,
                     decoration: InputDecoration(
-                      labelText: isCash ? 'Drawer / Cash Name *' : 'Account Display Name *',
-                      hintText: isCash ? 'e.g. Office Petty Cash Drawer' : 'e.g. HDFC Main Current A/c',
+                      labelText: isCash
+                          ? 'Drawer / Cash Name *'
+                          : 'Account Display Name *',
+                      hintText: isCash
+                          ? 'e.g. Office Petty Cash Drawer'
+                          : 'e.g. HDFC Main Current A/c',
                     ),
                   ),
                   if (!isCash) ...[
@@ -458,19 +465,24 @@ class BankAccountsScreen extends ConsumerWidget {
             FilledButton(
               onPressed: () async {
                 if (nameCtrl.text.trim().isEmpty) return;
-                final opBalance = double.tryParse(
-                        opCtrl.text.replaceAll(',', '').trim()) ??
-                    0.0;
+                final opBalance =
+                    double.tryParse(opCtrl.text.replaceAll(',', '').trim()) ??
+                        0.0;
                 final repo = ref.read(bankAccountRepositoryProvider);
 
                 if (isEditing) {
                   await repo.updateAccount(
                     id: account.id,
                     accountName: nameCtrl.text.trim(),
-                    bankName: bankCtrl.text.isNotEmpty ? bankCtrl.text.trim() : null,
-                    accountNumber: noCtrl.text.isNotEmpty ? noCtrl.text.trim() : null,
-                    ifscCode: ifscCtrl.text.isNotEmpty ? ifscCtrl.text.trim() : null,
-                    branch: branchCtrl.text.isNotEmpty ? branchCtrl.text.trim() : null,
+                    bankName:
+                        bankCtrl.text.isNotEmpty ? bankCtrl.text.trim() : null,
+                    accountNumber:
+                        noCtrl.text.isNotEmpty ? noCtrl.text.trim() : null,
+                    ifscCode:
+                        ifscCtrl.text.isNotEmpty ? ifscCtrl.text.trim() : null,
+                    branch: branchCtrl.text.isNotEmpty
+                        ? branchCtrl.text.trim()
+                        : null,
                     openingBalance: opBalance,
                     isCashAccount: isCash,
                     isDefault: isDef,
@@ -478,10 +490,15 @@ class BankAccountsScreen extends ConsumerWidget {
                 } else {
                   await repo.addAccount(
                     accountName: nameCtrl.text.trim(),
-                    bankName: bankCtrl.text.isNotEmpty ? bankCtrl.text.trim() : null,
-                    accountNumber: noCtrl.text.isNotEmpty ? noCtrl.text.trim() : null,
-                    ifscCode: ifscCtrl.text.isNotEmpty ? ifscCtrl.text.trim() : null,
-                    branch: branchCtrl.text.isNotEmpty ? branchCtrl.text.trim() : null,
+                    bankName:
+                        bankCtrl.text.isNotEmpty ? bankCtrl.text.trim() : null,
+                    accountNumber:
+                        noCtrl.text.isNotEmpty ? noCtrl.text.trim() : null,
+                    ifscCode:
+                        ifscCtrl.text.isNotEmpty ? ifscCtrl.text.trim() : null,
+                    branch: branchCtrl.text.isNotEmpty
+                        ? branchCtrl.text.trim()
+                        : null,
                     openingBalance: opBalance,
                     isCashAccount: isCash,
                     isDefault: isDef,
@@ -635,7 +652,8 @@ class BankAccountsScreen extends ConsumerWidget {
                 if (amount <= 0) {
                   ScaffoldMessenger.of(ctx).showSnackBar(
                     const SnackBar(
-                        content: Text('Please enter a valid positive transfer amount.')),
+                        content: Text(
+                            'Please enter a valid positive transfer amount.')),
                   );
                   return;
                 }
@@ -645,8 +663,10 @@ class BankAccountsScreen extends ConsumerWidget {
                       toAccountId: toId,
                       amount: amount,
                       date: date,
-                      narration: noteCtrl.text.isNotEmpty ? noteCtrl.text : null,
-                      referenceNo: refCtrl.text.isNotEmpty ? refCtrl.text : null,
+                      narration:
+                          noteCtrl.text.isNotEmpty ? noteCtrl.text : null,
+                      referenceNo:
+                          refCtrl.text.isNotEmpty ? refCtrl.text : null,
                     );
                 if (ctx.mounted) {
                   Navigator.pop(ctx);

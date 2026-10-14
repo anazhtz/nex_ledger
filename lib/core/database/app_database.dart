@@ -30,6 +30,7 @@ import 'tables/investors_table.dart';
 import 'tables/purchase_invoices_table.dart';
 import 'tables/item_defaults_table.dart';
 import 'tables/app_settings_table.dart';
+import 'tables/transaction_gsts_table.dart';
 import 'daos/project_dao.dart';
 import 'daos/transaction_dao.dart';
 import 'daos/purchase_dao.dart';
@@ -67,6 +68,7 @@ export 'tables/investors_table.dart';
 export 'tables/purchase_invoices_table.dart';
 export 'tables/item_defaults_table.dart';
 export 'tables/app_settings_table.dart';
+export 'tables/transaction_gsts_table.dart';
 export 'daos/project_dao.dart';
 export 'daos/transaction_dao.dart';
 export 'daos/purchase_dao.dart';
@@ -113,6 +115,7 @@ part 'app_database.g.dart';
     PurchaseInvoices,
     ItemDefaults,
     AppSettings,
+    TransactionGsts,
   ],
   daos: [
     ProjectDao,
@@ -133,7 +136,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -154,8 +157,7 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 5) {
             await m.createTable(expenseCategories);
-            await m.addColumn(
-                transactions, transactions.expenseCategoryId);
+            await m.addColumn(transactions, transactions.expenseCategoryId);
             await _seedExpenseCategories();
           }
           if (from < 6) {
@@ -262,6 +264,16 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(purchases, purchases.igstAmount);
             await m.addColumn(purchases, purchases.isOtherCharge);
             await m.addColumn(transactions, transactions.invoiceId);
+          }
+          if (from < 20) {
+            // Optional GST on subcontract bills, expenses and machinery rent.
+            await m.createTable(transactionGsts);
+            await m.addColumn(measurementBills, measurementBills.gstRate);
+            await m.addColumn(measurementBills, measurementBills.cgstAmount);
+            await m.addColumn(measurementBills, measurementBills.sgstAmount);
+            await m.addColumn(measurementBills, measurementBills.igstAmount);
+            await m.addColumn(measurementBills, measurementBills.isInterState);
+            await m.addColumn(measurementBills, measurementBills.partyGstin);
           }
         },
       );
@@ -376,6 +388,7 @@ class AppDatabase extends _$AppDatabase {
   /// without deleting or locking the physical SQLite database file.
   Future<void> wipeAndResetData() async {
     await transaction(() async {
+      await delete(transactionGsts).go();
       await delete(transactions).go();
       await delete(investors).go();
       await delete(purchases).go();
@@ -385,8 +398,10 @@ class AppDatabase extends _$AppDatabase {
       await delete(deposits).go();
       await delete(workers).go();
       await delete(vendors).go();
-      await (delete(projects)..where((tbl) => tbl.code.isNotValue('ADMIN-OVH'))).go();
-      await (delete(bankAccounts)..where((tbl) => tbl.isDefault.equals(false))).go();
+      await (delete(projects)..where((tbl) => tbl.code.isNotValue('ADMIN-OVH')))
+          .go();
+      await (delete(bankAccounts)..where((tbl) => tbl.isDefault.equals(false)))
+          .go();
       await (update(bankAccounts)..where((tbl) => tbl.isDefault.equals(true)))
           .write(const BankAccountsCompanion(openingBalance: Value(0.0)));
     });

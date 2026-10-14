@@ -66,7 +66,8 @@ class BankAccountDao extends DatabaseAccessor<AppDatabase>
           final matchesAccount = t.bankAccountId == acc.id ||
               (acc.isCashAccount &&
                   t.bankAccountId == null &&
-                  (t.paymentMode == PaymentMode.cash || t.paymentMode == null)) ||
+                  (t.paymentMode == PaymentMode.cash ||
+                      t.paymentMode == null)) ||
               (!acc.isCashAccount &&
                   acc.isDefault &&
                   t.bankAccountId == null &&

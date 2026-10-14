@@ -27,6 +27,7 @@ import 'package:nex_ledger/features/reports/presentation/day_book_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/ledgers_hub_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/reports_center_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/gst_register_screen.dart';
+import 'package:nex_ledger/features/reports/presentation/input_gst_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/purchase_register_screen.dart';
 import 'package:nex_ledger/features/bank_accounts/presentation/bank_accounts_screen.dart';
 import 'package:nex_ledger/features/settings/presentation/settings_screen.dart';
@@ -307,6 +308,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/reports/purchase-register',
             builder: (c, s) => const PurchaseRegisterScreen(),
+          ),
+          GoRoute(
+            path: '/reports/input-gst',
+            builder: (c, s) => const InputGstScreen(),
           ),
           GoRoute(
             path: '/reports/gst-purchases',

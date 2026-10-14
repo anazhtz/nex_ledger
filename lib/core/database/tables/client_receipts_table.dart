@@ -12,18 +12,21 @@ class ClientReceipts extends Table {
       integer().references(Transactions, #id, onDelete: KeyAction.cascade)();
   IntColumn get projectId =>
       integer().references(Projects, #id, onDelete: KeyAction.cascade)();
-  IntColumn get clientRaBillId =>
-      integer().nullable().references(ClientRaBills, #id, onDelete: KeyAction.setNull)();
+  IntColumn get clientRaBillId => integer()
+      .nullable()
+      .references(ClientRaBills, #id, onDelete: KeyAction.setNull)();
 
   DateTimeColumn get receiptDate => dateTime()();
   RealColumn get amount => real()();
 
   TextColumn get paymentMode => textEnum<PaymentMode>()();
-  IntColumn get bankAccountId =>
-      integer().nullable().references(BankAccounts, #id, onDelete: KeyAction.setNull)();
+  IntColumn get bankAccountId => integer()
+      .nullable()
+      .references(BankAccounts, #id, onDelete: KeyAction.setNull)();
 
   BoolColumn get isAdvance => boolean().withDefault(const Constant(false))();
-  BoolColumn get isRetentionRelease => boolean().withDefault(const Constant(false))();
+  BoolColumn get isRetentionRelease =>
+      boolean().withDefault(const Constant(false))();
 
   TextColumn get referenceNo => text().nullable()();
   TextColumn get notes => text().nullable()();

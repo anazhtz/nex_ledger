@@ -23,7 +23,8 @@ final projectMaterialSummaryProvider =
   final repo = ref.watch(purchaseRepositoryProvider);
   final selectedProjectId = ref.watch(materialSelectedProjectIdProvider);
   final projectsAsync = ref.watch(projectListProvider);
-  final searchQuery = ref.watch(materialSearchQueryProvider).trim().toLowerCase();
+  final searchQuery =
+      ref.watch(materialSearchQueryProvider).trim().toLowerCase();
   final dateRange = ref.watch(materialDateRangeProvider);
   final selectedCategory = ref.watch(materialSelectedCategoryProvider);
 
@@ -38,7 +39,8 @@ final projectMaterialSummaryProvider =
     if (dateRange != null) {
       filtered = filtered.where((p) {
         final d = p.transaction.date;
-        return d.isAfter(dateRange.start.subtract(const Duration(seconds: 1))) &&
+        return d.isAfter(
+                dateRange.start.subtract(const Duration(seconds: 1))) &&
             d.isBefore(dateRange.end.add(const Duration(days: 1)));
       }).toList();
     }
@@ -46,7 +48,8 @@ final projectMaterialSummaryProvider =
     // 2. Filter by category
     if (selectedCategory != null && selectedCategory.isNotEmpty) {
       filtered = filtered.where((p) {
-        final cat = p.purchase.materialCategory?.trim().toLowerCase() ?? 'general material';
+        final cat = p.purchase.materialCategory?.trim().toLowerCase() ??
+            'general material';
         return cat == selectedCategory.toLowerCase();
       }).toList();
     }
@@ -54,10 +57,15 @@ final projectMaterialSummaryProvider =
     // 3. Filter by search query
     if (searchQuery.isNotEmpty) {
       filtered = filtered.where((p) {
-        final descMatch = p.purchase.itemDescription.toLowerCase().contains(searchQuery);
-        final catMatch = (p.purchase.materialCategory ?? '').toLowerCase().contains(searchQuery);
+        final descMatch =
+            p.purchase.itemDescription.toLowerCase().contains(searchQuery);
+        final catMatch = (p.purchase.materialCategory ?? '')
+            .toLowerCase()
+            .contains(searchQuery);
         final vendorMatch = p.vendor.name.toLowerCase().contains(searchQuery);
-        final refMatch = (p.transaction.referenceNo ?? '').toLowerCase().contains(searchQuery);
+        final refMatch = (p.transaction.referenceNo ?? '')
+            .toLowerCase()
+            .contains(searchQuery);
         return descMatch || catMatch || vendorMatch || refMatch;
       }).toList();
     }
@@ -83,9 +91,10 @@ final projectMaterialSummaryProvider =
 
       final first = list.first;
       final desc = first.purchase.itemDescription.trim();
-      final category = (first.purchase.materialCategory?.trim().isNotEmpty == true)
-          ? first.purchase.materialCategory!.trim()
-          : 'General Materials';
+      final category =
+          (first.purchase.materialCategory?.trim().isNotEmpty == true)
+              ? first.purchase.materialCategory!.trim()
+              : 'General Materials';
       final unit = (first.purchase.unit?.trim().isNotEmpty == true)
           ? first.purchase.unit!.trim()
           : 'Units';
@@ -129,7 +138,8 @@ final projectMaterialSummaryProvider =
 
     if (selectedProjectId != null) {
       projectsAsync.whenData((projects) {
-        final match = projects.where((p) => p.id == selectedProjectId).firstOrNull;
+        final match =
+            projects.where((p) => p.id == selectedProjectId).firstOrNull;
         if (match != null) {
           projectName = match.name;
           projectCode = match.code;

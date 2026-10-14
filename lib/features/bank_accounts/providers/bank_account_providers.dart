@@ -17,8 +17,7 @@ final bankAccountsWithBalancesProvider =
   return ref.watch(bankAccountRepositoryProvider).watchAccountsWithBalances();
 });
 
-final liquiditySummaryProvider =
-    StreamProvider<({double cashInHand, double inBanks, double totalLiquidity})>(
-        (ref) {
+final liquiditySummaryProvider = StreamProvider<
+    ({double cashInHand, double inBanks, double totalLiquidity})>((ref) {
   return ref.watch(bankAccountRepositoryProvider).watchLiquiditySummary();
 });
