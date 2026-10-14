@@ -27,7 +27,7 @@ class StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final effectiveIconColor = iconColor ?? const Color(0xFF4F46E5);
+    final effectiveIconColor = iconColor ?? const Color(0xFF1F5FBF);
 
     Widget cardChild = Card(
       elevation: 0,
@@ -59,20 +59,20 @@ class StatCard extends StatelessWidget {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEEF2FF),
+                        color: const Color(0xFFEAF1FB),
                         borderRadius: BorderRadius.circular(8.r),
-                        border: Border.all(color: const Color(0xFFC7D2FE)),
+                        border: Border.all(color: const Color(0xFFBFD4EE)),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.search_rounded, size: 12.sp, color: const Color(0xFF4F46E5)),
+                          Icon(Icons.search_rounded, size: 12.sp, color: const Color(0xFF1F5FBF)),
                           SizedBox(width: 4.w),
                           Text(
                             'Breakdown',
                             style: TextStyle(
                               fontSize: 10.sp,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFF4F46E5),
+                              color: const Color(0xFF1F5FBF),
                             ),
                           ),
                         ],

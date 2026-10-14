@@ -244,7 +244,7 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                     subtitle: 'Cash handed from office/bank',
                     icon: Icons.arrow_outward_rounded,
                     color: const Color(0xFF6366F1),
-                    bgColor: const Color(0xFFEEF2FF),
+                    bgColor: const Color(0xFFEAF1FB),
                   ),
                 ),
                 SizedBox(width: 12.w),

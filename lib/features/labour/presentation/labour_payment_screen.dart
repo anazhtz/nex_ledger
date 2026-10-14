@@ -402,7 +402,7 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                   label: 'Net Outstanding Wage Balance Due',
                                   value: CurrencyFormatter.format(_summary!.amountDue),
                                   bold: true,
-                                  valueColor: const Color(0xFF4F46E5),
+                                  valueColor: const Color(0xFF1F5FBF),
                                 ),
                                 const SizedBox(height: 16),
 

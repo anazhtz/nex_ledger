@@ -157,7 +157,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: const Row(
           children: [
-            Icon(Icons.shield_rounded, color: Color(0xFF4F46E5)),
+            Icon(Icons.shield_rounded, color: Color(0xFF1F5FBF)),
             SizedBox(width: 10),
             Text('Change Security PIN'),
           ],
@@ -273,12 +273,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 Container(
                                   padding: EdgeInsets.all(10.r),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFEEF2FF),
+                                    color: const Color(0xFFEAF1FB),
                                     borderRadius: BorderRadius.circular(12.r),
                                   ),
                                   child: Icon(
                                     Icons.shield_rounded,
-                                    color: const Color(0xFF4F46E5),
+                                    color: const Color(0xFF1F5FBF),
                                     size: 22.sp,
                                   ),
                                 ),
@@ -374,12 +374,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             Container(
                               padding: EdgeInsets.all(12.r),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFEEF2FF),
+                                color: const Color(0xFFEAF1FB),
                                 borderRadius: BorderRadius.circular(12.r),
                               ),
                               child: Icon(
                                 Icons.backup_rounded,
-                                color: const Color(0xFF4F46E5),
+                                color: const Color(0xFF1F5FBF),
                                 size: 24.sp,
                               ),
                             ),
@@ -525,8 +525,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                             final btn3 = OutlinedButton.icon(
                               onPressed: _backing ? null : _restoreDatabase,
-                              icon: Icon(Icons.upload_file_rounded, size: 18.sp, color: const Color(0xFF4F46E5)),
-                              label: const Text('Import (.db)', style: TextStyle(color: Color(0xFF4F46E5))),
+                              icon: Icon(Icons.upload_file_rounded, size: 18.sp, color: const Color(0xFF1F5FBF)),
+                              label: const Text('Import (.db)', style: TextStyle(color: Color(0xFF1F5FBF))),
                               style: OutlinedButton.styleFrom(
                                 side: const BorderSide(color: Color(0xFF6366F1)),
                                 padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -598,7 +598,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ),
                           child: Icon(
                             Icons.account_balance_rounded,
-                            color: const Color(0xFF4F46E5),
+                            color: const Color(0xFF1F5FBF),
                             size: 24.sp,
                           ),
                         ),

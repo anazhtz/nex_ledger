@@ -80,10 +80,10 @@ class DayBookScreen extends ConsumerWidget {
         Container(
           padding: EdgeInsets.all(10.r),
           decoration: BoxDecoration(
-            color: const Color(0xFF4F46E5).withValues(alpha: 0.1),
+            color: const Color(0xFF1F5FBF).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12.r),
           ),
-          child: Icon(Icons.today_rounded, color: const Color(0xFF4F46E5), size: 28.sp),
+          child: Icon(Icons.today_rounded, color: const Color(0xFF1F5FBF), size: 28.sp),
         ),
         SizedBox(width: 14.w),
         Expanded(
@@ -154,7 +154,7 @@ class DayBookScreen extends ConsumerWidget {
                   padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                   child: Row(
                     children: [
-                      Icon(Icons.calendar_month_rounded, size: 18.sp, color: const Color(0xFF4F46E5)),
+                      Icon(Icons.calendar_month_rounded, size: 18.sp, color: const Color(0xFF1F5FBF)),
                       SizedBox(width: 8.w),
                       Text(
                         isToday
@@ -213,10 +213,10 @@ class DayBookScreen extends ConsumerWidget {
               label: const Text('Today'),
               style: OutlinedButton.styleFrom(
                 backgroundColor: _isSameDay(selectedDate, DateTime.now())
-                    ? const Color(0xFFEEF2FF)
+                    ? const Color(0xFFEAF1FB)
                     : null,
                 foregroundColor: _isSameDay(selectedDate, DateTime.now())
-                    ? const Color(0xFF4F46E5)
+                    ? const Color(0xFF1F5FBF)
                     : const Color(0xFF475569),
                 side: BorderSide(
                   color: _isSameDay(selectedDate, DateTime.now())
@@ -235,10 +235,10 @@ class DayBookScreen extends ConsumerWidget {
               label: const Text('Yesterday'),
               style: OutlinedButton.styleFrom(
                 backgroundColor: _isSameDay(selectedDate, DateTime.now().subtract(const Duration(days: 1)))
-                    ? const Color(0xFFEEF2FF)
+                    ? const Color(0xFFEAF1FB)
                     : null,
                 foregroundColor: _isSameDay(selectedDate, DateTime.now().subtract(const Duration(days: 1)))
-                    ? const Color(0xFF4F46E5)
+                    ? const Color(0xFF1F5FBF)
                     : const Color(0xFF475569),
                 side: BorderSide(
                   color: _isSameDay(selectedDate, DateTime.now().subtract(const Duration(days: 1)))
@@ -336,8 +336,8 @@ class DayBookScreen extends ConsumerWidget {
           label: 'Closing Balance',
           value: CurrencyFormatter.format(report.closingBalance),
           icon: Icons.lock_clock_outlined,
-          iconColor: const Color(0xFF4F46E5),
-          valueColor: report.closingBalance < 0 ? const Color(0xFFDC2626) : const Color(0xFF4F46E5),
+          iconColor: const Color(0xFF1F5FBF),
+          valueColor: report.closingBalance < 0 ? const Color(0xFFDC2626) : const Color(0xFF1F5FBF),
           subtitle: 'Funds at close of day',
         ),
       ];
@@ -455,7 +455,7 @@ class DayBookScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(e.project.code, style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF4F46E5))),
+                  Text(e.project.code, style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF1F5FBF))),
                   Text(e.project.name, style: TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B))),
                 ],
               ),

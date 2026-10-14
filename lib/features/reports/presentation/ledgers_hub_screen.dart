@@ -909,7 +909,7 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                   : Icons.warning_amber_rounded,
               iconColor: isPayableNegative
                   ? const Color(0xFFEA580C)
-                  : (isCreditBalance ? const Color(0xFF4F46E5) : const Color(0xFFDC2626)),
+                  : (isCreditBalance ? const Color(0xFF1F5FBF) : const Color(0xFFDC2626)),
               subtitle: summary.closingBalance >= 0 ? 'Balance (Credit)' : 'Overdrawn (Debit)',
             );
 
@@ -993,7 +993,7 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                 DataCell(Text(
                   e.projectCode != null ? '${e.projectCode}' : '—',
                   style: TextStyle(
-                    color: e.projectCode != null ? const Color(0xFF4F46E5) : const Color(0xFF94A3B8),
+                    color: e.projectCode != null ? const Color(0xFF1F5FBF) : const Color(0xFF94A3B8),
                     fontWeight: FontWeight.w600,
                   ),
                 )),
@@ -1025,7 +1025,7 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.h),
                       decoration: BoxDecoration(
-                        color: e.runningBalance >= 0 ? const Color(0xFFEEF2FF) : const Color(0xFFFEF2F2),
+                        color: e.runningBalance >= 0 ? const Color(0xFFEAF1FB) : const Color(0xFFFEF2F2),
                         borderRadius: BorderRadius.circular(4.r),
                       ),
                       child: Text(
@@ -1033,7 +1033,7 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                         style: TextStyle(
                           fontSize: 9.sp,
                           fontWeight: FontWeight.w700,
-                          color: e.runningBalance >= 0 ? const Color(0xFF4F46E5) : const Color(0xFFDC2626),
+                          color: e.runningBalance >= 0 ? const Color(0xFF1F5FBF) : const Color(0xFFDC2626),
                         ),
                       ),
                     ),

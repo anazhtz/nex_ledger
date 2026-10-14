@@ -235,7 +235,7 @@ class _EquipmentHubScreenState extends ConsumerState<EquipmentHubScreen>
                     subtitle: 'Gross Rental: ${CurrencyFormatter.format(m.totalGrossRentalIncurred)}',
                     icon: Icons.access_time_rounded,
                     color: const Color(0xFF6366F1),
-                    bgColor: const Color(0xFFEEF2FF),
+                    bgColor: const Color(0xFFEAF1FB),
                   ),
                 ),
                 SizedBox(width: 12.w),

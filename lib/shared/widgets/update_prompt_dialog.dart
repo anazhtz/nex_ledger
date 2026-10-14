@@ -26,11 +26,11 @@ class UpdatePromptDialog extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFF4F46E5).withAlpha(30),
+              color: const Color(0xFF1F5FBF).withAlpha(30),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.system_update_alt_rounded,
-                color: Color(0xFF4F46E5), size: 24),
+                color: Color(0xFF1F5FBF), size: 24),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -46,7 +46,7 @@ class UpdatePromptDialog extends StatelessWidget {
                   'NexLedger v${updateInfo.latestVersion}',
                   style: const TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF4F46E5),
+                    color: Color(0xFF1F5FBF),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -136,7 +136,7 @@ class UpdatePromptDialog extends StatelessWidget {
           icon: const Icon(Icons.download_rounded, size: 18),
           label: const Text('Download & Update'),
           style: FilledButton.styleFrom(
-            backgroundColor: const Color(0xFF4F46E5),
+            backgroundColor: const Color(0xFF1F5FBF),
           ),
         ),
       ],

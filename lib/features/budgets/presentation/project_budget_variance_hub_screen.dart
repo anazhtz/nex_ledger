@@ -297,7 +297,7 @@ class _ProjectBudgetVarianceHubScreenState
                     subtitle: '${m.portfolioUtilizationPercentage.toStringAsFixed(1)}% total utilized',
                     icon: Icons.receipt_long_rounded,
                     color: const Color(0xFF6366F1),
-                    bgColor: const Color(0xFFEEF2FF),
+                    bgColor: const Color(0xFFEAF1FB),
                   ),
                 ),
                 SizedBox(width: 12.w),
@@ -542,7 +542,7 @@ class _ProjectBudgetVarianceHubScreenState
                     IconButton(
                       onPressed: () => context.go('/reports/project-pnl'),
                       tooltip: 'View Project P&L',
-                      icon: Icon(Icons.analytics_outlined, size: 18.sp, color: const Color(0xFF4F46E5)),
+                      icon: Icon(Icons.analytics_outlined, size: 18.sp, color: const Color(0xFF1F5FBF)),
                     ),
                   ],
                 ),

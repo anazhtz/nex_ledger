@@ -25,12 +25,12 @@ class KeyboardShortcutsDialog extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(8.r),
             decoration: BoxDecoration(
-              color: const Color(0xFFEEF2FF),
+              color: const Color(0xFFEAF1FB),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(
               Icons.keyboard_rounded,
-              color: const Color(0xFF4F46E5),
+              color: const Color(0xFF1F5FBF),
               size: 22.sp,
             ),
           ),
@@ -112,7 +112,7 @@ class KeyboardShortcutsDialog extends StatelessWidget {
         style: TextStyle(
           fontSize: 12.sp,
           fontWeight: FontWeight.bold,
-          color: const Color(0xFF4F46E5),
+          color: const Color(0xFF1F5FBF),
           letterSpacing: 0.5,
         ),
       ),

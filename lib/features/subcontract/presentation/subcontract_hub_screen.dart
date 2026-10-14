@@ -133,8 +133,8 @@ class _SubcontractHubScreenState extends ConsumerState<SubcontractHubScreen>
                         controller: _tabController,
                         isScrollable: true,
                         tabAlignment: TabAlignment.start,
-                        indicatorColor: const Color(0xFF4F46E5),
-                        labelColor: const Color(0xFF4F46E5),
+                        indicatorColor: const Color(0xFF1F5FBF),
+                        labelColor: const Color(0xFF1F5FBF),
                         unselectedLabelColor: const Color(0xFF64748B),
                         labelStyle: TextStyle(
                             fontSize: 13.sp, fontWeight: FontWeight.bold),
@@ -245,7 +245,7 @@ class _SubcontractHubScreenState extends ConsumerState<SubcontractHubScreen>
           subtitle: 'Settled against bills',
           icon: Icons.payments_outlined,
           color: const Color(0xFF6366F1),
-          bgColor: const Color(0xFFEEF2FF),
+          bgColor: const Color(0xFFEAF1FB),
         ),
         SizedBox(width: 12.w),
         _buildKpiCard(
@@ -366,7 +366,7 @@ class _SubcontractHubScreenState extends ConsumerState<SubcontractHubScreen>
                     wo.orderNumber,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF4F46E5),
+                      color: const Color(0xFF1F5FBF),
                       decoration: TextDecoration.underline,
                     ),
                   ),
@@ -428,7 +428,7 @@ class _SubcontractHubScreenState extends ConsumerState<SubcontractHubScreen>
                                 backgroundColor: const Color(0xFFE2E8F0),
                                 color: pct >= 100
                                     ? const Color(0xFF10B981)
-                                    : const Color(0xFF4F46E5),
+                                    : const Color(0xFF1F5FBF),
                                 minHeight: 6.h,
                                 borderRadius: BorderRadius.circular(3.r),
                               ),
@@ -479,7 +479,7 @@ class _SubcontractHubScreenState extends ConsumerState<SubcontractHubScreen>
                     IconButton(
                       icon: Icon(Icons.straighten_rounded, size: 17.sp),
                       tooltip: 'Record Measurement (RA Bill)',
-                      color: const Color(0xFF4F46E5),
+                      color: const Color(0xFF1F5FBF),
                       onPressed: () => context.push(
                         '/subcontracts/measurement/new?workOrderId=${wo.id}',
                       ),

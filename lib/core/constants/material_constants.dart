@@ -187,7 +187,7 @@ const List<MaterialCategoryPreset> kStandardMaterialCategories = [
     name: 'Hardware & Fasteners',
     defaultUnit: 'Nos',
     icon: Icons.hardware_rounded,
-    color: Color(0xFF4F46E5),
+    color: Color(0xFF1F5FBF),
     commonItems: [
       'M12 Heavy Anchor Fasteners',
       'SS 304 Grade Door Hinges & Mortise Lock',

@@ -117,11 +117,11 @@ class _MaterialRegisterScreenState
                     Container(
                       padding: EdgeInsets.all(10.r),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEEF2FF),
+                        color: const Color(0xFFEAF1FB),
                         borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: Icon(Icons.local_shipping_rounded,
-                          color: const Color(0xFF4F46E5), size: 22.sp),
+                          color: const Color(0xFF1F5FBF), size: 22.sp),
                     ),
                     SizedBox(width: 14.w),
                     Expanded(
@@ -712,7 +712,7 @@ class _MaterialRegisterScreenState
                             padding: EdgeInsets.symmetric(
                                 horizontal: 8.w, vertical: 3.h),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFEEF2FF),
+                              color: const Color(0xFFEAF1FB),
                               borderRadius: BorderRadius.circular(6.r),
                             ),
                             child: Text(
@@ -720,7 +720,7 @@ class _MaterialRegisterScreenState
                               style: TextStyle(
                                 fontSize: 11.sp,
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFF4F46E5),
+                                color: const Color(0xFF1F5FBF),
                               ),
                             ),
                           )),

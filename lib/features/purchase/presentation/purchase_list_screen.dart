@@ -222,12 +222,12 @@ class PurchaseListScreen extends ConsumerWidget {
                                       margin: const EdgeInsets.only(right: 6),
                                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFFEEF2FF),
+                                        color: const Color(0xFFEAF1FB),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
                                         pd.purchase.materialCategory!,
-                                        style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.bold, color: const Color(0xFF4F46E5)),
+                                        style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.bold, color: const Color(0xFF1F5FBF)),
                                       ),
                                     ),
                                   Text(
@@ -415,13 +415,13 @@ class PurchaseListScreen extends ConsumerWidget {
               margin: EdgeInsets.only(bottom: 12.h),
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               decoration: BoxDecoration(
-                color: const Color(0xFFEEF2FF),
+                color: const Color(0xFFEAF1FB),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: const Color(0xFFC7D2FE)),
+                border: Border.all(color: const Color(0xFFBFD4EE)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.inventory_2_rounded, color: const Color(0xFF4F46E5), size: 20.sp),
+                  Icon(Icons.inventory_2_rounded, color: const Color(0xFF1F5FBF), size: 20.sp),
                   SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
@@ -463,7 +463,7 @@ class PurchaseListScreen extends ConsumerWidget {
                       DataCell(Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.category_outlined, size: 16.sp, color: const Color(0xFF4F46E5)),
+                          Icon(Icons.category_outlined, size: 16.sp, color: const Color(0xFF1F5FBF)),
                           SizedBox(width: 6.w),
                           Text(m.categoryName, style: const TextStyle(fontWeight: FontWeight.w600)),
                         ],

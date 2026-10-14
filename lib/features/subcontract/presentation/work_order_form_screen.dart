@@ -357,7 +357,7 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                                 child: ChoiceChip(
                                   label: Text(tradePreset.name),
                                   selected: isSelected,
-                                  selectedColor: const Color(0xFF4F46E5),
+                                  selectedColor: const Color(0xFF1F5FBF),
                                   labelStyle: TextStyle(
                                     fontSize: 12.sp,
                                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,

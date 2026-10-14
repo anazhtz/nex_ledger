@@ -156,7 +156,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                                 : Icon(Icons.save_rounded, size: 18.sp),
                             label: Text(_saving ? 'Saving...' : 'Save Daily Attendance'),
                             style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFF4F46E5),
+                              backgroundColor: const Color(0xFF1F5FBF),
                               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
                             ),
                           )
@@ -201,7 +201,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.calendar_month_rounded, size: 18.sp, color: const Color(0xFF4F46E5)),
+                            Icon(Icons.calendar_month_rounded, size: 18.sp, color: const Color(0xFF1F5FBF)),
                             SizedBox(width: 8.w),
                             Text(
                               DateFormatter.format(selectedDate),
@@ -430,12 +430,12 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                                       leading: Container(
                                         padding: EdgeInsets.all(8.r),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFEEF2FF),
+                                          color: const Color(0xFFEAF1FB),
                                           borderRadius: BorderRadius.circular(8.r),
                                         ),
                                         child: Icon(
                                           Icons.person_rounded,
-                                          color: const Color(0xFF4F46E5),
+                                          color: const Color(0xFF1F5FBF),
                                           size: 20.sp,
                                         ),
                                       ),
@@ -454,7 +454,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                                               padding: EdgeInsets.symmetric(
                                                   horizontal: 6.w, vertical: 2.h),
                                               decoration: BoxDecoration(
-                                                color: const Color(0xFFEEF2FF),
+                                                color: const Color(0xFFEAF1FB),
                                                 borderRadius: BorderRadius.circular(4.r),
                                               ),
                                               child: Text(
@@ -462,7 +462,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                                                 style: TextStyle(
                                                   fontSize: 10.sp,
                                                   fontWeight: FontWeight.bold,
-                                                  color: const Color(0xFF4F46E5),
+                                                  color: const Color(0xFF1F5FBF),
                                                 ),
                                               ),
                                             ),

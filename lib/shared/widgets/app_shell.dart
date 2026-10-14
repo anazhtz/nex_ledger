@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
+import 'package:nex_ledger/core/theme/app_theme.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/features/auth/providers/auth_provider.dart';
 import 'package:nex_ledger/features/cash_book/providers/cash_book_providers.dart';
@@ -213,27 +214,13 @@ class _AppShellState extends ConsumerState<AppShell> {
                 duration: const Duration(milliseconds: 200),
                 curve: Curves.easeInOut,
                 width: sidebarWidth,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  border: Border(
-                    right: BorderSide(
-                      color: theme.colorScheme.outlineVariant.withOpacity(0.6),
-                    ),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
-                      blurRadius: 10,
-                      offset: const Offset(2, 0),
-                    ),
-                  ],
-                ),
+                decoration: const BoxDecoration(color: AppTheme.navy),
                 child: Column(
                   children: [
                     // App Logo & Header
                     _buildHeader(theme, effectiveCollapsed),
 
-                    const Divider(height: 1),
+                    Divider(height: 1, color: Colors.white.withValues(alpha: 0.12)),
 
                     // Navigation List
                     Expanded(
@@ -247,7 +234,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                       ),
                     ),
 
-                    const Divider(height: 1),
+                    Divider(height: 1, color: Colors.white.withValues(alpha: 0.12)),
 
                     // Sidebar Footer (Collapse Toggle & Status)
                     _buildFooter(theme, effectiveCollapsed),
@@ -258,7 +245,7 @@ class _AppShellState extends ConsumerState<AppShell> {
               // Main Page Content Area with Global Active Project Top Bar
               Expanded(
                 child: Container(
-                  color: theme.colorScheme.surfaceContainerLowest,
+                  color: AppTheme.surfaceBg,
                   child: Column(
                     children: [
                       // Top Global Active Project Context Bar
@@ -266,6 +253,8 @@ class _AppShellState extends ConsumerState<AppShell> {
 
                       // Active Screen Child
                       Expanded(child: widget.child),
+
+                      _buildStatusBar(),
                     ],
                   ),
                 ),
@@ -316,13 +305,13 @@ class _AppShellState extends ConsumerState<AppShell> {
                       Container(
                         padding: EdgeInsets.all(6.r),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEEF2FF),
+                          color: const Color(0xFFEAF1FB),
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                         child: Icon(
                           Icons.domain_rounded,
                           size: 18.sp,
-                          color: const Color(0xFF4F46E5),
+                          color: const Color(0xFF1F5FBF),
                         ),
                       ),
                       SizedBox(width: 8.w),
@@ -353,10 +342,10 @@ class _AppShellState extends ConsumerState<AppShell> {
                             padding: EdgeInsets.symmetric(
                                 horizontal: 12.w, vertical: 4.h),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFEEF2FF),
+                              color: const Color(0xFFEAF1FB),
                               borderRadius: BorderRadius.circular(8.r),
                               border: Border.all(
-                                color: const Color(0xFFC7D2FE),
+                                color: const Color(0xFFBFD4EE),
                               ),
                             ),
                             child: DropdownButtonHideUnderline(
@@ -365,13 +354,13 @@ class _AppShellState extends ConsumerState<AppShell> {
                                 isDense: true,
                                 icon: const Icon(
                                   Icons.keyboard_arrow_down_rounded,
-                                  color: Color(0xFF4F46E5),
+                                  color: Color(0xFF1F5FBF),
                                   size: 20,
                                 ),
                                 style: TextStyle(
                                   fontSize: 13.sp,
                                   fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF4F46E5),
+                                  color: const Color(0xFF1F5FBF),
                                 ),
                                 onChanged: (int? newId) {
                                   ref
@@ -385,7 +374,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                                       children: [
                                         Icon(Icons.border_all_rounded,
                                             size: 16.sp,
-                                            color: const Color(0xFF4F46E5)),
+                                            color: const Color(0xFF1F5FBF)),
                                         SizedBox(width: 6.w),
                                         const Text(
                                             'All Projects (Company Overview)'),
@@ -401,7 +390,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                                             padding: EdgeInsets.symmetric(
                                                 horizontal: 6.w, vertical: 2.h),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFF4F46E5)
+                                              color: const Color(0xFF1F5FBF)
                                                   .withValues(alpha: 0.1),
                                               borderRadius:
                                                   BorderRadius.circular(4.r),
@@ -411,7 +400,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                                               style: TextStyle(
                                                 fontSize: 11.sp,
                                                 fontWeight: FontWeight.bold,
-                                                color: const Color(0xFF4F46E5),
+                                                color: const Color(0xFF1F5FBF),
                                               ),
                                             ),
                                           ),
@@ -568,15 +557,17 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   Widget _buildHeader(ThemeData theme, bool isCollapsed) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 18.h),
       child: Row(
+        mainAxisAlignment:
+            isCollapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(10.r),
+            borderRadius: BorderRadius.circular(6.r),
             child: Image.asset(
               'assets/images/app_logo.png',
-              width: 36.r,
-              height: 36.r,
+              width: 38.r,
+              height: 38.r,
               fit: BoxFit.cover,
             ),
           ),
@@ -587,26 +578,60 @@ class _AppShellState extends ConsumerState<AppShell> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'NexLedger',
+                    'NEXLEDGER',
                     style: TextStyle(
                       fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.3,
-                      color: theme.colorScheme.onSurface,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
+                      color: Colors.white,
                     ),
                   ),
                   Text(
-                    'Mini ERP Desktop',
+                    'Builders ERP',
                     style: TextStyle(
                       fontSize: 11.sp,
                       fontWeight: FontWeight.w500,
-                      color: theme.colorScheme.onSurfaceVariant,
+                      color: Colors.white.withValues(alpha: 0.65),
                     ),
                   ),
                 ],
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  /// Indian financial year label, e.g. 2026-27 (April to March).
+  String get _financialYear {
+    final now = DateTime.now();
+    final start = now.month >= 4 ? now.year : now.year - 1;
+    return '$start-${((start + 1) % 100).toString().padLeft(2, '0')}';
+  }
+
+  Widget _buildStatusBar() {
+    final style = TextStyle(fontSize: 11.5.sp, color: AppTheme.textMuted);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 6.h),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: AppTheme.borderColor)),
+      ),
+      child: Row(
+        children: [
+          Text('Financial Year : $_financialYear', style: style),
+          SizedBox(width: 24.w),
+          Text('User : Admin', style: style),
+          const Spacer(),
+          Container(
+            width: 7.r,
+            height: 7.r,
+            decoration: const BoxDecoration(
+                shape: BoxShape.circle, color: AppTheme.successGreen),
+          ),
+          SizedBox(width: 6.w),
+          Text('Offline · data stored on this computer', style: style),
         ],
       ),
     );
@@ -638,7 +663,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                   fontSize: 10.sp,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.0,
-                  color: theme.colorScheme.primary.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.5),
                 ),
               ),
             ),
@@ -670,44 +695,40 @@ class _AppShellState extends ConsumerState<AppShell> {
     required ThemeData theme,
     required bool isCollapsed,
   }) {
-    final activeBg = theme.colorScheme.primaryContainer.withOpacity(0.6);
-    final activeFg = theme.colorScheme.primary;
-    final inactiveFg = theme.colorScheme.onSurfaceVariant;
-
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 3.h),
+      padding: EdgeInsets.symmetric(vertical: 1.5.h),
       child: Tooltip(
         message: isCollapsed ? item.label : '',
         waitDuration: const Duration(milliseconds: 300),
         child: Material(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(10.r),
+          borderRadius: BorderRadius.circular(4.r),
           child: InkWell(
             onTap: () => context.go(item.path),
-            borderRadius: BorderRadius.circular(10.r),
-            hoverColor: theme.colorScheme.primary.withOpacity(0.06),
-            splashColor: theme.colorScheme.primary.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(4.r),
+            hoverColor: Colors.white.withValues(alpha: 0.07),
+            splashColor: Colors.white.withValues(alpha: 0.12),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
               padding: EdgeInsets.symmetric(
-                horizontal: isCollapsed ? 12.w : 14.w,
-                vertical: 10.h,
+                horizontal: isCollapsed ? 0 : 14.w,
+                vertical: 11.h,
               ),
               decoration: BoxDecoration(
-                color: isSelected ? activeBg : Colors.transparent,
-                borderRadius: BorderRadius.circular(10.r),
-                border: isSelected
-                    ? Border.all(
-                        color: theme.colorScheme.primary.withOpacity(0.2),
-                      )
-                    : null,
+                color: isSelected ? AppTheme.navyActive : Colors.transparent,
+                borderRadius: BorderRadius.circular(4.r),
               ),
               child: Row(
+                mainAxisAlignment: isCollapsed
+                    ? MainAxisAlignment.center
+                    : MainAxisAlignment.start,
                 children: [
                   Icon(
                     item.icon,
                     size: 20.sp,
-                    color: isSelected ? activeFg : inactiveFg,
+                    color: isSelected
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.8),
                   ),
                   if (!isCollapsed) ...[
                     SizedBox(width: 12.w),
@@ -715,25 +736,16 @@ class _AppShellState extends ConsumerState<AppShell> {
                       child: Text(
                         item.label,
                         style: TextStyle(
-                          fontSize: 13.sp,
+                          fontSize: 13.5.sp,
                           fontWeight:
                               isSelected ? FontWeight.w700 : FontWeight.w500,
                           color: isSelected
-                              ? activeFg
-                              : theme.colorScheme.onSurface,
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.88),
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    if (isSelected)
-                      Container(
-                        width: 6.w,
-                        height: 6.h,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: activeFg,
-                        ),
-                      ),
                   ],
                 ],
               ),
@@ -746,68 +758,54 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   Widget _buildFooter(ThemeData theme, bool isCollapsed) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
       child: Row(
+        mainAxisAlignment:
+            isCollapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
         children: [
-          IconButton(
-            onPressed: () {
-              setState(() {
-                _isCollapsed = !_isCollapsed;
-              });
-            },
-            icon: Icon(
-              isCollapsed
-                  ? Icons.chevron_right_rounded
-                  : Icons.chevron_left_rounded,
-              color: theme.colorScheme.onSurfaceVariant,
-              size: 22.sp,
-            ),
-            tooltip: isCollapsed ? 'Expand Menu' : 'Collapse Menu',
-          ),
           if (!isCollapsed) ...[
-            SizedBox(width: 6.w),
+            CircleAvatar(
+              radius: 15.r,
+              backgroundColor: Colors.white.withValues(alpha: 0.18),
+              child: Icon(Icons.person_rounded,
+                  size: 18.sp, color: Colors.white),
+            ),
+            SizedBox(width: 10.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 7.w,
-                        height: 7.h,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.green,
-                        ),
-                      ),
-                      SizedBox(width: 6.w),
-                      Expanded(
-                        child: Text(
-                          'Offline Mode',
-                          style: TextStyle(
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.w600,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    'Admin',
+                    style: TextStyle(
+                      fontSize: 12.5.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ),
                   Text(
-                    'SQLite Local Engine',
+                    'Single-user mode',
                     style: TextStyle(
-                      fontSize: 10.sp,
-                      color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                      fontSize: 10.5.sp,
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
                   ),
                 ],
               ),
             ),
           ],
+          IconButton(
+            onPressed: () => setState(() => _isCollapsed = !_isCollapsed),
+            icon: Icon(
+              isCollapsed
+                  ? Icons.chevron_right_rounded
+                  : Icons.chevron_left_rounded,
+              color: Colors.white.withValues(alpha: 0.8),
+              size: 22.sp,
+            ),
+            tooltip: isCollapsed ? 'Expand Menu' : 'Collapse Menu',
+          ),
         ],
       ),
     );

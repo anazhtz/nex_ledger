@@ -149,12 +149,12 @@ class _RestoreDatabaseDialogState extends ConsumerState<RestoreDatabaseDialog> {
                   Container(
                     padding: EdgeInsets.all(10.r),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEEF2FF),
+                      color: const Color(0xFFEAF1FB),
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Icon(
                       Icons.restore_page_rounded,
-                      color: const Color(0xFF4F46E5),
+                      color: const Color(0xFF1F5FBF),
                       size: 24.sp,
                     ),
                   ),

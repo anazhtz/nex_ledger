@@ -131,8 +131,8 @@ class _ClientBillingHubScreenState extends ConsumerState<ClientBillingHubScreen>
                       controller: _tabController,
                       isScrollable: true,
                       tabAlignment: TabAlignment.start,
-                      indicatorColor: const Color(0xFF4F46E5),
-                      labelColor: const Color(0xFF4F46E5),
+                      indicatorColor: const Color(0xFF1F5FBF),
+                      labelColor: const Color(0xFF1F5FBF),
                       unselectedLabelColor: const Color(0xFF64748B),
                       labelStyle: TextStyle(
                           fontSize: 13.sp, fontWeight: FontWeight.bold),
@@ -255,7 +255,7 @@ class _ClientBillingHubScreenState extends ConsumerState<ClientBillingHubScreen>
                     subtitle: 'Bank / Cheque receipts',
                     icon: Icons.savings_rounded,
                     color: const Color(0xFF6366F1),
-                    bgColor: const Color(0xFFEEF2FF),
+                    bgColor: const Color(0xFFEAF1FB),
                   ),
                 ),
                 SizedBox(width: 12.w),
@@ -426,7 +426,7 @@ class _ClientBillingHubScreenState extends ConsumerState<ClientBillingHubScreen>
                         backgroundColor: const Color(0xFFE2E8F0),
                         color: pct >= 100
                             ? const Color(0xFF10B981)
-                            : const Color(0xFF4F46E5),
+                            : const Color(0xFF1F5FBF),
                         minHeight: 6.h,
                         borderRadius: BorderRadius.circular(3.r),
                       ),
@@ -477,7 +477,7 @@ class _ClientBillingHubScreenState extends ConsumerState<ClientBillingHubScreen>
                     IconButton(
                       icon: Icon(Icons.add_chart_rounded, size: 17.sp),
                       tooltip: 'Raise RA Bill',
-                      color: const Color(0xFF4F46E5),
+                      color: const Color(0xFF1F5FBF),
                       onPressed: () => context.push(
                         '/client-billing/ra-bills/new?projectId=${p.id}',
                       ),
@@ -536,7 +536,7 @@ class _ClientBillingHubScreenState extends ConsumerState<ClientBillingHubScreen>
                 b.billNumber,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF4F46E5),
+                  color: Color(0xFF1F5FBF),
                 ),
               )),
               DataCell(Text(DateFormatter.format(b.billDate))),

@@ -164,7 +164,7 @@ class WorkOrderDetailScreen extends ConsumerWidget {
                               value: CurrencyFormatter.format(summary.totalPaid),
                               subtitle: 'Disbursed to contractor',
                               color: const Color(0xFF6366F1),
-                              bgColor: const Color(0xFFEEF2FF),
+                              bgColor: const Color(0xFFEAF1FB),
                               icon: Icons.payments_outlined,
                             ),
                             SizedBox(width: 12.w),
@@ -216,7 +216,7 @@ class WorkOrderDetailScreen extends ConsumerWidget {
                                       fontWeight: FontWeight.bold,
                                       color: summary.progressPercentage >= 100
                                           ? const Color(0xFF10B981)
-                                          : const Color(0xFF4F46E5),
+                                          : const Color(0xFF1F5FBF),
                                     ),
                                   ),
                                 ],
@@ -230,7 +230,7 @@ class WorkOrderDetailScreen extends ConsumerWidget {
                                 backgroundColor: const Color(0xFFE2E8F0),
                                 color: summary.progressPercentage >= 100
                                     ? const Color(0xFF10B981)
-                                    : const Color(0xFF4F46E5),
+                                    : const Color(0xFF1F5FBF),
                               ),
                             ],
                           ),

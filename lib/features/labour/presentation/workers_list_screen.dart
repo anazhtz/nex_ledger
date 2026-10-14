@@ -140,7 +140,7 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
                             cells: [
                             DataCell(Text(
                               w.workerCode ?? '—',
-                              style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF4F46E5)),
+                              style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF1F5FBF)),
                             )),
                             DataCell(GestureDetector(
                               onTap: () => context.push('/labour/workers/${w.id}'),
@@ -149,7 +149,7 @@ class _WorkersListScreenState extends ConsumerState<WorkersListScreen> {
                                 style: const TextStyle(
                                     fontWeight: FontWeight.w600,
                                     decoration: TextDecoration.underline,
-                                    color: Color(0xFF4F46E5)),
+                                    color: Color(0xFF1F5FBF)),
                               ),
                             )),
                             DataCell(Container(

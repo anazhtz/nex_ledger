@@ -61,8 +61,8 @@ class BankAccountsScreen extends ConsumerWidget {
                   icon: const Icon(Icons.swap_horiz_rounded, size: 18),
                   label: const Text('Transfer Funds (Contra)'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF4F46E5),
-                    side: const BorderSide(color: Color(0xFF4F46E5)),
+                    foregroundColor: const Color(0xFF1F5FBF),
+                    side: const BorderSide(color: Color(0xFF1F5FBF)),
                   ),
                 ),
                 SizedBox(width: 12.w),
@@ -214,14 +214,14 @@ class BankAccountsScreen extends ConsumerWidget {
                                   padding: EdgeInsets.symmetric(
                                       horizontal: 6.w, vertical: 1.h),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFEEF2FF),
+                                    color: const Color(0xFFEAF1FB),
                                     borderRadius: BorderRadius.circular(4.r),
                                   ),
                                   child: Text(
                                     'Default',
                                     style: TextStyle(
                                       fontSize: 10.sp,
-                                      color: const Color(0xFF4F46E5),
+                                      color: const Color(0xFF1F5FBF),
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
@@ -527,7 +527,7 @@ class BankAccountsScreen extends ConsumerWidget {
         builder: (ctx, setState) => AlertDialog(
           title: Row(
             children: [
-              const Icon(Icons.swap_horiz_rounded, color: Color(0xFF4F46E5)),
+              const Icon(Icons.swap_horiz_rounded, color: Color(0xFF1F5FBF)),
               SizedBox(width: 8.w),
               const Text('Transfer Funds (Contra Entry)'),
             ],

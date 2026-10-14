@@ -58,10 +58,10 @@ class MaintenanceScreen extends ConsumerWidget {
                 height: 500.h,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppTheme.primaryIndigo.withValues(alpha: 0.15),
+                  color: AppTheme.primaryBlue.withValues(alpha: 0.15),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryIndigo.withValues(alpha: 0.15),
+                      color: AppTheme.primaryBlue.withValues(alpha: 0.15),
                       blurRadius: 140.r,
                     ),
                   ],
@@ -246,7 +246,7 @@ class MaintenanceScreen extends ConsumerWidget {
                             ),
                           ),
                           style: FilledButton.styleFrom(
-                            backgroundColor: AppTheme.primaryIndigo,
+                            backgroundColor: AppTheme.primaryBlue,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12.r),
                             ),

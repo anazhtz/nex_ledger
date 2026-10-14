@@ -6,11 +6,12 @@ import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/constants/material_constants.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
+import 'package:nex_ledger/core/theme/app_theme.dart';
+import 'package:nex_ledger/shared/widgets/erp_widgets.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
 import 'package:nex_ledger/features/bank_accounts/providers/bank_account_providers.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 import 'package:nex_ledger/features/budgets/presentation/widgets/budget_warning_banner.dart';
-import 'package:nex_ledger/features/purchase/models/material_consumption.dart';
 import 'package:nex_ledger/features/purchase/providers/purchase_providers.dart';
 
 class PurchaseFormScreen extends ConsumerStatefulWidget {
@@ -50,9 +51,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
     'Other',
   ];
 
-  final _categorySearchCtrl = TextEditingController();
   late List<MaterialCategoryPreset> _categories;
-  String _categorySearchQuery = '';
 
   int? _selectedProject;
   int? _selectedVendor;
@@ -64,19 +63,8 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
   bool _isAdvanceStock = false;
   bool _loading = false;
   bool _showAddVendor = false;
-  bool _expandAllCategories = false;
 
   bool get _isEditing => widget.purchaseId != null;
-
-  List<MaterialCategoryPreset> get _filteredCategories {
-    if (_categorySearchQuery.trim().isEmpty) return _categories;
-    final q = _categorySearchQuery.trim().toLowerCase();
-    return _categories.where((cat) {
-      final matchName = cat.name.toLowerCase().contains(q);
-      final matchItems = cat.commonItems.any((item) => item.toLowerCase().contains(q));
-      return matchName || matchItems;
-    }).toList();
-  }
 
   @override
   void initState() {
@@ -126,7 +114,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
               name: pd.purchase.materialCategory!,
               defaultUnit: pd.purchase.unit ?? 'Nos',
               icon: Icons.category_rounded,
-              color: const Color(0xFF4F46E5),
+              color: const Color(0xFF1F5FBF),
               commonItems: [pd.purchase.itemDescription],
             ),
           );
@@ -151,10 +139,10 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                 Container(
                   padding: EdgeInsets.all(8.r),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEEF2FF),
+                    color: const Color(0xFFEAF1FB),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
-                  child: Icon(Icons.category_rounded, color: const Color(0xFF4F46E5), size: 20.sp),
+                  child: Icon(Icons.category_rounded, color: const Color(0xFF1F5FBF), size: 20.sp),
                 ),
                 SizedBox(width: 10.w),
                 const Text('Add Custom Material Category'),
@@ -225,7 +213,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                     name: name,
                     defaultUnit: selectedUnit,
                     icon: Icons.category_rounded,
-                    color: const Color(0xFF4F46E5),
+                    color: const Color(0xFF1F5FBF),
                     commonItems: items.isNotEmpty ? items : [name],
                   );
 
@@ -238,13 +226,11 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                     } else if (_descCtrl.text.isEmpty) {
                       _descCtrl.text = name;
                     }
-                    _categorySearchCtrl.clear();
-                    _categorySearchQuery = '';
                   });
 
                   Navigator.pop(ctx);
                 },
-                style: FilledButton.styleFrom(backgroundColor: const Color(0xFF4F46E5)),
+                style: FilledButton.styleFrom(backgroundColor: const Color(0xFF1F5FBF)),
                 child: const Text('Add & Select Category'),
               ),
             ],
@@ -258,7 +244,6 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
 
   @override
   void dispose() {
-    _categorySearchCtrl.dispose();
     _descCtrl.dispose();
     _qtyCtrl.dispose();
     _rateCtrl.dispose();
@@ -304,7 +289,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
     if (picked != null) setState(() => _date = picked);
   }
 
-  Future<void> _submit() async {
+  Future<void> _submit({bool addNew = false}) async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedProject == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -466,7 +451,12 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
             backgroundColor: Color(0xFF059669),
           ),
         );
-        context.go('/purchases');
+        if (addNew) {
+          _formKey.currentState?.reset();
+          setState(_resetForNewEntry);
+        } else {
+          context.go('/purchases');
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -482,990 +472,693 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
     }
   }
 
+  double _parse(TextEditingController c) =>
+      double.tryParse(c.text.replaceAll(',', '').replaceAll(' ', '').trim()) ??
+      0.0;
+
+  InputDecoration _dec({String? hint, String? prefix, Widget? suffix}) =>
+      InputDecoration(hintText: hint, prefixText: prefix, suffixIcon: suffix);
+
+  String get _dateText => '${_date.day.toString().padLeft(2, '0')}-'
+      '${_date.month.toString().padLeft(2, '0')}-${_date.year}';
+
+  void _resetForNewEntry() {
+    _descCtrl.clear();
+    _qtyCtrl.text = '1';
+    _rateCtrl.clear();
+    _unitCtrl.text = 'Nos';
+    _amountCtrl.clear();
+    _paidAmountCtrl.clear();
+    _narrationCtrl.clear();
+    _refCtrl.clear();
+    _selectedCategory = null;
+    _paymentStatus = PaymentStatus.pending;
+    _paymentMode = null;
+    _isAdvanceStock = false;
+  }
+
+  Widget _tableHead(String text, {TextAlign align = TextAlign.left}) => Text(
+        text,
+        textAlign: align,
+        style: TextStyle(
+          fontSize: 12.5.sp,
+          fontWeight: FontWeight.w700,
+          color: AppTheme.textMain,
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final projectsAsync = ref.watch(projectListProvider);
     final vendorsAsync = ref.watch(vendorListProvider);
     final accountsAsync = ref.watch(bankAccountsWithBalancesProvider);
+
+    final total = _parse(_amountCtrl);
+    final paid = switch (_paymentStatus) {
+      PaymentStatus.paid => total,
+      PaymentStatus.partial => _parse(_paidAmountCtrl),
+      PaymentStatus.pending => 0.0,
+    };
+    final balance = (total - paid).clamp(0.0, double.infinity);
+
+    void goBack() => context.go('/purchases');
 
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.enter, control: true): _submit,
         const SingleActivator(LogicalKeyboardKey.enter, meta: true): _submit,
-        const SingleActivator(LogicalKeyboardKey.escape): () => context.go('/purchases'),
+        const SingleActivator(LogicalKeyboardKey.escape): goBack,
       },
       child: Focus(
         autofocus: true,
         child: Scaffold(
-          backgroundColor: theme.colorScheme.surfaceContainerLowest,
-          body: SingleChildScrollView(
-            padding: EdgeInsets.all(24.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back),
-                      onPressed: () => context.go('/purchases'),
-                    ),
-                    SizedBox(width: 8.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _isEditing ? 'Edit Purchase Entry' : 'New Purchase Entry',
-                            style: theme.textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            _isEditing
-                                ? 'Modify purchase details, rates, payment status, or vendor bills'
-                                : 'Record materials, equipment, petty expenses, and vendor credit bills',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF64748B),
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 20.h),
-                Center(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 720.w),
-                    child: Card(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16.r),
-                        side: const BorderSide(color: Color(0xFFE2E8F0)),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(24.w),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+          backgroundColor: AppTheme.surfaceBg,
+          body: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 20.h),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ErpPageHeader(
+                          title: _isEditing
+                              ? 'Edit Purchase Entry'
+                              : 'Purchase Entry',
+                          subtitle:
+                              'Record materials, equipment, petty expenses and vendor bills',
+                          onClose: goBack,
+                        ),
+                        SizedBox(height: 16.h),
+
+                        // ── Header details ───────────────────────────────
+                        ErpPanel(
+                          child: ErpColumns(
                             children: [
-                              Text(
-                                'Project & Vendor Details',
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF0F172A),
-                                ),
-                              ),
-                              SizedBox(height: 12.h),
-                              projectsAsync.when(
-                                loading: () => const SizedBox.shrink(),
-                                error: (e, _) => Text('Error loading projects: $e'),
-                                data: (projects) => _buildProjectSelector(
-                                  projects,
-                                  ref.watch(selectedProjectIdProvider),
-                                  theme,
-                                ),
-                              ),
-                              SizedBox(height: 16.h),
-                              vendorsAsync.when(
-                                loading: () => const SizedBox.shrink(),
-                                error: (_, __) => const SizedBox.shrink(),
-                                data: (vendors) {
-                                  final selectedVendorValue =
-                                      vendors.any((v) => v.id == _selectedVendor)
-                                          ? _selectedVendor
-                                          : null;
-                                  return Column(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: DropdownButtonFormField<int>(
-                                              value: selectedVendorValue,
-                                              decoration: const InputDecoration(
-                                                labelText: 'Vendor / Supplier *',
-                                                prefixIcon: Icon(Icons.store_outlined),
-                                              ),
-                                              items: vendors
-                                                  .map((v) => DropdownMenuItem(
-                                                        value: v.id,
-                                                        child: Text(v.name),
-                                                      ))
-                                                  .toList(),
-                                              onChanged: (v) =>
-                                                  setState(() => _selectedVendor = v),
-                                              validator: (v) =>
-                                                  v == null ? 'Required' : null,
-                                            ),
-                                          ),
-                                          SizedBox(width: 8.w),
-                                          TextButton.icon(
-                                            onPressed: () => setState(
-                                                () => _showAddVendor = !_showAddVendor),
-                                            icon: Icon(
-                                              _showAddVendor ? Icons.close : Icons.add,
-                                              size: 16.sp,
-                                            ),
-                                            label: Text(
-                                              _showAddVendor ? 'Cancel' : 'New Vendor',
-                                            ),
-                                          ),
-                                        ],
+                              Column(children: [
+                                ErpField(
+                                  label: 'Purchase Date',
+                                  required: true,
+                                  child: InkWell(
+                                    onTap: _pickDate,
+                                    child: InputDecorator(
+                                      decoration: _dec(
+                                        suffix: Icon(
+                                            Icons.calendar_today_outlined,
+                                            size: 16.sp),
                                       ),
-                                      if (_showAddVendor)
-                                        Padding(
-                                          padding: EdgeInsets.only(top: 8.h),
-                                          child: Row(
-                                            children: [
-                                              Expanded(
-                                                child: TextFormField(
-                                                  controller: _newVendorCtrl,
-                                                  decoration: const InputDecoration(
-                                                    labelText: 'New Vendor Name',
-                                                    hintText: 'e.g. ABC Steel Suppliers',
-                                                  ),
-                                                ),
-                                              ),
-                                              SizedBox(width: 8.w),
-                                              FilledButton(
-                                                onPressed: _addVendor,
-                                                child: const Text('Add'),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                    ],
-                                  );
-                                },
-                              ),
-                              SizedBox(height: 24.h),
-                               const Divider(color: Color(0xFFE2E8F0)),
-                              SizedBox(height: 16.h),
-                              Text(
-                                'Material Category & Item Details',
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF0F172A),
+                                      child: Text(_dateText,
+                                          style: TextStyle(fontSize: 13.sp)),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                               SizedBox(height: 8.h),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      'Material Category (Auto-sets unit & stats):',
-                                      style: TextStyle(
-                                        fontSize: 11.sp,
-                                        fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF64748B),
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                ErpField(
+                                  label: 'Bill / Challan No.',
+                                  child: TextFormField(
+                                    controller: _refCtrl,
+                                    decoration: _dec(hint: 'Invoice or challan number'),
                                   ),
-                                  SizedBox(width: 4.w),
-                                  TextButton.icon(
-                                    onPressed: () => _openAddCustomCategoryDialog(),
-                                    icon: Icon(Icons.add_circle_outline_rounded, size: 14.sp, color: const Color(0xFF4F46E5)),
-                                    label: Text(
-                                      '+ Add Category',
-                                      style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.bold, color: const Color(0xFF4F46E5)),
-                                    ),
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                                      visualDensity: VisualDensity.compact,
-                                    ),
-                                  ),
-                                  SizedBox(width: 4.w),
-                                  TextButton.icon(
-                                    onPressed: () => setState(() => _expandAllCategories = !_expandAllCategories),
-                                    icon: Icon(
-                                      _expandAllCategories ? Icons.unfold_less_rounded : Icons.grid_view_rounded,
-                                      size: 14.sp,
-                                    ),
-                                    label: Text(
-                                      _expandAllCategories ? 'Collapse' : 'View All (${_categories.length})',
-                                      style: TextStyle(fontSize: 11.sp),
-                                    ),
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                                      visualDensity: VisualDensity.compact,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 6.h),
-                              SizedBox(
-                                height: 38.h,
-                                child: TextField(
-                                  controller: _categorySearchCtrl,
-                                  style: TextStyle(fontSize: 12.sp),
-                                  decoration: InputDecoration(
-                                    hintText: 'Search categories & items (e.g. cement, 12mm, pipe, paint, bricks)...',
-                                    hintStyle: TextStyle(fontSize: 11.sp, color: const Color(0xFF94A3B8)),
-                                    prefixIcon: Icon(Icons.search_rounded, size: 16.sp, color: const Color(0xFF64748B)),
-                                    suffixIcon: _categorySearchQuery.isNotEmpty
-                                        ? IconButton(
-                                            icon: Icon(Icons.clear, size: 14.sp),
-                                            onPressed: () {
-                                              _categorySearchCtrl.clear();
-                                              setState(() => _categorySearchQuery = '');
-                                            },
-                                          )
-                                        : null,
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 0),
-                                    filled: true,
-                                    fillColor: const Color(0xFFF8FAFC),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.r),
-                                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.r),
-                                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8.r),
-                                      borderSide: const BorderSide(color: Color(0xFF4F46E5), width: 1.5),
-                                    ),
-                                  ),
-                                  onChanged: (val) {
-                                    setState(() => _categorySearchQuery = val);
-                                  },
                                 ),
-                              ),
-                              SizedBox(height: 8.h),
-                              if (_filteredCategories.isEmpty)
-                                Container(
-                                  padding: EdgeInsets.all(10.r),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF8FAFC),
-                                    borderRadius: BorderRadius.circular(8.r),
-                                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                                ErpField(
+                                  label: 'Category',
+                                  child: Row(children: [
+                                    Expanded(child: _buildCategoryDropdown()),
+                                    SizedBox(width: 6.w),
+                                    IconButton.outlined(
+                                      tooltip: 'Add custom category',
+                                      onPressed: () =>
+                                          _openAddCustomCategoryDialog(),
+                                      icon: Icon(Icons.add, size: 18.sp),
+                                    ),
+                                  ]),
+                                ),
+                              ]),
+                              Column(children: [
+                                ErpField(
+                                  label: 'Project / Site',
+                                  required: true,
+                                  child: projectsAsync.when(
+                                    loading: () => const LinearProgressIndicator(),
+                                    error: (e, _) => Text('Error: $e'),
+                                    data: _buildProjectDropdown,
                                   ),
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.search_off_rounded, color: const Color(0xFF64748B), size: 18.sp),
-                                      SizedBox(width: 8.w),
+                                ),
+                                ErpField(
+                                  label: 'Supplier / Vendor',
+                                  required: true,
+                                  child: vendorsAsync.when(
+                                    loading: () => const LinearProgressIndicator(),
+                                    error: (e, _) => Text('Error: $e'),
+                                    data: _buildVendorField,
+                                  ),
+                                ),
+                                if (_showAddVendor)
+                                  ErpField(
+                                    label: 'New Vendor',
+                                    child: Row(children: [
                                       Expanded(
-                                        child: Text(
-                                          'No category found for "$_categorySearchQuery".',
-                                          style: TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B)),
-                                          overflow: TextOverflow.ellipsis,
+                                        child: TextFormField(
+                                          controller: _newVendorCtrl,
+                                          decoration: _dec(
+                                              hint: 'e.g. ABC Steel Suppliers'),
                                         ),
                                       ),
-                                      SizedBox(width: 8.w),
-                                      FilledButton.icon(
-                                        onPressed: () => _openAddCustomCategoryDialog(prefillName: _categorySearchQuery.trim()),
-                                        icon: const Icon(Icons.add, size: 14),
-                                        label: const Text('Add Custom Category'),
-                                        style: FilledButton.styleFrom(
-                                          backgroundColor: const Color(0xFF4F46E5),
-                                          visualDensity: VisualDensity.compact,
-                                        ),
+                                      SizedBox(width: 6.w),
+                                      FilledButton(
+                                        onPressed: _addVendor,
+                                        child: const Text('Add'),
+                                      ),
+                                    ]),
+                                  ),
+                              ]),
+                              Column(children: [
+                                ErpField(
+                                  label: 'Payment Terms',
+                                  child: DropdownButtonFormField<PaymentStatus>(
+                                    value: _paymentStatus,
+                                    isExpanded: true,
+                                    decoration: _dec(),
+                                    items: const [
+                                      DropdownMenuItem(
+                                        value: PaymentStatus.pending,
+                                        child: Text('Credit (Unpaid)'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: PaymentStatus.partial,
+                                        child: Text('Partial Advance'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: PaymentStatus.paid,
+                                        child: Text('Paid in Full'),
                                       ),
                                     ],
-                                  ),
-                                )
-                              else if (_expandAllCategories)
-                                Wrap(
-                                  spacing: 8.w,
-                                  runSpacing: 8.h,
-                                  children: _filteredCategories.map((cat) => _buildCategoryChip(cat)).toList(),
-                                )
-                              else
-                                SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  physics: const BouncingScrollPhysics(),
-                                  child: Row(
-                                    children: _filteredCategories.map((cat) {
-                                      return Padding(
-                                        padding: EdgeInsets.only(right: 8.w),
-                                        child: _buildCategoryChip(cat),
-                                      );
-                                    }).toList(),
-                                  ),
-                                ),
-                              SizedBox(height: 10.h),
-
-                              // ─── Quick 1-Click Selectable Item Presets for Selected Category ───
-                              if (_selectedCategory != null) ...[
-                                () {
-                                  final currentPreset = _categories
-                                      .where((c) => c.name == _selectedCategory)
-                                      .firstOrNull;
-                                  if (currentPreset == null || currentPreset.commonItems.isEmpty) {
-                                    return const SizedBox.shrink();
-                                  }
-                                  return Container(
-                                    margin: EdgeInsets.only(bottom: 12.h),
-                                    padding: EdgeInsets.all(12.r),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF1F5F9),
-                                      borderRadius: BorderRadius.circular(12.r),
-                                      border: Border.all(color: const Color(0xFFCBD5E1)),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Icon(Icons.touch_app_rounded, size: 15.sp, color: const Color(0xFF4F46E5)),
-                                            SizedBox(width: 6.w),
-                                            Text(
-                                              'Quick Items for ${currentPreset.name} (Click to auto-fill):',
-                                              style: TextStyle(
-                                                fontSize: 11.sp,
-                                                fontWeight: FontWeight.bold,
-                                                color: const Color(0xFF1E293B),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 8.h),
-                                        SingleChildScrollView(
-                                          scrollDirection: Axis.horizontal,
-                                          physics: const BouncingScrollPhysics(),
-                                          child: Row(
-                                            children: currentPreset.commonItems.map((item) {
-                                              final isSelected = _descCtrl.text == item;
-                                              return Padding(
-                                                padding: EdgeInsets.only(right: 6.w),
-                                                child: ActionChip(
-                                                  avatar: Icon(
-                                                    isSelected ? Icons.check_circle_rounded : Icons.add_circle_outline_rounded,
-                                                    size: 14.sp,
-                                                    color: isSelected ? Colors.white : const Color(0xFF4F46E5),
-                                                  ),
-                                                  label: Text(item),
-                                                  backgroundColor: isSelected ? const Color(0xFF4F46E5) : Colors.white,
-                                                  side: BorderSide(
-                                                    color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFFCBD5E1),
-                                                  ),
-                                                  labelStyle: TextStyle(
-                                                    fontSize: 11.sp,
-                                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                                    color: isSelected ? Colors.white : const Color(0xFF1E293B),
-                                                  ),
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      _descCtrl.text = item;
-                                                      _unitCtrl.text = currentPreset.defaultUnit;
-                                                    });
-                                                  },
-                                                ),
-                                              );
-                                            }).toList(),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }(),
-                              ],
-
-                              // ─── Live In-Form Project Material Consumption Alert ───
-                              if (_selectedProject != null && _selectedCategory != null && !_isAdvanceStock)
-                                _buildLiveMaterialConsumptionCard(context),
-
-                              TextFormField(
-                                controller: _descCtrl,
-                                decoration: const InputDecoration(
-                                  labelText: 'Item / Material / Service Description *',
-                                  hintText: 'e.g. 53 Grade Cement, 12mm TMT Steel, Sand',
-                                  prefixIcon: Icon(Icons.inventory_2_outlined),
-                                ),
-                                validator: (v) =>
-                                    v == null || v.trim().isEmpty ? 'Required' : null,
-                              ),
-                              SizedBox(height: 14.h),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    flex: 3,
-                                    child: TextFormField(
-                                      controller: _qtyCtrl,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Qty *',
-                                        hintText: '1.0',
-                                      ),
-                                      keyboardType:
-                                          const TextInputType.numberWithOptions(decimal: true),
-                                      onChanged: (_) => _onQtyOrRateChanged(),
-                                      validator: (v) {
-                                        if (v == null || v.trim().isEmpty) return 'Required';
-                                        final num = double.tryParse(v.replaceAll(',', ''));
-                                        if (num == null || num <= 0) return 'Invalid';
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                  SizedBox(width: 10.w),
-                                  Expanded(
-                                    flex: 3,
-                                    child: DropdownButtonFormField<String>(
-                                      value: _commonUnits.contains(_unitCtrl.text)
-                                          ? _unitCtrl.text
-                                          : 'Nos',
-                                      isExpanded: true,
-                                      decoration: const InputDecoration(labelText: 'Unit'),
-                                      items: _commonUnits
-                                          .map((u) => DropdownMenuItem(
-                                                value: u,
-                                                child: Text(u),
-                                              ))
-                                          .toList(),
-                                      onChanged: (v) {
-                                        if (v != null) {
-                                          setState(() => _unitCtrl.text = v);
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                  SizedBox(width: 10.w),
-                                  Expanded(
-                                    flex: 4,
-                                    child: TextFormField(
-                                      controller: _rateCtrl,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Unit Rate (₹)',
-                                        hintText: '0.00',
-                                        prefixText: '₹ ',
-                                      ),
-                                      keyboardType:
-                                          const TextInputType.numberWithOptions(decimal: true),
-                                      onChanged: (_) => _onQtyOrRateChanged(),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 14.h),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: InkWell(
-                                      onTap: _pickDate,
-                                      child: InputDecorator(
-                                        decoration: const InputDecoration(
-                                          labelText: 'Purchase Date *',
-                                          prefixIcon: Icon(Icons.calendar_today_outlined),
-                                        ),
-                                        child: Text(
-                                          '${_date.day.toString().padLeft(2, '0')}/'
-                                          '${_date.month.toString().padLeft(2, '0')}/'
-                                          '${_date.year}',
-                                          style: TextStyle(
-                                            fontSize: 13.sp,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: 14.w),
-                                  Expanded(
-                                    child: TextFormField(
-                                      controller: _amountCtrl,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Total Bill Amount (₹) *',
-                                        prefixText: '₹ ',
-                                        helperText: 'Auto-calculated or enter total bill',
-                                      ),
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: theme.colorScheme.primary,
-                                      ),
-                                      keyboardType:
-                                          const TextInputType.numberWithOptions(decimal: true),
-                                      validator: (v) {
-                                        if (v == null || v.trim().isEmpty) return 'Required';
-                                        if (double.tryParse(v.replaceAll(',', '')) == null) {
-                                          return 'Invalid';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 8.h),
-
-                              // ─── Real-Time Project Budget Impact Warning ────────
-                              if (_selectedProject != null && !_isAdvanceStock)
-                                BudgetWarningBanner(
-                                  projectId: _selectedProject,
-                                  costHead: BudgetCostHead.materials,
-                                  addedAmount:
-                                      double.tryParse(_amountCtrl.text.replaceAll(',', '')) ?? 0.0,
-                                ),
-
-                              SizedBox(height: 16.h),
-                              const Divider(color: Color(0xFFE2E8F0)),
-                              SizedBox(height: 16.h),
-                              Text(
-                                'Payment Terms & Credit Options',
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF0F172A),
-                                ),
-                              ),
-                              SizedBox(height: 12.h),
-                              Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF8FAFC),
-                                  borderRadius: BorderRadius.circular(10.r),
-                                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                                ),
-                                padding: EdgeInsets.all(6.w),
-                                child: SegmentedButton<PaymentStatus>(
-                                  segments: const [
-                                    ButtonSegment(
-                                      value: PaymentStatus.pending,
-                                      label: Text('Vendor Credit (Unpaid)'),
-                                      icon: Icon(Icons.schedule_outlined, size: 16),
-                                    ),
-                                    ButtonSegment(
-                                      value: PaymentStatus.partial,
-                                      label: Text('Partial Advance'),
-                                      icon: Icon(Icons.pie_chart_outline, size: 16),
-                                    ),
-                                    ButtonSegment(
-                                      value: PaymentStatus.paid,
-                                      label: Text('Paid in Full'),
-                                      icon: Icon(Icons.check_circle_outline, size: 16),
-                                    ),
-                                  ],
-                                  selected: {_paymentStatus},
-                                  onSelectionChanged: (newSelection) {
-                                    setState(() {
-                                      _paymentStatus = newSelection.first;
-                                      if (_paymentStatus == PaymentStatus.paid) {
-                                        _paidAmountCtrl.text = _amountCtrl.text;
-                                      } else if (_paymentStatus == PaymentStatus.pending) {
-                                        _paidAmountCtrl.text = '0';
-                                      }
-                                    });
-                                  },
-                                ),
-                              ),
-                              SizedBox(height: 14.h),
-                              if (_paymentStatus == PaymentStatus.partial) ...[
-                                Container(
-                                  padding: EdgeInsets.all(14.w),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFEFF6FF),
-                                    borderRadius: BorderRadius.circular(10.r),
-                                    border: Border.all(color: const Color(0xFFBFDBFE)),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Icon(Icons.account_balance_wallet_outlined,
-                                              color: const Color(0xFF1D4ED8), size: 18.sp),
-                                          SizedBox(width: 8.w),
-                                          Text(
-                                            'Partial Advance Payment Breakdown',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: const Color(0xFF1E40AF),
-                                              fontSize: 13.sp,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: 10.h),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: TextFormField(
-                                              controller: _paidAmountCtrl,
-                                              decoration: const InputDecoration(
-                                                labelText: 'Paid Today (₹) *',
-                                                prefixText: '₹ ',
-                                                fillColor: Colors.white,
-                                                filled: true,
-                                              ),
-                                              keyboardType:
-                                                  const TextInputType.numberWithOptions(
-                                                      decimal: true),
-                                              onChanged: (_) => setState(() {}),
-                                            ),
-                                          ),
-                                          SizedBox(width: 14.w),
-                                          Expanded(
-                                            child: Builder(
-                                              builder: (_) {
-                                                final total = double.tryParse(
-                                                        _amountCtrl.text.replaceAll(',', '')) ??
-                                                    0.0;
-                                                final paid = double.tryParse(_paidAmountCtrl
-                                                        .text
-                                                        .replaceAll(',', '')) ??
-                                                    0.0;
-                                                final due = (total - paid).clamp(0.0, double.infinity);
-                                                return Container(
-                                                  padding: EdgeInsets.symmetric(
-                                                      horizontal: 14.w, vertical: 12.h),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.white,
-                                                    borderRadius: BorderRadius.circular(8.r),
-                                                    border: Border.all(
-                                                        color: const Color(0xFFCBD5E1)),
-                                                  ),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(
-                                                        'Remaining Credit Due:',
-                                                        style: TextStyle(
-                                                          fontSize: 11.sp,
-                                                          color: const Color(0xFF64748B),
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        CurrencyFormatter.format(due),
-                                                        style: TextStyle(
-                                                          fontSize: 14.sp,
-                                                          fontWeight: FontWeight.bold,
-                                                          color: const Color(0xFFDC2626),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(height: 14.h),
-                              ],
-                              if (_paymentStatus == PaymentStatus.pending) ...[
-                                Container(
-                                  padding: EdgeInsets.all(12.w),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFFFBEB),
-                                    borderRadius: BorderRadius.circular(8.r),
-                                    border: Border.all(color: const Color(0xFFFDE68A)),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.info_outline,
-                                          color: const Color(0xFFB45309), size: 18.sp),
-                                      SizedBox(width: 10.w),
-                                      Expanded(
-                                        child: Text(
-                                          'Vendor Credit: Full amount recorded as Accounts Payable liability. Project P&L recognizes the cost immediately; cash will only decrease when payments are recorded.',
-                                          style: TextStyle(
-                                            fontSize: 12.sp,
-                                            color: const Color(0xFF92400E),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(height: 14.h),
-                              ],
-                              Row(
-                                children: [
-                                  if (_paymentStatus != PaymentStatus.pending) ...[
-                                    Expanded(
-                                      child: DropdownButtonFormField<PaymentMode?>(
-                                        value: _paymentMode,
-                                        isExpanded: true,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Payment Mode',
-                                          prefixIcon: Icon(Icons.payments_outlined),
-                                        ),
-                                        items: [
-                                          const DropdownMenuItem(
-                                              value: null,
-                                              child: Text('— Select Mode —',
-                                                  overflow: TextOverflow.ellipsis)),
-                                          ...PaymentMode.values.map(
-                                            (m) => DropdownMenuItem(
-                                              value: m,
-                                              child: Text(m.displayName,
-                                                  overflow: TextOverflow.ellipsis),
-                                            ),
-                                          ),
-                                        ],
-                                        onChanged: (v) =>
-                                            setState(() => _paymentMode = v),
-                                      ),
-                                    ),
-                                    accountsAsync.maybeWhen(
-                                      data: (accounts) {
-                                        if (accounts.isEmpty) return const SizedBox.shrink();
-                                        return Expanded(
-                                          child: Padding(
-                                            padding: EdgeInsets.only(left: 14.w),
-                                            child: DropdownButtonFormField<int?>(
-                                              value: _selectedBankAccountId,
-                                              isExpanded: true,
-                                              decoration: const InputDecoration(
-                                                labelText: 'Paid From (Account)',
-                                                prefixIcon: Icon(
-                                                    Icons.account_balance_outlined),
-                                              ),
-                                              items: [
-                                                const DropdownMenuItem(
-                                                  value: null,
-                                                  child: Text('— Auto (Default) —',
-                                                      overflow:
-                                                          TextOverflow.ellipsis),
-                                                ),
-                                                ...accounts.map(
-                                                  (a) => DropdownMenuItem(
-                                                    value: a.account.id,
-                                                    child: Row(
-                                                      children: [
-                                                        Expanded(
-                                                          child: Text(
-                                                            '${a.account.accountName} (${a.account.isCashAccount ? 'Cash' : 'Bank'})',
-                                                            overflow:
-                                                                TextOverflow.ellipsis,
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                          CurrencyFormatter.format(
-                                                              a.currentBalance),
-                                                          style: TextStyle(
-                                                            fontSize: 11.sp,
-                                                            color: a.currentBalance >= 0
-                                                                ? const Color(0xFF059669)
-                                                                : const Color(0xFFDC2626),
-                                                            fontWeight: FontWeight.w600,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                              onChanged: (v) =>
-                                                  setState(() => _selectedBankAccountId = v),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      orElse: () => const SizedBox.shrink(),
-                                    ),
-                                    SizedBox(width: 14.w),
-                                  ],
-                                  Expanded(
-                                    child: TextFormField(
-                                      controller: _refCtrl,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Bill / Invoice / Challan No.',
-                                        prefixIcon: Icon(Icons.receipt_long_outlined),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 14.h),
-                              TextFormField(
-                                controller: _narrationCtrl,
-                                decoration: const InputDecoration(
-                                  labelText: 'Remarks / Narration (optional)',
-                                  prefixIcon: Icon(Icons.notes_outlined),
-                                ),
-                                maxLines: 2,
-                              ),
-                              SizedBox(height: 18.h),
-                              Container(
-                                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-                                decoration: BoxDecoration(
-                                  color: _isAdvanceStock
-                                      ? const Color(0xFFFEF3C7)
-                                      : theme.colorScheme.surfaceContainerLow,
-                                  borderRadius: BorderRadius.circular(10.r),
-                                  border: Border.all(
-                                    color: _isAdvanceStock
-                                        ? const Color(0xFFD97706)
-                                        : theme.colorScheme.outlineVariant,
-                                    width: _isAdvanceStock ? 1.5 : 1,
-                                  ),
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: SwitchListTile(
-                                    contentPadding: EdgeInsets.zero,
-                                    value: _isAdvanceStock,
-                                    title: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.inventory_2_outlined,
-                                          size: 20.sp,
-                                          color: _isAdvanceStock
-                                              ? const Color(0xFFD97706)
-                                              : theme.colorScheme.onSurface,
-                                        ),
-                                        SizedBox(width: 8.w),
-                                        Expanded(
-                                          child: Text(
-                                            'Hold as Advance Stock / Asset',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              color: _isAdvanceStock
-                                                  ? const Color(0xFF92400E)
-                                                  : theme.colorScheme.onSurface,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    subtitle: Text(
-                                      _isAdvanceStock
-                                          ? 'Bulk stock held for future allocation. Does not hit P&L now.'
-                                          : 'Standard site purchase — hits project P&L immediately.',
-                                      style: TextStyle(
-                                        fontSize: 11.sp,
-                                        color: _isAdvanceStock
-                                            ? const Color(0xFFB45309)
-                                            : const Color(0xFF64748B),
-                                      ),
-                                    ),
-                                    onChanged: (val) {
+                                    onChanged: (v) {
+                                      if (v == null) return;
                                       setState(() {
-                                        _isAdvanceStock = val;
+                                        _paymentStatus = v;
+                                        if (v == PaymentStatus.paid) {
+                                          _paidAmountCtrl.text = _amountCtrl.text;
+                                        } else if (v == PaymentStatus.pending) {
+                                          _paidAmountCtrl.text = '0';
+                                        }
                                       });
                                     },
                                   ),
                                 ),
-                              ),
-                              SizedBox(height: 24.h),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  TextButton(
-                                    onPressed: () => context.go('/purchases'),
-                                    child: const Text('Cancel'),
+                                if (_paymentStatus != PaymentStatus.pending) ...[
+                                  ErpField(
+                                    label: 'Payment Mode',
+                                    child: DropdownButtonFormField<PaymentMode?>(
+                                      value: _paymentMode,
+                                      isExpanded: true,
+                                      decoration: _dec(),
+                                      items: [
+                                        const DropdownMenuItem(
+                                            value: null,
+                                            child: Text('— Select Mode —')),
+                                        ...PaymentMode.values.map(
+                                          (m) => DropdownMenuItem(
+                                              value: m,
+                                              child: Text(m.displayName)),
+                                        ),
+                                      ],
+                                      onChanged: (v) =>
+                                          setState(() => _paymentMode = v),
+                                    ),
                                   ),
-                                  SizedBox(width: 12.w),
-                                  FilledButton(
-                                    onPressed: _loading ? null : _submit,
-                                    child: _loading
-                                        ? SizedBox(
-                                            width: 18.w,
-                                            height: 18.h,
-                                            child: const CircularProgressIndicator(
-                                                strokeWidth: 2),
-                                          )
-                                        : Text(_isEditing
-                                            ? 'Update Purchase (Ctrl+Enter)'
-                                            : 'Save Purchase (Ctrl+Enter)'),
+                                  accountsAsync.maybeWhen(
+                                    data: _buildAccountField,
+                                    orElse: () => const SizedBox.shrink(),
                                   ),
                                 ],
-                              ),
+                                if (_paymentStatus == PaymentStatus.partial)
+                                  ErpField(
+                                    label: 'Paid Today',
+                                    required: true,
+                                    child: TextFormField(
+                                      controller: _paidAmountCtrl,
+                                      decoration: _dec(prefix: '₹ '),
+                                      keyboardType:
+                                          const TextInputType.numberWithOptions(
+                                              decimal: true),
+                                      onChanged: (_) => setState(() {}),
+                                    ),
+                                  ),
+                              ]),
                             ],
                           ),
                         ),
-                      ),
+                        SizedBox(height: 16.h),
+
+                        // ── Material details ─────────────────────────────
+                        const ErpSectionTitle('Material Details'),
+                        SizedBox(height: 8.h),
+                        _buildItemTable(),
+                        if (_selectedCategory != null) _buildQuickItems(),
+                        if (_selectedProject != null &&
+                            _selectedCategory != null &&
+                            !_isAdvanceStock) ...[
+                          SizedBox(height: 10.h),
+                          _buildLiveMaterialConsumptionCard(context),
+                        ],
+                        if (_selectedProject != null && !_isAdvanceStock)
+                          BudgetWarningBanner(
+                            projectId: _selectedProject,
+                            costHead: BudgetCostHead.materials,
+                            addedAmount: total,
+                          ),
+                        SizedBox(height: 16.h),
+
+                        // ── Bottom: options / remarks / totals ───────────
+                        LayoutBuilder(builder: (context, c) {
+                          final options = _buildOptionsPanel();
+                          final remarks = ErpPanel(
+                            title: 'Remarks',
+                            child: TextFormField(
+                              controller: _narrationCtrl,
+                              minLines: 4,
+                              maxLines: 4,
+                              decoration: _dec(hint: 'Remarks / narration (optional)'),
+                            ),
+                          );
+                          final totals = _buildTotalsPanel(total, paid, balance);
+                          if (c.maxWidth < 900) {
+                            return Column(children: [
+                              options,
+                              SizedBox(height: 12.h),
+                              remarks,
+                              SizedBox(height: 12.h),
+                              totals,
+                            ]);
+                          }
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(flex: 4, child: options),
+                              SizedBox(width: 14.w),
+                              Expanded(flex: 4, child: remarks),
+                              SizedBox(width: 14.w),
+                              Expanded(flex: 4, child: totals),
+                            ],
+                          );
+                        }),
+                      ],
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+              ErpActionBar(
+                onCancel: goBack,
+                loading: _loading,
+                onSaveAndNew:
+                    _isEditing ? null : () => _submit(addNew: true),
+                onSaveAndClose: _submit,
+                saveLabel: _isEditing ? 'Update & Close' : 'Save & Close',
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildProjectSelector(
-      List<Project> projects, int? globalId, ThemeData theme) {
-    if (globalId != null) {
-      final activeProject =
-          projects.where((p) => p.id == globalId).firstOrNull;
-      if (activeProject != null) {
-        _selectedProject = activeProject.id;
-        return Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.35),
-            borderRadius: BorderRadius.circular(8.r),
-            border: Border.all(
-              color: theme.colorScheme.primary.withValues(alpha: 0.3),
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.folder_special_rounded,
-                  color: theme.colorScheme.primary, size: 20.sp),
-              SizedBox(width: 10.w),
-              Text(
-                'Target Project: ',
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              Text(
-                '${activeProject.code} — ${activeProject.name}',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-              const Spacer(),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(4.r),
-                ),
-                child: Text(
-                  'Auto-Assigned',
-                  style: TextStyle(
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      }
-    }
+  // ── Header pieces ───────────────────────────────────────────────────────
 
-    final selectedProjectValue =
+  Widget _buildProjectDropdown(List<Project> projects) {
+    final value =
         projects.any((p) => p.id == _selectedProject) ? _selectedProject : null;
-
     return DropdownButtonFormField<int>(
-      value: selectedProjectValue,
+      value: value,
       isExpanded: true,
-      decoration: const InputDecoration(
-        labelText: 'Select Target Project *',
-        prefixIcon: Icon(Icons.folder_outlined),
-      ),
+      decoration: _dec(hint: 'Select project'),
       items: projects
           .map((p) => DropdownMenuItem(
                 value: p.id,
-                child: Text('${p.code} — ${p.name}', overflow: TextOverflow.ellipsis),
+                child: Text('${p.code} — ${p.name}',
+                    overflow: TextOverflow.ellipsis),
               ))
           .toList(),
       onChanged: (v) => setState(() => _selectedProject = v),
       validator: (v) => v == null ? 'Required' : null,
+    );
+  }
+
+  Widget _buildVendorField(List<Vendor> vendors) {
+    final value =
+        vendors.any((v) => v.id == _selectedVendor) ? _selectedVendor : null;
+    return Row(children: [
+      Expanded(
+        child: DropdownButtonFormField<int>(
+          value: value,
+          isExpanded: true,
+          decoration: _dec(hint: 'Select supplier'),
+          items: vendors
+              .map((v) => DropdownMenuItem(
+                    value: v.id,
+                    child: Text(v.name, overflow: TextOverflow.ellipsis),
+                  ))
+              .toList(),
+          onChanged: (v) => setState(() => _selectedVendor = v),
+          validator: (v) => v == null ? 'Required' : null,
+        ),
+      ),
+      SizedBox(width: 6.w),
+      IconButton.outlined(
+        tooltip: _showAddVendor ? 'Cancel' : 'Add new vendor',
+        onPressed: () => setState(() => _showAddVendor = !_showAddVendor),
+        icon: Icon(_showAddVendor ? Icons.close : Icons.add, size: 18.sp),
+      ),
+    ]);
+  }
+
+  Widget _buildAccountField(List<BankAccountWithBalance> accounts) {
+    if (accounts.isEmpty) return const SizedBox.shrink();
+    return ErpField(
+      label: 'Paid From',
+      child: DropdownButtonFormField<int?>(
+        value: _selectedBankAccountId,
+        isExpanded: true,
+        decoration: _dec(),
+        items: [
+          const DropdownMenuItem(value: null, child: Text('— Auto (Default) —')),
+          ...accounts.map(
+            (a) => DropdownMenuItem(
+              value: a.account.id,
+              child: Row(children: [
+                Expanded(
+                  child: Text(
+                    '${a.account.accountName} (${a.account.isCashAccount ? 'Cash' : 'Bank'})',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Text(
+                  CurrencyFormatter.format(a.currentBalance),
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                    color: a.currentBalance >= 0
+                        ? AppTheme.successGreen
+                        : AppTheme.dangerRed,
+                  ),
+                ),
+              ]),
+            ),
+          ),
+        ],
+        onChanged: (v) => setState(() => _selectedBankAccountId = v),
+      ),
+    );
+  }
+
+  Widget _buildCategoryDropdown() {
+    final value = _categories.any((c) => c.name == _selectedCategory)
+        ? _selectedCategory
+        : null;
+    return DropdownButtonFormField<String?>(
+      value: value,
+      isExpanded: true,
+      decoration: _dec(hint: 'Select category'),
+      items: [
+        const DropdownMenuItem(value: null, child: Text('— None —')),
+        ..._categories.map(
+          (c) => DropdownMenuItem(
+            value: c.name,
+            child: Row(children: [
+              Icon(c.icon, size: 16.sp, color: c.color),
+              SizedBox(width: 8.w),
+              Expanded(
+                  child: Text(c.name, overflow: TextOverflow.ellipsis)),
+              Text(c.defaultUnit,
+                  style: TextStyle(
+                      fontSize: 11.sp, color: AppTheme.textMuted)),
+            ]),
+          ),
+        ),
+      ],
+      onChanged: (name) {
+        setState(() {
+          _selectedCategory = name;
+          final preset = _categories.where((c) => c.name == name).firstOrNull;
+          if (preset != null) {
+            _unitCtrl.text = preset.defaultUnit;
+            if (_descCtrl.text.isEmpty) {
+              _descCtrl.text = preset.commonItems.isNotEmpty
+                  ? preset.commonItems.first
+                  : preset.name;
+            }
+          }
+        });
+      },
+    );
+  }
+
+  // ── Item table ──────────────────────────────────────────────────────────
+
+  Widget _buildItemTable() {
+    const flexes = [6, 2, 2, 2, 3];
+    Widget cell(int i, Widget child) => Expanded(
+          flex: flexes[i],
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4.w),
+            child: child,
+          ),
+        );
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: AppTheme.borderColor),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(children: [
+        Container(
+          color: AppTheme.tableHeaderBg,
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 11.h),
+          child: Row(children: [
+            cell(0, _tableHead('Item / Material / Service *')),
+            cell(1, _tableHead('Qty *', align: TextAlign.right)),
+            cell(2, _tableHead('Unit')),
+            cell(3, _tableHead('Rate (₹)', align: TextAlign.right)),
+            cell(4, _tableHead('Amount (₹) *', align: TextAlign.right)),
+          ]),
+        ),
+        Padding(
+          padding: EdgeInsets.all(10.r),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            cell(
+              0,
+              TextFormField(
+                controller: _descCtrl,
+                decoration: _dec(hint: 'e.g. 53 Grade Cement, 12mm TMT Steel'),
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Required' : null,
+              ),
+            ),
+            cell(
+              1,
+              TextFormField(
+                controller: _qtyCtrl,
+                textAlign: TextAlign.right,
+                decoration: _dec(hint: '1'),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                onChanged: (_) => setState(_onQtyOrRateChanged),
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Required';
+                  final n = double.tryParse(v.replaceAll(',', ''));
+                  return (n == null || n <= 0) ? 'Invalid' : null;
+                },
+              ),
+            ),
+            cell(
+              2,
+              DropdownButtonFormField<String>(
+                value: _commonUnits.contains(_unitCtrl.text)
+                    ? _unitCtrl.text
+                    : 'Nos',
+                isExpanded: true,
+                decoration: _dec(),
+                items: _commonUnits
+                    .map((u) => DropdownMenuItem(value: u, child: Text(u)))
+                    .toList(),
+                onChanged: (v) {
+                  if (v != null) setState(() => _unitCtrl.text = v);
+                },
+              ),
+            ),
+            cell(
+              3,
+              TextFormField(
+                controller: _rateCtrl,
+                textAlign: TextAlign.right,
+                decoration: _dec(hint: '0.00'),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                onChanged: (_) => setState(_onQtyOrRateChanged),
+              ),
+            ),
+            cell(
+              4,
+              TextFormField(
+                controller: _amountCtrl,
+                textAlign: TextAlign.right,
+                decoration: _dec(hint: 'Auto or enter total'),
+                style: const TextStyle(
+                    fontWeight: FontWeight.w700, color: AppTheme.primaryBlue),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                onChanged: (_) => setState(() {}),
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Required';
+                  return double.tryParse(v.replaceAll(',', '')) == null
+                      ? 'Invalid'
+                      : null;
+                },
+              ),
+            ),
+          ]),
+        ),
+      ]),
+    );
+  }
+
+  Widget _buildQuickItems() {
+    final preset =
+        _categories.where((c) => c.name == _selectedCategory).firstOrNull;
+    if (preset == null || preset.commonItems.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: EdgeInsets.only(top: 10.h),
+      child: Wrap(
+        spacing: 6.w,
+        runSpacing: 6.h,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text('Quick items:',
+              style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textMuted)),
+          ...preset.commonItems.map((item) {
+            final selected = _descCtrl.text == item;
+            return ChoiceChip(
+              label: Text(item),
+              selected: selected,
+              showCheckmark: false,
+              selectedColor: AppTheme.primaryBlue,
+              backgroundColor: Colors.white,
+              side: BorderSide(
+                  color: selected
+                      ? AppTheme.primaryBlue
+                      : AppTheme.borderColor),
+              labelStyle: TextStyle(
+                fontSize: 12.sp,
+                color: selected ? Colors.white : AppTheme.textMain,
+              ),
+              onSelected: (_) => setState(() {
+                _descCtrl.text = item;
+                _unitCtrl.text = preset.defaultUnit;
+              }),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  // ── Bottom panels ───────────────────────────────────────────────────────
+
+  Widget _buildOptionsPanel() {
+    final pending = _paymentStatus == PaymentStatus.pending;
+    return ErpPanel(
+      title: 'Treatment & Notes',
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+          decoration: BoxDecoration(
+            color: _isAdvanceStock ? const Color(0xFFFEF3C7) : AppTheme.surfaceBg,
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: _isAdvanceStock
+                  ? const Color(0xFFD97706)
+                  : AppTheme.borderColor,
+            ),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              value: _isAdvanceStock,
+              title: Text('Hold as Advance Stock / Asset',
+                  style: TextStyle(
+                      fontSize: 13.sp, fontWeight: FontWeight.w600)),
+              subtitle: Text(
+                _isAdvanceStock
+                    ? 'Bulk stock for future allocation. Does not hit P&L now.'
+                    : 'Standard site purchase — hits project P&L immediately.',
+                style: TextStyle(fontSize: 11.sp),
+              ),
+              onChanged: (v) => setState(() => _isAdvanceStock = v),
+            ),
+          ),
+        ),
+        if (pending) ...[
+          SizedBox(height: 10.h),
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Icon(Icons.info_outline,
+                size: 16.sp, color: const Color(0xFFB45309)),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                'Credit purchase: full amount is recorded as Accounts Payable. '
+                'Project P&L recognises the cost now; cash falls only when you pay.',
+                style: TextStyle(
+                    fontSize: 11.5.sp, color: const Color(0xFF92400E)),
+              ),
+            ),
+          ]),
+        ],
+      ]),
+    );
+  }
+
+  Widget _buildTotalsPanel(double total, double paid, double balance) {
+    return ErpPanel(
+      color: AppTheme.totalsBg,
+      borderColor: AppTheme.totalsBorder,
+      child: Column(children: [
+        ErpTotalLine(
+            label: 'Total Bill Amount', value: CurrencyFormatter.format(total)),
+        ErpTotalLine(
+            label: 'Paid Now', value: CurrencyFormatter.format(paid)),
+        Divider(color: AppTheme.totalsBorder, height: 16.h),
+        ErpTotalLine(
+          label: 'Balance Payable (Credit)',
+          value: CurrencyFormatter.format(balance),
+          bold: true,
+          color: balance > 0 ? AppTheme.dangerRed : AppTheme.textMain,
+        ),
+        Divider(color: AppTheme.totalsBorder, height: 20.h),
+        Row(children: [
+          Expanded(
+            child: Text('Grand Total',
+                style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.primaryBlue)),
+          ),
+          Text(CurrencyFormatter.format(total),
+              style: TextStyle(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.primaryBlue)),
+        ]),
+      ]),
     );
   }
 
@@ -1558,67 +1251,4 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
       },
     );
   }
-
-  Widget _buildCategoryChip(MaterialCategoryPreset cat) {
-    final isSelected = _selectedCategory == cat.name;
-    return ChoiceChip(
-      avatar: Icon(
-        cat.icon,
-        size: 15.sp,
-        color: isSelected ? Colors.white : cat.color,
-      ),
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(cat.name),
-          SizedBox(width: 5.w),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.h),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? Colors.white.withValues(alpha: 0.25)
-                  : const Color(0xFFE2E8F0),
-              borderRadius: BorderRadius.circular(4.r),
-            ),
-            child: Text(
-              cat.defaultUnit,
-              style: TextStyle(
-                fontSize: 9.sp,
-                fontWeight: FontWeight.bold,
-                color: isSelected ? Colors.white : const Color(0xFF64748B),
-              ),
-            ),
-          ),
-        ],
-      ),
-      selected: isSelected,
-      selectedColor: const Color(0xFF4F46E5),
-      backgroundColor: Colors.white,
-      side: BorderSide(
-        color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFFCBD5E1),
-        width: isSelected ? 1.5 : 1.0,
-      ),
-      labelStyle: TextStyle(
-        fontSize: 11.sp,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-        color: isSelected ? Colors.white : const Color(0xFF334155),
-      ),
-      onSelected: (selected) {
-        setState(() {
-          if (selected) {
-            _selectedCategory = cat.name;
-            _unitCtrl.text = cat.defaultUnit;
-            if (_descCtrl.text.isEmpty && cat.commonItems.isNotEmpty) {
-              _descCtrl.text = cat.commonItems.first;
-            } else if (_descCtrl.text.isEmpty) {
-              _descCtrl.text = cat.name;
-            }
-          } else {
-            _selectedCategory = null;
-          }
-        });
-      },
-    );
-  }
 }
-

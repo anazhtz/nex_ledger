@@ -85,7 +85,7 @@ class ProjectListScreen extends ConsumerWidget {
                             IconButton(
                               icon: const Icon(Icons.inventory_2_outlined, size: 18),
                               tooltip: 'Material Register',
-                              color: const Color(0xFF4F46E5),
+                              color: const Color(0xFF1F5FBF),
                               onPressed: () =>
                                   context.go('/materials?projectId=${p.id}'),
                             ),
