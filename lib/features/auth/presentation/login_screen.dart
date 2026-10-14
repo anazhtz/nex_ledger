@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nex_ledger/core/services/security_service.dart';
+import 'package:nex_ledger/features/auth/presentation/widgets/recovery_key_widgets.dart';
 import 'package:nex_ledger/features/auth/providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -79,7 +80,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           _pinCtrl.clear();
         });
       } else if (mounted) {
-        context.go('/');
+        // The recovery-key screen takes over (see build); reset local state.
+        setState(() {
+          _localError = null;
+          _firstPin = null;
+          _pinCtrl.clear();
+        });
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -107,6 +113,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authProvider);
     final isSetup = authState.isReady && !authState.isConfigured;
     final errorText = _localError ?? authState.error;
+
+    // Right after creating / resetting a PIN: show the recovery key first.
+    final newKey = authState.recoveryKeyToShow;
+    if (newKey != null) {
+      return RecoveryKeyScreen(
+        recoveryKey: newKey,
+        onContinue: () {
+          ref.read(authProvider.notifier).acknowledgeRecoveryKey();
+          context.go('/');
+        },
+      );
+    }
 
     return CallbackShortcuts(
       bindings: {
@@ -367,6 +385,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
                         ),
+                        if (!isSetup) ...[
+                          const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: () => showDialog<void>(
+                              context: context,
+                              builder: (_) => const ForgotPinDialog(),
+                            ),
+                            child: const Text(
+                              'Forgot PIN?',
+                              style: TextStyle(color: Color(0xFF94A3B8)),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),

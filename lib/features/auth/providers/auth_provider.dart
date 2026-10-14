@@ -9,11 +9,16 @@ class AuthState {
   final bool isReady;
   final String? error;
 
+  /// A freshly created recovery key waiting to be shown to the user. While it
+  /// is set the app stays locked, so the key cannot be skipped by accident.
+  final String? recoveryKeyToShow;
+
   const AuthState({
     required this.isUnlocked,
     required this.isConfigured,
     this.isReady = true,
     this.error,
+    this.recoveryKeyToShow,
   });
 
   AuthState copyWith({
@@ -22,12 +27,17 @@ class AuthState {
     bool? isReady,
     String? error,
     bool clearError = false,
+    String? recoveryKeyToShow,
+    bool clearRecoveryKey = false,
   }) =>
       AuthState(
         isUnlocked: isUnlocked ?? this.isUnlocked,
         isConfigured: isConfigured ?? this.isConfigured,
         isReady: isReady ?? this.isReady,
         error: clearError ? null : (error ?? this.error),
+        recoveryKeyToShow: clearRecoveryKey
+            ? null
+            : (recoveryKeyToShow ?? this.recoveryKeyToShow),
       );
 }
 
@@ -49,9 +59,44 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final problem = SecurityService.validateNewPin(pin);
     if (problem != null) return problem;
     await SecurityService.updatePin(pin);
-    state =
-        state.copyWith(isUnlocked: true, isConfigured: true, clearError: true);
+    // Show the recovery key before letting the user in.
+    final key = await SecurityService.createRecoveryKey();
+    state = state.copyWith(
+        isUnlocked: false,
+        isConfigured: true,
+        recoveryKeyToShow: key,
+        clearError: true);
     return null;
+  }
+
+  /// The user has written the recovery key down — finish unlocking.
+  void acknowledgeRecoveryKey() {
+    state = state.copyWith(
+        isUnlocked: true, clearRecoveryKey: true, clearError: true);
+  }
+
+  /// Forgotten PIN: set a new one using the recovery key. Returns an error
+  /// message, or null on success (a replacement key is then shown).
+  Future<String?> resetPinWithRecoveryKey(String key, String newPin) async {
+    final weak = SecurityService.validateNewPin(newPin);
+    if (weak != null) return weak;
+    final newKey = await SecurityService.resetPinWithRecoveryKey(key, newPin);
+    if (newKey == null) {
+      return 'That recovery key is not correct. Check it and try again.';
+    }
+    state = state.copyWith(
+        isUnlocked: false,
+        isConfigured: true,
+        recoveryKeyToShow: newKey,
+        clearError: true);
+    return null;
+  }
+
+  /// Settings: create a replacement recovery key (needs the current PIN).
+  /// Returns the new key, or null when the PIN is wrong.
+  Future<String?> regenerateRecoveryKey(String currentPin) async {
+    if (!await SecurityService.verifyPin(currentPin)) return null;
+    return SecurityService.createRecoveryKey();
   }
 
   /// Verify Security PIN and unlock app

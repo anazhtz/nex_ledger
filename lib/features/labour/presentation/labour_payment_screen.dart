@@ -42,6 +42,21 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
   int? _selectedBankAccountId;
   final _narrationCtrl = TextEditingController();
 
+  /// How much to pay now. Defaults to the full balance due; may be lowered for
+  /// a part payment (e.g. a weekly advance) but never above what is due.
+  final _amountCtrl = TextEditingController();
+
+  static String _plainAmount(double v) =>
+      v % 1 == 0 ? v.toInt().toString() : v.toStringAsFixed(2);
+
+  double get _payAmount => double.tryParse(_amountCtrl.text.trim()) ?? 0.0;
+
+  bool get _amountValid {
+    final due = _summary?.amountDue ?? 0.0;
+    final a = _payAmount;
+    return a > 0 && a <= due + 0.005;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +66,7 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
   @override
   void dispose() {
     _narrationCtrl.dispose();
+    _amountCtrl.dispose();
     super.dispose();
   }
 
@@ -65,7 +81,10 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                 _from,
                 _to,
               );
-      setState(() => _summary = summary);
+      setState(() {
+        _summary = summary;
+        _amountCtrl.text = _plainAmount(summary.amountDue);
+      });
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -92,6 +111,16 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
       return;
     }
 
+    if (!_amountValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Enter an amount between ₹1 and ${CurrencyFormatter.format(_summary!.amountDue)} (the balance due).'),
+        ),
+      );
+      return;
+    }
+
     // Negative balance check on wage payout
     final accountsWithBalances =
         ref.read(bankAccountsWithBalancesProvider).asData?.value;
@@ -106,7 +135,7 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
           : (ref.read(liquiditySummaryProvider).asData?.value.totalLiquidity ??
               0.0);
 
-      if (currentBal - _summary!.amountDue < 0) {
+      if (currentBal - _payAmount < 0) {
         final proceed = await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
@@ -119,8 +148,8 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
               ],
             ),
             content: Text(
-              'This wage payment of ${CurrencyFormatter.format(_summary!.amountDue)} exceeds your current balance in ${targetAcc?.account.accountName ?? 'Total Liquidity'} (${CurrencyFormatter.format(currentBal)}).\n\n'
-              'Recording this will make your balance negative (${CurrencyFormatter.format(currentBal - _summary!.amountDue)}).\n\n'
+              'This wage payment of ${CurrencyFormatter.format(_payAmount)} exceeds your current balance in ${targetAcc?.account.accountName ?? 'Total Liquidity'} (${CurrencyFormatter.format(currentBal)}).\n\n'
+              'Recording this will make your balance negative (${CurrencyFormatter.format(currentBal - _payAmount)}).\n\n'
               'Do you wish to proceed anyway?',
             ),
             actions: [
@@ -142,7 +171,7 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
     }
 
     final currentSummary = _summary!;
-    final currentAmount = _summary!.amountDue;
+    final currentAmount = _payAmount;
     final workerId = _selectedWorker!;
     final projectId = _selectedProject!;
 
@@ -425,7 +454,8 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                       value:
                                           '${formatHours(_summary!.totalOvertimeHours)} hrs = ${CurrencyFormatter.format(_summary!.totalOvertimeWages)}'),
                                 _SummaryRow(
-                                    label: 'Gross Earned Wages (All-Time, incl. OT)',
+                                    label:
+                                        'Gross Earned Wages (All-Time, incl. OT)',
                                     value: CurrencyFormatter.format(
                                         _summary!.totalEarnedWages)),
                                 _SummaryRow(
@@ -443,6 +473,32 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                   valueColor: const Color(0xFF1F5FBF),
                                 ),
                                 const SizedBox(height: 16),
+
+                                // Amount to pay (full balance by default)
+                                TextFormField(
+                                  controller: _amountCtrl,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  decoration: InputDecoration(
+                                    labelText: 'Amount to Pay Now (₹)',
+                                    prefixText: '₹ ',
+                                    helperText:
+                                        'Full balance is ${CurrencyFormatter.format(_summary!.amountDue)}. Lower it to pay only part.',
+                                    errorText: _amountCtrl.text.isNotEmpty &&
+                                            !_amountValid
+                                        ? 'Enter ₹1 to ${CurrencyFormatter.format(_summary!.amountDue)}'
+                                        : null,
+                                    suffixIcon: TextButton(
+                                      onPressed: () => setState(() =>
+                                          _amountCtrl.text = _plainAmount(
+                                              _summary!.amountDue)),
+                                      child: const Text('Full'),
+                                    ),
+                                  ),
+                                  onChanged: (_) => setState(() {}),
+                                ),
+                                const SizedBox(height: 12),
 
                                 // Payment date
                                 InkWell(
@@ -565,22 +621,20 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                 const SizedBox(height: 12),
 
                                 // ─── Real-Time Project Labour Budget Warning ───
-                                if (_selectedProject != null &&
-                                    _summary!.amountDue > 0)
+                                if (_selectedProject != null && _amountValid)
                                   BudgetWarningBanner(
                                     projectId: _selectedProject,
                                     costHead: BudgetCostHead.labour,
-                                    addedAmount: _summary!.amountDue,
+                                    addedAmount: _payAmount,
                                   ),
 
                                 const SizedBox(height: 16),
                                 SizedBox(
                                   width: double.infinity,
                                   child: FilledButton.icon(
-                                    onPressed:
-                                        _paying || _summary!.amountDue <= 0
-                                            ? null
-                                            : _recordPayment,
+                                    onPressed: _paying || !_amountValid
+                                        ? null
+                                        : _recordPayment,
                                     icon: const Icon(Icons.payments_outlined),
                                     label: _paying
                                         ? const SizedBox(
@@ -590,7 +644,7 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                                 strokeWidth: 2),
                                           )
                                         : Text(
-                                            'Record Payment of ${CurrencyFormatter.format(_summary!.amountDue)}'),
+                                            'Record Payment of ${CurrencyFormatter.format(_amountValid ? _payAmount : 0)}'),
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -602,7 +656,9 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                         : () => _printWageReceipt(
                                               workerId: _selectedWorker!,
                                               projectId: _selectedProject!,
-                                              amountPaid: _summary!.amountDue,
+                                              amountPaid: _amountValid
+                                                  ? _payAmount
+                                                  : _summary!.amountDue,
                                               summary: _summary!,
                                             ),
                                     icon: const Icon(Icons.print_outlined,
@@ -655,12 +711,15 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
-              Text(
-                '${activeProject.code} — ${activeProject.name}',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
+              Flexible(
+                child: Text(
+                  '${activeProject.code} — ${activeProject.name}',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
               ),
               const Spacer(),
@@ -732,8 +791,11 @@ class _SummaryRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: theme.textTheme.bodyMedium),
-          Text(value, style: textStyle),
+          Expanded(child: Text(label, style: theme.textTheme.bodyMedium)),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(value, style: textStyle, textAlign: TextAlign.right),
+          ),
         ],
       ),
     );

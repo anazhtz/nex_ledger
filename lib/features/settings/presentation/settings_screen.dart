@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nex_ledger/features/auth/presentation/widgets/recovery_key_widgets.dart';
 import 'package:nex_ledger/core/services/security_service.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/database_provider.dart';
@@ -323,17 +324,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               ],
                             );
 
-                            final actionBtns = Row(
-                              mainAxisSize: isNarrow
-                                  ? MainAxisSize.max
-                                  : MainAxisSize.min,
+                            final actionBtns = Wrap(
+                              spacing: 8.w,
+                              runSpacing: 8.h,
                               children: [
                                 OutlinedButton.icon(
                                   onPressed: _showChangePinDialog,
                                   icon: const Icon(Icons.key_rounded, size: 16),
                                   label: const Text('Change PIN'),
                                 ),
-                                SizedBox(width: 8.w),
+                                OutlinedButton.icon(
+                                  onPressed: () => showDialog<void>(
+                                    context: context,
+                                    builder: (_) =>
+                                        const NewRecoveryKeyDialog(),
+                                  ),
+                                  icon: const Icon(Icons.vpn_key_outlined,
+                                      size: 16),
+                                  label: const Text('Recovery Key'),
+                                ),
                                 FilledButton.icon(
                                   onPressed: () {
                                     ref.read(authProvider.notifier).lock();
