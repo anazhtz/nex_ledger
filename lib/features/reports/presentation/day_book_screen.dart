@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -270,7 +271,7 @@ class DayBookScreen extends ConsumerWidget {
               data: (accounts) {
                 return SizedBox(
                   width: 260.w,
-                  child: DropdownButtonFormField<int?>(
+                  child: AppDropdownField<int?>(
                     value: selectedBankAccountId,
                     isExpanded: true,
                     isDense: true,

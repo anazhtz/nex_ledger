@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -223,8 +224,7 @@ class _PettyCashVoucherFormScreenState
                               child: walletsAsync.when(
                                 loading: () => const LinearProgressIndicator(),
                                 error: (e, _) => Text('Error: $e'),
-                                data: (wallets) =>
-                                    DropdownButtonFormField<int?>(
+                                data: (wallets) => AppDropdownField<int?>(
                                   value: _selectedWalletId,
                                   isExpanded: true,
                                   decoration: const InputDecoration(
@@ -351,7 +351,7 @@ class _PettyCashVoucherFormScreenState
                           children: [
                             Expanded(
                               flex: 2,
-                              child: DropdownButtonFormField<BudgetCostHead>(
+                              child: AppDropdownField<BudgetCostHead>(
                                 value: _costHead,
                                 isExpanded: true,
                                 decoration: const InputDecoration(

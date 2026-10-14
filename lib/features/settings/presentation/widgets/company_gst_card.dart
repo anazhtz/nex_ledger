@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -166,7 +167,7 @@ class _CompanyGstCardState extends ConsumerState<CompanyGstCard> {
                                 prefixIcon: Icon(Icons.map_outlined)),
                             child: Text(fromGstin),
                           )
-                        : DropdownButtonFormField<String?>(
+                        : AppDropdownField<String?>(
                             value: _stateCode,
                             isExpanded: true,
                             decoration: const InputDecoration(

@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -127,7 +128,7 @@ class DepositListScreen extends ConsumerWidget {
                     // Type filter
                     SizedBox(
                       width: 280,
-                      child: DropdownButtonFormField<DepositType?>(
+                      child: AppDropdownField<DepositType?>(
                         value: filterType,
                         isExpanded: true,
                         decoration: const InputDecoration(

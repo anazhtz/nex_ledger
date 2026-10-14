@@ -90,6 +90,9 @@ class SearchableSelectField<T> extends FormField<T?> {
     super.autovalidateMode,
     bool enabled = true,
     this.fieldKey,
+
+    /// Show the search box even for a short list.
+    bool alwaysSearch = false,
   }) : super(
           initialValue: value,
           enabled: enabled,
@@ -105,6 +108,7 @@ class SearchableSelectField<T> extends FormField<T?> {
               emptyText: emptyText,
               allLabel: allLabel,
               enabled: enabled,
+              alwaysSearch: alwaysSearch,
               onSelected: (v) {
                 s.didChange(v);
                 onChanged(v);
@@ -142,6 +146,7 @@ class _SelectBody<T> extends StatefulWidget {
   final String emptyText;
   final String? allLabel;
   final bool enabled;
+  final bool alwaysSearch;
   final ValueChanged<T?> onSelected;
 
   const _SelectBody({
@@ -154,6 +159,7 @@ class _SelectBody<T> extends StatefulWidget {
     required this.emptyText,
     required this.allLabel,
     required this.enabled,
+    required this.alwaysSearch,
     required this.onSelected,
   });
 
@@ -261,6 +267,7 @@ class _SelectBodyState<T> extends State<_SelectBody<T>> {
           searchHint: widget.searchHint,
           emptyText: widget.emptyText,
           allLabel: widget.allLabel,
+          alwaysSearch: widget.alwaysSearch,
           onChoose: _choose,
           onDismiss: _closePopup,
         ),
@@ -330,6 +337,7 @@ class _Popover<T> extends StatefulWidget {
   final String searchHint;
   final String emptyText;
   final String? allLabel;
+  final bool alwaysSearch;
   final ValueChanged<T?> onChoose;
   final VoidCallback onDismiss;
 
@@ -342,6 +350,7 @@ class _Popover<T> extends StatefulWidget {
     required this.searchHint,
     required this.emptyText,
     required this.allLabel,
+    required this.alwaysSearch,
     required this.onChoose,
     required this.onDismiss,
   });
@@ -351,7 +360,12 @@ class _Popover<T> extends StatefulWidget {
 }
 
 class _PopoverState<T> extends State<_Popover<T>> {
-  static const double _rowHeight = 54;
+  double get _rowHeight =>
+      widget.options.any((o) => (o.subtitle ?? '').isNotEmpty) ? 54 : 44;
+
+  /// Short lists are plain menus; the search box appears only for longer ones.
+  bool get _showSearch => widget.options.length > 6 || widget.alwaysSearch;
+  final _keyFocus = FocusNode();
   static const double _maxListHeight = 290;
 
   final _search = TextEditingController();
@@ -381,7 +395,7 @@ class _PopoverState<T> extends State<_Popover<T>> {
     _highlight = i < 0 ? 0 : i;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _searchFocus.requestFocus();
+      (_showSearch ? _searchFocus : _keyFocus).requestFocus();
       _scrollToHighlight();
     });
   }
@@ -390,6 +404,7 @@ class _PopoverState<T> extends State<_Popover<T>> {
   void dispose() {
     _search.dispose();
     _searchFocus.dispose();
+    _keyFocus.dispose();
     _scroll.dispose();
     super.dispose();
   }
@@ -419,6 +434,32 @@ class _PopoverState<T> extends State<_Popover<T>> {
     if (rows.isEmpty) return;
     final o = rows[_highlight.clamp(0, rows.length - 1)];
     widget.onChoose(o?.value);
+  }
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+    final k = event.logicalKey;
+    if (k == LogicalKeyboardKey.arrowDown) {
+      _move(1);
+      return KeyEventResult.handled;
+    }
+    if (k == LogicalKeyboardKey.arrowUp) {
+      _move(-1);
+      return KeyEventResult.handled;
+    }
+    if (event is KeyDownEvent &&
+        (k == LogicalKeyboardKey.enter ||
+            k == LogicalKeyboardKey.numpadEnter)) {
+      _chooseHighlighted();
+      return KeyEventResult.handled;
+    }
+    if (event is KeyDownEvent && k == LogicalKeyboardKey.escape) {
+      widget.onDismiss();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
   }
 
   @override
@@ -459,74 +500,50 @@ class _PopoverState<T> extends State<_Popover<T>> {
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 6),
-                    child: Focus(
-                      onKeyEvent: (node, event) {
-                        if (event is! KeyDownEvent &&
-                            event is! KeyRepeatEvent) {
-                          return KeyEventResult.ignored;
-                        }
-                        final k = event.logicalKey;
-                        if (k == LogicalKeyboardKey.arrowDown) {
-                          _move(1);
-                          return KeyEventResult.handled;
-                        }
-                        if (k == LogicalKeyboardKey.arrowUp) {
-                          _move(-1);
-                          return KeyEventResult.handled;
-                        }
-                        if (event is KeyDownEvent &&
-                            (k == LogicalKeyboardKey.enter ||
-                                k == LogicalKeyboardKey.numpadEnter)) {
-                          _chooseHighlighted();
-                          return KeyEventResult.handled;
-                        }
-                        if (event is KeyDownEvent &&
-                            k == LogicalKeyboardKey.escape) {
-                          widget.onDismiss();
-                          return KeyEventResult.handled;
-                        }
-                        return KeyEventResult.ignored;
-                      },
-                      child: TextField(
-                        key: const Key('select_search'),
-                        controller: _search,
-                        focusNode: _searchFocus,
-                        autofocus: true,
-                        textInputAction: TextInputAction.search,
-                        decoration: InputDecoration(
-                          hintText: widget.searchHint,
-                          isDense: true,
-                          filled: true,
-                          fillColor: const Color(0xFFF1F5F9),
-                          prefixIcon:
-                              const Icon(Icons.search_rounded, size: 20),
-                          suffixIcon: _query.isEmpty
-                              ? null
-                              : IconButton(
-                                  tooltip: 'Clear',
-                                  icon:
-                                      const Icon(Icons.close_rounded, size: 18),
-                                  onPressed: () => setState(() {
-                                    _search.clear();
-                                    _query = '';
-                                    _highlight = 0;
-                                  }),
-                                ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
+                  if (_showSearch)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 10, 10, 6),
+                      child: Focus(
+                        onKeyEvent: _onKey,
+                        child: TextField(
+                          key: const Key('select_search'),
+                          controller: _search,
+                          focusNode: _searchFocus,
+                          autofocus: true,
+                          textInputAction: TextInputAction.search,
+                          decoration: InputDecoration(
+                            hintText: widget.searchHint,
+                            isDense: true,
+                            filled: true,
+                            fillColor: const Color(0xFFF1F5F9),
+                            prefixIcon:
+                                const Icon(Icons.search_rounded, size: 20),
+                            suffixIcon: _query.isEmpty
+                                ? null
+                                : IconButton(
+                                    tooltip: 'Clear',
+                                    icon: const Icon(Icons.close_rounded,
+                                        size: 18),
+                                    onPressed: () => setState(() {
+                                      _search.clear();
+                                      _query = '';
+                                      _highlight = 0;
+                                    }),
+                                  ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
                           ),
+                          onChanged: (v) => setState(() {
+                            _query = v;
+                            _highlight = 0;
+                            if (_scroll.hasClients) _scroll.jumpTo(0);
+                          }),
                         ),
-                        onChanged: (v) => setState(() {
-                          _query = v;
-                          _highlight = 0;
-                          if (_scroll.hasClients) _scroll.jumpTo(0);
-                        }),
                       ),
                     ),
-                  ),
+                  if (!_showSearch) const SizedBox(height: 6),
                   if (rows.isEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(
@@ -541,20 +558,25 @@ class _PopoverState<T> extends State<_Popover<T>> {
                   else
                     SizedBox(
                       height: listHeight,
-                      child: ListView.builder(
-                        controller: _scroll,
-                        itemExtent: _rowHeight,
-                        padding: const EdgeInsets.only(bottom: 6),
-                        itemCount: rows.length,
-                        itemBuilder: (context, i) => _Row<T>(
-                          option: rows[i],
-                          allLabel: widget.allLabel,
-                          selected: rows[i] == null
-                              ? widget.value == null
-                              : rows[i]!.value == widget.value,
-                          highlighted: i == _highlight,
-                          onTap: () => widget.onChoose(rows[i]?.value),
-                          onHover: () => setState(() => _highlight = i),
+                      child: Focus(
+                        focusNode: _showSearch ? null : _keyFocus,
+                        canRequestFocus: !_showSearch,
+                        onKeyEvent: _showSearch ? null : _onKey,
+                        child: ListView.builder(
+                          controller: _scroll,
+                          itemExtent: _rowHeight,
+                          padding: const EdgeInsets.only(bottom: 6),
+                          itemCount: rows.length,
+                          itemBuilder: (context, i) => _Row<T>(
+                            option: rows[i],
+                            allLabel: widget.allLabel,
+                            selected: rows[i] == null
+                                ? widget.value == null
+                                : rows[i]!.value == widget.value,
+                            highlighted: i == _highlight,
+                            onTap: () => widget.onChoose(rows[i]?.value),
+                            onHover: () => setState(() => _highlight = i),
+                          ),
                         ),
                       ),
                     ),

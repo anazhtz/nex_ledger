@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -224,7 +225,7 @@ class _PurchaseRegisterScreenState
             ),
             SizedBox(
               width: 230,
-              child: DropdownButtonFormField<int?>(
+              child: AppDropdownField<int?>(
                 key: ValueKey('shop-$vendorValue'),
                 value: vendorValue,
                 isExpanded: true,
@@ -245,7 +246,7 @@ class _PurchaseRegisterScreenState
             ),
             SizedBox(
               width: 170,
-              child: DropdownButtonFormField<PaymentStatus?>(
+              child: AppDropdownField<PaymentStatus?>(
                 key: ValueKey('status-${_filter.status}'),
                 value: _filter.status,
                 isExpanded: true,

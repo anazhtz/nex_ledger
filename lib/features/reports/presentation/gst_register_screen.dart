@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -225,7 +226,7 @@ class _GstRegisterScreenState extends ConsumerState<GstRegisterScreen> {
             ),
             SizedBox(
               width: 230,
-              child: DropdownButtonFormField<int?>(
+              child: AppDropdownField<int?>(
                 key: ValueKey('gst-vendor-$vendorValue'),
                 value: vendorValue,
                 isExpanded: true,

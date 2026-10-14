@@ -78,6 +78,7 @@ class ProjectPickerField extends StatelessWidget {
       emptyText: 'No project matches',
       allLabel: allLabel,
       enabled: enabled,
+      alwaysSearch: true,
       validator: validator ??
           (required
               ? (v) => v == null ? 'Please select a project' : null

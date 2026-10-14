@@ -9,6 +9,7 @@ import 'package:nex_ledger/core/database/database_provider.dart';
 import 'package:nex_ledger/core/theme/app_theme.dart';
 import 'package:nex_ledger/features/labour/data/labour_repository.dart';
 import 'package:nex_ledger/features/labour/presentation/labour_payment_screen.dart';
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:nex_ledger/features/projects/providers/project_providers.dart';
 
 void main() {
@@ -62,9 +63,9 @@ void main() {
         .runAsync(() => Future.delayed(const Duration(milliseconds: 200)));
     await tester.pump(const Duration(milliseconds: 100));
 
-    await tester.tap(find.byType(DropdownButtonFormField<int?>).first);
+    await tester.tap(find.byType(AppDropdownField<int?>).first);
     await tester.pumpAndSettle();
-    await tester.tap(find.textContaining('Raju').last);
+    await tester.tap(find.textContaining('Raju').first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Calculate'));
     await tester

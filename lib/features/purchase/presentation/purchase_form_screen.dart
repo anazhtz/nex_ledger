@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -173,7 +174,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                     ),
                   ),
                   SizedBox(height: 14.h),
-                  DropdownButtonFormField<String>(
+                  AppDropdownField<String>(
                     value: selectedUnit,
                     isExpanded: true,
                     decoration: const InputDecoration(
@@ -660,7 +661,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                               Column(children: [
                                 ErpField(
                                   label: 'Payment Terms',
-                                  child: DropdownButtonFormField<PaymentStatus>(
+                                  child: AppDropdownField<PaymentStatus>(
                                     value: _paymentStatus,
                                     isExpanded: true,
                                     decoration: _dec(),
@@ -696,8 +697,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
                                     PaymentStatus.pending) ...[
                                   ErpField(
                                     label: 'Payment Mode',
-                                    child:
-                                        DropdownButtonFormField<PaymentMode?>(
+                                    child: AppDropdownField<PaymentMode?>(
                                       value: _paymentMode,
                                       isExpanded: true,
                                       decoration: _dec(),
@@ -830,7 +830,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
         vendors.any((v) => v.id == _selectedVendor) ? _selectedVendor : null;
     return Row(children: [
       Expanded(
-        child: DropdownButtonFormField<int>(
+        child: AppDropdownField<int>(
           value: value,
           isExpanded: true,
           decoration: _dec(hint: 'Select supplier'),
@@ -857,7 +857,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
     if (accounts.isEmpty) return const SizedBox.shrink();
     return ErpField(
       label: 'Paid From',
-      child: DropdownButtonFormField<int?>(
+      child: AppDropdownField<int?>(
         value: _selectedBankAccountId,
         isExpanded: true,
         decoration: _dec(),
@@ -906,7 +906,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
     final value = _categories.any((c) => c.name == _selectedCategory)
         ? _selectedCategory
         : null;
-    return DropdownButtonFormField<String?>(
+    return AppDropdownField<String?>(
       value: value,
       isExpanded: true,
       decoration: _dec(hint: 'Select category'),
@@ -1003,7 +1003,7 @@ class _PurchaseFormScreenState extends ConsumerState<PurchaseFormScreen> {
             ),
             cell(
               2,
-              DropdownButtonFormField<String>(
+              AppDropdownField<String>(
                 value: _commonUnits.contains(_unitCtrl.text)
                     ? _unitCtrl.text
                     : 'Nos',

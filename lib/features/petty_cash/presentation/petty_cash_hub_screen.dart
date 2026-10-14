@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -642,7 +643,7 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                   error: (_, __) => const SizedBox.shrink(),
                   data: (wallets) => SizedBox(
                     width: 220.w,
-                    child: DropdownButtonFormField<int?>(
+                    child: AppDropdownField<int?>(
                       value: selectedFilterSupervisor,
                       isExpanded: true,
                       decoration: InputDecoration(
@@ -688,7 +689,7 @@ class _PettyCashHubScreenState extends ConsumerState<PettyCashHubScreen>
                 ),
                 SizedBox(
                   width: 200.w,
-                  child: DropdownButtonFormField<PettyCashTxnType?>(
+                  child: AppDropdownField<PettyCashTxnType?>(
                     value: selectedFilterType,
                     isExpanded: true,
                     decoration: InputDecoration(

@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -357,7 +358,7 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                           vendorsAsync.when(
                             loading: () => const LinearProgressIndicator(),
                             error: (e, _) => Text('Error loading vendors: $e'),
-                            data: (vendors) => DropdownButtonFormField<int?>(
+                            data: (vendors) => AppDropdownField<int?>(
                               value: _selectedVendorId,
                               isExpanded: true,
                               decoration: const InputDecoration(
@@ -421,7 +422,7 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                             SizedBox(width: 14.w),
                             Expanded(
                               flex: 2,
-                              child: DropdownButtonFormField<EquipmentStatus>(
+                              child: AppDropdownField<EquipmentStatus>(
                                 value: _status,
                                 isExpanded: true,
                                 decoration: const InputDecoration(
@@ -451,8 +452,7 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                           children: [
                             Expanded(
                               flex: 3,
-                              child:
-                                  DropdownButtonFormField<EquipmentRentalBasis>(
+                              child: AppDropdownField<EquipmentRentalBasis>(
                                 value: _rentalBasis,
                                 isExpanded: true,
                                 decoration: const InputDecoration(
@@ -498,7 +498,7 @@ class _EquipmentFormScreenState extends ConsumerState<EquipmentFormScreen> {
                         SizedBox(height: 14.h),
 
                         // ─── Fuel Policy ─────────────────────────────────────
-                        DropdownButtonFormField<EquipmentFuelPolicy>(
+                        AppDropdownField<EquipmentFuelPolicy>(
                           value: _fuelPolicy,
                           isExpanded: true,
                           decoration: const InputDecoration(

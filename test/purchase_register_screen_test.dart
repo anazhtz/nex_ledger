@@ -88,7 +88,7 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('status-null')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Pending').last);
+    await tester.tap(find.text('Pending').first);
     await tester.pumpAndSettle();
 
     expect(find.text('Purchase Bills (1)'), findsOneWidget);

@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nex_ledger/core/constants/enums.dart';
@@ -503,7 +504,7 @@ class _MarkPaidDialogState extends State<_MarkPaidDialog> {
                 if (picked != null) setState(() => _date = picked);
               },
             ),
-            DropdownButtonFormField<PaymentMode?>(
+            AppDropdownField<PaymentMode?>(
               value: _mode,
               isExpanded: true,
               decoration: const InputDecoration(

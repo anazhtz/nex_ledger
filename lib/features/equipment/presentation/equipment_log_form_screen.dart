@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -367,8 +368,7 @@ class _EquipmentLogFormScreenState
                               child: equipmentsAsync.when(
                                 loading: () => const LinearProgressIndicator(),
                                 error: (e, _) => Text('Error: $e'),
-                                data: (equipments) =>
-                                    DropdownButtonFormField<int?>(
+                                data: (equipments) => AppDropdownField<int?>(
                                   value: _selectedEquipmentId,
                                   isExpanded: true,
                                   decoration: const InputDecoration(

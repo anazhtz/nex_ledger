@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -522,7 +523,7 @@ class _InvoicePayDialogState extends ConsumerState<InvoicePayDialog> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                DropdownButtonFormField<PaymentMode?>(
+                AppDropdownField<PaymentMode?>(
                   value: _mode,
                   isExpanded: true,
                   decoration: const InputDecoration(labelText: 'Payment mode'),
@@ -537,7 +538,7 @@ class _InvoicePayDialogState extends ConsumerState<InvoicePayDialog> {
                 ),
                 if (accounts.isNotEmpty) ...[
                   const SizedBox(height: 12),
-                  DropdownButtonFormField<int?>(
+                  AppDropdownField<int?>(
                     value: _bankId,
                     isExpanded: true,
                     decoration: const InputDecoration(labelText: 'Paid from'),

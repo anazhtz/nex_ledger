@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -375,7 +376,7 @@ class _PurchaseInvoiceFormScreenState
                   },
                 ),
                 const SizedBox(height: 10),
-                DropdownButtonFormField<String?>(
+                AppDropdownField<String?>(
                   value: state,
                   isExpanded: true,
                   decoration: const InputDecoration(labelText: 'State'),
@@ -840,7 +841,7 @@ class _PurchaseInvoiceFormScreenState
                 error: (e, _) => Text('Error: $e'),
                 data: (vendors) => Row(children: [
                   Expanded(
-                    child: DropdownButtonFormField<int?>(
+                    child: AppDropdownField<int?>(
                       key: ValueKey('vendor-$_vendorId-${vendors.length}'),
                       value: vendors.any((v) => v.id == _vendorId)
                           ? _vendorId
@@ -888,7 +889,7 @@ class _PurchaseInvoiceFormScreenState
                 SizedBox(width: 8.w),
                 Expanded(
                   flex: 2,
-                  child: DropdownButtonFormField<String?>(
+                  child: AppDropdownField<String?>(
                     key: ValueKey('state-$_state'),
                     value: GstUtils.stateByCode.values.contains(_state)
                         ? _state
@@ -938,7 +939,7 @@ class _PurchaseInvoiceFormScreenState
             ),
             ErpField(
               label: 'Category',
-              child: DropdownButtonFormField<String?>(
+              child: AppDropdownField<String?>(
                 key: ValueKey('cat-$_category'),
                 value:
                     kStandardMaterialCategories.any((c) => c.name == _category)
@@ -1063,7 +1064,7 @@ class _PurchaseInvoiceFormScreenState
             ] else ...[
               ErpField(
                 label: 'Payment Terms',
-                child: DropdownButtonFormField<PaymentStatus>(
+                child: AppDropdownField<PaymentStatus>(
                   value: _paymentStatus,
                   isExpanded: true,
                   decoration: _dec(),
@@ -1093,7 +1094,7 @@ class _PurchaseInvoiceFormScreenState
               if (_paymentStatus != PaymentStatus.pending) ...[
                 ErpField(
                   label: 'Payment Mode',
-                  child: DropdownButtonFormField<PaymentMode?>(
+                  child: AppDropdownField<PaymentMode?>(
                     value: _paymentMode,
                     isExpanded: true,
                     decoration: _dec(),
@@ -1134,7 +1135,7 @@ class _PurchaseInvoiceFormScreenState
     if (accounts.isEmpty) return const SizedBox.shrink();
     return ErpField(
       label: 'Paid From',
-      child: DropdownButtonFormField<int?>(
+      child: AppDropdownField<int?>(
         value: _bankAccountId,
         isExpanded: true,
         decoration: _dec(),
@@ -1376,7 +1377,7 @@ class _PurchaseInvoiceFormScreenState
         _cell(_wQty, numField(l.qty, 'qty')),
         _cell(
           _wUnit,
-          DropdownButtonFormField<String>(
+          AppDropdownField<String>(
             value: l.unit,
             isExpanded: true,
             decoration: tight,
@@ -1392,7 +1393,7 @@ class _PurchaseInvoiceFormScreenState
         _cell(_wDisc, numField(l.disc, 'disc', hint: '0')),
         _cell(
           _wGst,
-          DropdownButtonFormField<double>(
+          AppDropdownField<double>(
             key: Key('inv_gst_$index'),
             value: l.gstRate,
             isExpanded: true,

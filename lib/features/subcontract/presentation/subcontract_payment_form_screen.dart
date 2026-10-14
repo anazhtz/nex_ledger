@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -237,7 +238,7 @@ class _SubcontractPaymentFormScreenState
                               const Center(child: LinearProgressIndicator()),
                           error: (e, _) =>
                               Text('Error loading contractors: $e'),
-                          data: (subs) => DropdownButtonFormField<int>(
+                          data: (subs) => AppDropdownField<int>(
                             isExpanded: true,
                             value:
                                 subs.any((s) => s.id == _selectedSubcontractor)
@@ -301,7 +302,7 @@ class _SubcontractPaymentFormScreenState
                                               _selectedSubcontractor)
                                       .toList();
 
-                                  return DropdownButtonFormField<int?>(
+                                  return AppDropdownField<int?>(
                                     value: filteredWos.any((w) =>
                                             w.workOrder.id ==
                                             _selectedWorkOrderId)
@@ -436,7 +437,7 @@ class _SubcontractPaymentFormScreenState
                         Row(
                           children: [
                             Expanded(
-                              child: DropdownButtonFormField<PaymentMode>(
+                              child: AppDropdownField<PaymentMode>(
                                 value: _paymentMode,
                                 decoration: const InputDecoration(
                                   labelText: 'Payment Mode *',
@@ -469,7 +470,7 @@ class _SubcontractPaymentFormScreenState
                                           ? accounts.first.account.id
                                           : null);
 
-                                  return DropdownButtonFormField<int?>(
+                                  return AppDropdownField<int?>(
                                     value: selectedAccountValue,
                                     isExpanded: true,
                                     decoration: const InputDecoration(

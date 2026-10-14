@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -213,8 +214,7 @@ class _ProjectFormScreenState extends ConsumerState<ProjectFormScreen> {
                                 Row(
                                   children: [
                                     Expanded(
-                                      child:
-                                          DropdownButtonFormField<ProjectType>(
+                                      child: AppDropdownField<ProjectType>(
                                         value: _type,
                                         isExpanded: true,
                                         decoration: const InputDecoration(
@@ -233,8 +233,7 @@ class _ProjectFormScreenState extends ConsumerState<ProjectFormScreen> {
                                     ),
                                     const SizedBox(width: 16),
                                     Expanded(
-                                      child: DropdownButtonFormField<
-                                          ProjectStatus>(
+                                      child: AppDropdownField<ProjectStatus>(
                                         value: _status,
                                         isExpanded: true,
                                         decoration: const InputDecoration(

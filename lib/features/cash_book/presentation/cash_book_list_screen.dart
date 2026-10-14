@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:nex_ledger/shared/widgets/project_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -139,7 +140,7 @@ class CashBookListScreen extends ConsumerWidget {
                       ),
                       SizedBox(
                         width: 220,
-                        child: DropdownButtonFormField<TransactionType?>(
+                        child: AppDropdownField<TransactionType?>(
                           value: filter.types?.firstOrNull,
                           isExpanded: true,
                           decoration: const InputDecoration(

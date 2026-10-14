@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -562,7 +563,7 @@ class BankAccountsScreen extends ConsumerWidget {
                         fontSize: 12.sp, color: const Color(0xFF64748B)),
                   ),
                   SizedBox(height: 16.h),
-                  DropdownButtonFormField<int>(
+                  AppDropdownField<int>(
                     value: fromId,
                     isExpanded: true,
                     decoration: const InputDecoration(
@@ -582,7 +583,7 @@ class BankAccountsScreen extends ConsumerWidget {
                     },
                   ),
                   SizedBox(height: 12.h),
-                  DropdownButtonFormField<int>(
+                  AppDropdownField<int>(
                     value: toId,
                     isExpanded: true,
                     decoration: const InputDecoration(

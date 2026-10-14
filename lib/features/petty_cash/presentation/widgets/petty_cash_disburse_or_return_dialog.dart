@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -220,7 +221,7 @@ class _PettyCashDisburseOrReturnDialogState
                   walletsAsync.when(
                     loading: () => const LinearProgressIndicator(),
                     error: (e, _) => Text('Error: $e'),
-                    data: (wallets) => DropdownButtonFormField<int?>(
+                    data: (wallets) => AppDropdownField<int?>(
                       value: _selectedWalletId,
                       isExpanded: true,
                       decoration: const InputDecoration(
@@ -329,7 +330,7 @@ class _PettyCashDisburseOrReturnDialogState
                   SizedBox(height: 14.h),
 
                   // ─── Payment Mode ──────────────────────────────────────────
-                  DropdownButtonFormField<PaymentMode>(
+                  AppDropdownField<PaymentMode>(
                     value: _paymentMode,
                     isExpanded: true,
                     decoration: const InputDecoration(
@@ -359,7 +360,7 @@ class _PettyCashDisburseOrReturnDialogState
                   bankAccountsAsync.when(
                     loading: () => const LinearProgressIndicator(),
                     error: (_, __) => const SizedBox.shrink(),
-                    data: (accounts) => DropdownButtonFormField<int?>(
+                    data: (accounts) => AppDropdownField<int?>(
                       value: _selectedBankAccountId,
                       isExpanded: true,
                       decoration: const InputDecoration(

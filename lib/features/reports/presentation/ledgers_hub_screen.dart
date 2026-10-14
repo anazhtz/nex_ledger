@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -445,7 +446,7 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                     // Vendor Dropdown
                     SizedBox(
                       width: 280.w,
-                      child: DropdownButtonFormField<int>(
+                      child: AppDropdownField<int>(
                         value: effectiveVendorId,
                         isExpanded: true,
                         decoration: const InputDecoration(
@@ -561,7 +562,7 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                     // Subcontractor Dropdown
                     SizedBox(
                       width: 280.w,
-                      child: DropdownButtonFormField<int>(
+                      child: AppDropdownField<int>(
                         value: effectiveSubId,
                         isExpanded: true,
                         decoration: const InputDecoration(
@@ -679,7 +680,7 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                     // Worker Dropdown
                     SizedBox(
                       width: 300.w,
-                      child: DropdownButtonFormField<int>(
+                      child: AppDropdownField<int>(
                         value: effectiveWorkerId,
                         isExpanded: true,
                         decoration: const InputDecoration(
@@ -785,7 +786,7 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                   children: [
                     SizedBox(
                       width: 340.w,
-                      child: DropdownButtonFormField<int?>(
+                      child: AppDropdownField<int?>(
                         value: selectedBankAccountId,
                         isExpanded: true,
                         decoration: const InputDecoration(
@@ -928,7 +929,7 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
         ],
         SizedBox(
           width: 360.w,
-          child: DropdownButtonFormField<int?>(
+          child: AppDropdownField<int?>(
             value: filterValue,
             isExpanded: true,
             decoration: const InputDecoration(
@@ -1234,7 +1235,7 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                                 : null;
                             return Column(
                               children: [
-                                DropdownButtonFormField<int?>(
+                                AppDropdownField<int?>(
                                   value: value,
                                   isExpanded: true,
                                   decoration: InputDecoration(
@@ -1337,7 +1338,7 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                             final accountsAsync =
                                 ref.watch(bankAccountsWithBalancesProvider);
                             return accountsAsync.maybeWhen(
-                              data: (accounts) => DropdownButtonFormField<int?>(
+                              data: (accounts) => AppDropdownField<int?>(
                                 value: selectedBankAccountId,
                                 isExpanded: true,
                                 decoration: InputDecoration(
@@ -1374,7 +1375,7 @@ class _LedgersHubScreenState extends ConsumerState<LedgersHubScreen> {
                         Row(
                           children: [
                             Expanded(
-                              child: DropdownButtonFormField<PaymentMode>(
+                              child: AppDropdownField<PaymentMode>(
                                 value: paymentMode,
                                 isExpanded: true,
                                 decoration:

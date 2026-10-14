@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -483,7 +484,7 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
                               ],
 
                               // Payment mode
-                              DropdownButtonFormField<PaymentMode?>(
+                              AppDropdownField<PaymentMode?>(
                                 value: _paymentMode,
                                 isExpanded: true,
                                 decoration: const InputDecoration(
@@ -517,7 +518,7 @@ class _CashBookEntryFormState extends ConsumerState<CashBookEntryForm> {
                                     return const SizedBox.shrink();
                                   return Column(
                                     children: [
-                                      DropdownButtonFormField<int?>(
+                                      AppDropdownField<int?>(
                                         value: _selectedBankAccountId,
                                         isExpanded: true,
                                         decoration: InputDecoration(

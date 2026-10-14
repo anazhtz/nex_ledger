@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -251,7 +252,7 @@ class _DepositEntryFormState extends ConsumerState<DepositEntryForm> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        DropdownButtonFormField<PaymentMode?>(
+                        AppDropdownField<PaymentMode?>(
                           value: _paymentMode,
                           isExpanded: true,
                           decoration:

@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nex_ledger/core/utils/currency_formatter.dart';
@@ -214,7 +215,7 @@ class _OptionalGstPanelState extends ConsumerState<OptionalGstPanel> {
               children: [
                 SizedBox(
                   width: 130,
-                  child: DropdownButtonFormField<double>(
+                  child: AppDropdownField<double>(
                     key: const Key('gst_rate'),
                     value: _value.rate,
                     isExpanded: true,

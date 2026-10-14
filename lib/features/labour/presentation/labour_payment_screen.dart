@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -359,8 +360,7 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                               workersAsync.when(
                                 loading: () => const LinearProgressIndicator(),
                                 error: (_, __) => const SizedBox.shrink(),
-                                data: (workers) =>
-                                    DropdownButtonFormField<int?>(
+                                data: (workers) => AppDropdownField<int?>(
                                   value: _selectedWorker,
                                   decoration: const InputDecoration(
                                       labelText: 'Worker'),
@@ -518,7 +518,7 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                 const SizedBox(height: 12),
 
                                 // Payment mode
-                                DropdownButtonFormField<PaymentMode?>(
+                                AppDropdownField<PaymentMode?>(
                                   value: _paymentMode,
                                   decoration: const InputDecoration(
                                       labelText: 'Payment Mode'),
@@ -547,7 +547,7 @@ class _LabourPaymentScreenState extends ConsumerState<LabourPaymentScreen> {
                                       return const SizedBox.shrink();
                                     return Column(
                                       children: [
-                                        DropdownButtonFormField<int?>(
+                                        AppDropdownField<int?>(
                                           value: _selectedBankAccountId,
                                           isExpanded: true,
                                           decoration: const InputDecoration(

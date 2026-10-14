@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -476,7 +477,7 @@ class _MaterialRegisterScreenState
                     // 2. Category Filter
                     SizedBox(
                       width: 240.w,
-                      child: DropdownButtonFormField<String?>(
+                      child: AppDropdownField<String?>(
                         value: selectedCategory,
                         isExpanded: true,
                         decoration: const InputDecoration(

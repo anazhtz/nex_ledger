@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -302,7 +303,7 @@ class _WorkOrderFormScreenState extends ConsumerState<WorkOrderFormScreen> {
                           data: (subs) => Row(
                             children: [
                               Expanded(
-                                child: DropdownButtonFormField<int>(
+                                child: AppDropdownField<int>(
                                   isExpanded: true,
                                   value: subs.any(
                                           (s) => s.id == _selectedSubcontractor)

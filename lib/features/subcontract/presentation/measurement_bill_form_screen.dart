@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -222,7 +223,7 @@ class _MeasurementBillFormScreenState
                                 ? _selectedWorkOrderId
                                 : null;
 
-                            return DropdownButtonFormField<int>(
+                            return AppDropdownField<int>(
                               value: selectedValue,
                               isExpanded: true,
                               decoration: const InputDecoration(

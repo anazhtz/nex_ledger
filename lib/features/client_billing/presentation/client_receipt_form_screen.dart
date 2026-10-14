@@ -1,3 +1,4 @@
+import 'package:nex_ledger/shared/widgets/app_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -232,7 +233,7 @@ class _ClientReceiptFormScreenState
                           loading: () => const SizedBox.shrink(),
                           error: (_, __) => const SizedBox.shrink(),
                           data: (bills) {
-                            return DropdownButtonFormField<int?>(
+                            return AppDropdownField<int?>(
                               value: bills.any(
                                       (b) => b.bill.id == _selectedRaBillId)
                                   ? _selectedRaBillId
@@ -373,7 +374,7 @@ class _ClientReceiptFormScreenState
                           children: [
                             Expanded(
                               flex: 2,
-                              child: DropdownButtonFormField<PaymentMode>(
+                              child: AppDropdownField<PaymentMode>(
                                 value: _selectedPaymentMode,
                                 isExpanded: true,
                                 decoration: const InputDecoration(
@@ -401,7 +402,7 @@ class _ClientReceiptFormScreenState
                                   loading: () => const SizedBox.shrink(),
                                   error: (_, __) => const SizedBox.shrink(),
                                   data: (accounts) {
-                                    return DropdownButtonFormField<int>(
+                                    return AppDropdownField<int>(
                                       value: accounts.any((a) =>
                                               a.id == _selectedBankAccountId)
                                           ? _selectedBankAccountId
