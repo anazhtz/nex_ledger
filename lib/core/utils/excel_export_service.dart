@@ -8,6 +8,8 @@ import 'package:nex_ledger/core/constants/enums.dart';
 import 'package:nex_ledger/core/database/app_database.dart';
 import 'package:nex_ledger/core/database/daos/deposit_dao.dart';
 import 'package:nex_ledger/core/database/daos/labour_dao.dart';
+import 'package:nex_ledger/core/database/daos/purchase_dao.dart';
+import 'package:nex_ledger/features/reports/data/purchase_register.dart';
 import 'package:nex_ledger/core/utils/date_formatter.dart';
 import 'package:nex_ledger/features/reports/data/report_repository.dart';
 import 'package:nex_ledger/features/reports/models/ledger_models.dart';
@@ -156,7 +158,9 @@ class ExcelExportService {
     excel.delete('Sheet1');
 
     sheet.appendRow([TextCellValue('NEXLEDGER CASH BOOK TRANSACTIONS LEDGER')]);
-    sheet.appendRow([TextCellValue('Generated On: ${DateFormatter.format(DateTime.now())}')]);
+    sheet.appendRow([
+      TextCellValue('Generated On: ${DateFormatter.format(DateTime.now())}')
+    ]);
     sheet.appendRow([TextCellValue('')]);
 
     sheet.appendRow([
@@ -240,7 +244,9 @@ class ExcelExportService {
     excel.delete('Sheet1');
 
     sheet.appendRow([TextCellValue('NEXLEDGER SECURITY DEPOSITS LEDGER')]);
-    sheet.appendRow([TextCellValue('Generated On: ${DateFormatter.format(DateTime.now())}')]);
+    sheet.appendRow([
+      TextCellValue('Generated On: ${DateFormatter.format(DateTime.now())}')
+    ]);
     sheet.appendRow([TextCellValue('')]);
 
     sheet.appendRow([
@@ -270,7 +276,9 @@ class ExcelExportService {
       final adjustedAmount = d.adjustedAmount;
       final netHeld = d.status == DepositStatus.refunded
           ? 0.0
-          : ((originalAmount - adjustedAmount) > 0 ? (originalAmount - adjustedAmount) : 0.0);
+          : ((originalAmount - adjustedAmount) > 0
+              ? (originalAmount - adjustedAmount)
+              : 0.0);
 
       totalOriginal += originalAmount;
       totalAdjusted += adjustedAmount;
@@ -284,7 +292,8 @@ class ExcelExportService {
         TextCellValue(p.name),
         DoubleCellValue(originalAmount),
         DoubleCellValue(adjustedAmount),
-        DoubleCellValue(d.status == DepositStatus.refunded ? originalAmount : 0.0),
+        DoubleCellValue(
+            d.status == DepositStatus.refunded ? originalAmount : 0.0),
         DoubleCellValue(netHeld),
         TextCellValue(d.status.displayName),
         TextCellValue(d.adjustmentReference ?? t.referenceNo ?? '—'),
@@ -320,8 +329,11 @@ class ExcelExportService {
     final sheet = excel['Labour Wage Ledger'];
     excel.delete('Sheet1');
 
-    sheet.appendRow([TextCellValue('NEXLEDGER LABOUR & WORKER RUNNING WAGE LEDGER')]);
-    sheet.appendRow([TextCellValue('Generated On: ${DateFormatter.format(DateTime.now())}')]);
+    sheet.appendRow(
+        [TextCellValue('NEXLEDGER LABOUR & WORKER RUNNING WAGE LEDGER')]);
+    sheet.appendRow([
+      TextCellValue('Generated On: ${DateFormatter.format(DateTime.now())}')
+    ]);
     sheet.appendRow([TextCellValue('')]);
 
     sheet.appendRow([
@@ -385,8 +397,10 @@ class ExcelExportService {
     final sheet = excel['Account Statement'];
     excel.delete('Sheet1');
 
-    sheet.appendRow([TextCellValue('NEXLEDGER FINANCIAL ERP — ACCOUNT STATEMENT')]);
-    sheet.appendRow([TextCellValue('Ledger: $ledgerTitle — ${summary.entityName}')]);
+    sheet.appendRow(
+        [TextCellValue('NEXLEDGER FINANCIAL ERP — ACCOUNT STATEMENT')]);
+    sheet.appendRow(
+        [TextCellValue('Ledger: $ledgerTitle — ${summary.entityName}')]);
     if (summary.entitySubtitle != null) {
       sheet.appendRow([TextCellValue(summary.entitySubtitle!)]);
     }
@@ -398,15 +412,20 @@ class ExcelExportService {
     } else {
       sheet.appendRow([TextCellValue('Statement Period: All-Time')]);
     }
-    sheet.appendRow([TextCellValue('Generated On: ${DateFormatter.format(DateTime.now())}')]);
+    sheet.appendRow([
+      TextCellValue('Generated On: ${DateFormatter.format(DateTime.now())}')
+    ]);
     sheet.appendRow([TextCellValue('')]);
 
     // Summary KPIs Box
     sheet.appendRow([
       TextCellValue('SUMMARY'),
-      TextCellValue('${summary.creditLabel}: ₹${summary.totalCredit.toStringAsFixed(2)}'),
-      TextCellValue('${summary.debitLabel}: ₹${summary.totalDebit.toStringAsFixed(2)}'),
-      TextCellValue('${summary.balanceLabel}: ₹${summary.closingBalance.toStringAsFixed(2)}'),
+      TextCellValue(
+          '${summary.creditLabel}: ₹${summary.totalCredit.toStringAsFixed(2)}'),
+      TextCellValue(
+          '${summary.debitLabel}: ₹${summary.totalDebit.toStringAsFixed(2)}'),
+      TextCellValue(
+          '${summary.balanceLabel}: ₹${summary.closingBalance.toStringAsFixed(2)}'),
     ]);
     sheet.appendRow([TextCellValue('')]);
 
@@ -426,7 +445,8 @@ class ExcelExportService {
       sheet.appendRow([
         TextCellValue(DateFormatter.format(e.date)),
         TextCellValue(e.referenceNo ?? '—'),
-        TextCellValue('${e.title}${e.subtitle != null ? ' (${e.subtitle})' : ''}'),
+        TextCellValue(
+            '${e.title}${e.subtitle != null ? ' (${e.subtitle})' : ''}'),
         TextCellValue(e.projectCode ?? '—'),
         DoubleCellValue(e.debit),
         DoubleCellValue(e.credit),
@@ -447,7 +467,8 @@ class ExcelExportService {
       TextCellValue(''),
     ]);
 
-    final safeName = summary.entityName.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_');
+    final safeName =
+        summary.entityName.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_');
     return _saveExcelFile(
       excel,
       'Ledger_${safeName}_${DateFormatter.format(DateTime.now()).replaceAll(' ', '_')}.xlsx',
@@ -464,7 +485,8 @@ class ExcelExportService {
     excel.delete('Sheet1');
 
     // Title & Info
-    sheet.appendRow([TextCellValue('NEXLEDGER ERP — PROJECT MATERIAL QUANTITY REGISTER')]);
+    sheet.appendRow(
+        [TextCellValue('NEXLEDGER ERP — PROJECT MATERIAL QUANTITY REGISTER')]);
     sheet.appendRow([
       TextCellValue(
         'Project: ${summary.projectCode != null ? '${summary.projectCode} — ' : ''}${summary.projectName}${summary.clientName != null ? ' (Client: ${summary.clientName})' : ''}',
@@ -477,17 +499,23 @@ class ExcelExportService {
         ),
       ]);
     } else {
-      sheet.appendRow([TextCellValue('Period: All-Time Project Inward Deliveries')]);
+      sheet.appendRow(
+          [TextCellValue('Period: All-Time Project Inward Deliveries')]);
     }
-    sheet.appendRow([TextCellValue('Generated On: ${DateFormatter.format(DateTime.now())}')]);
+    sheet.appendRow([
+      TextCellValue('Generated On: ${DateFormatter.format(DateTime.now())}')
+    ]);
     sheet.appendRow([TextCellValue('')]);
 
     // KPI Summary Block
     sheet.appendRow([
       TextCellValue('SUMMARY METRICS'),
-      TextCellValue('Total Material Spend: ₹${summary.totalMaterialSpend.toStringAsFixed(2)}'),
-      TextCellValue('Total Delivery Consignments: ${summary.totalDeliveriesCount}'),
-      TextCellValue('Distinct Material Items: ${summary.totalDistinctItemsCount}'),
+      TextCellValue(
+          'Total Material Spend: ₹${summary.totalMaterialSpend.toStringAsFixed(2)}'),
+      TextCellValue(
+          'Total Delivery Consignments: ${summary.totalDeliveriesCount}'),
+      TextCellValue(
+          'Distinct Material Items: ${summary.totalDistinctItemsCount}'),
     ]);
     sheet.appendRow([TextCellValue('')]);
 
@@ -516,7 +544,9 @@ class ExcelExportService {
         DoubleCellValue(item.avgUnitRate),
         DoubleCellValue(item.totalAmount),
         IntCellValue(item.inwardCount),
-        TextCellValue(item.lastDeliveryDate != null ? DateFormatter.format(item.lastDeliveryDate!) : '—'),
+        TextCellValue(item.lastDeliveryDate != null
+            ? DateFormatter.format(item.lastDeliveryDate!)
+            : '—'),
         TextCellValue(item.primaryVendor ?? '—'),
       ]);
     }
@@ -575,11 +605,133 @@ class ExcelExportService {
       }
     }
 
-    final safeProjName = (summary.projectCode ?? summary.projectName).replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_');
+    final safeProjName = (summary.projectCode ?? summary.projectName)
+        .replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_');
     return _saveExcelFile(
       excel,
       'Materials_${safeProjName}_${DateFormatter.format(DateTime.now()).replaceAll(' ', '_')}.xlsx',
     );
   }
-}
 
+  // ─── Purchase Register ─────────────────────────────────────────────────────
+
+  /// Builds the workbook: one sheet with every bill and one with the shop-wise
+  /// totals. Kept separate from saving so it can be tested.
+  static Excel buildPurchaseRegisterWorkbook({
+    required List<PurchaseDetail> rows,
+    required String filterText,
+  }) {
+    final excel = Excel.createExcel();
+    final bills = excel['Purchase Register'];
+    final shops = excel['By Shop'];
+    excel.delete('Sheet1');
+
+    final totals = purchaseTotals(rows);
+    final generated = 'Generated On: ${DateFormatter.format(DateTime.now())}';
+
+    // ── Sheet 1: every bill ──
+    bills.appendRow([TextCellValue('NEXLEDGER ERP — PURCHASE REGISTER')]);
+    bills.appendRow([TextCellValue(filterText)]);
+    bills.appendRow([TextCellValue(generated)]);
+    bills.appendRow([TextCellValue('')]);
+    bills.appendRow([
+      TextCellValue('#'),
+      TextCellValue('Date'),
+      TextCellValue('Shop / Supplier'),
+      TextCellValue('Project'),
+      TextCellValue('Item'),
+      TextCellValue('Category'),
+      TextCellValue('Qty'),
+      TextCellValue('Unit'),
+      TextCellValue('Rate (₹)'),
+      TextCellValue('Bill Amount (₹)'),
+      TextCellValue('Paid (₹)'),
+      TextCellValue('Balance (₹)'),
+      TextCellValue('Status'),
+      TextCellValue('Type'),
+    ]);
+    var n = 1;
+    for (final d in rows) {
+      bills.appendRow([
+        IntCellValue(n++),
+        TextCellValue(DateFormatter.format(d.transaction.date)),
+        TextCellValue(d.vendor.name),
+        TextCellValue('${d.project.code} — ${d.project.name}'),
+        TextCellValue(d.purchase.itemDescription),
+        TextCellValue(d.purchase.materialCategory ?? '—'),
+        DoubleCellValue(d.purchase.quantity),
+        TextCellValue(d.purchase.unit ?? '—'),
+        DoubleCellValue(d.purchase.unitRate),
+        DoubleCellValue(d.transaction.amount),
+        DoubleCellValue(d.purchase.paidAmount),
+        DoubleCellValue(purchaseBalance(d)),
+        TextCellValue(d.purchase.paymentStatus.displayName),
+        TextCellValue(d.purchase.isAdvanceStock ? 'Stock' : 'Direct Cost'),
+      ]);
+    }
+    bills.appendRow([
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue('TOTAL (${totals.count} bills)'),
+      DoubleCellValue(totals.total),
+      DoubleCellValue(totals.paid),
+      DoubleCellValue(totals.balance),
+    ]);
+
+    // ── Sheet 2: by shop ──
+    shops.appendRow([TextCellValue('NEXLEDGER ERP — SHOP-WISE PURCHASES')]);
+    shops.appendRow([TextCellValue(filterText)]);
+    shops.appendRow([TextCellValue(generated)]);
+    shops.appendRow([TextCellValue('')]);
+    shops.appendRow([
+      TextCellValue('#'),
+      TextCellValue('Shop / Supplier'),
+      TextCellValue('Contact'),
+      TextCellValue('Bills'),
+      TextCellValue('Total Purchased (₹)'),
+      TextCellValue('Paid (₹)'),
+      TextCellValue('Balance to Pay (₹)'),
+      TextCellValue('Last Bill'),
+    ]);
+    var k = 1;
+    for (final sh in summarizeByShop(rows)) {
+      shops.appendRow([
+        IntCellValue(k++),
+        TextCellValue(sh.vendor.name),
+        TextCellValue(sh.vendor.contact ?? '—'),
+        IntCellValue(sh.bills),
+        DoubleCellValue(sh.total),
+        DoubleCellValue(sh.paid),
+        DoubleCellValue(sh.balance),
+        TextCellValue(DateFormatter.format(sh.lastBillDate)),
+      ]);
+    }
+    shops.appendRow([
+      TextCellValue(''),
+      TextCellValue('TOTAL'),
+      TextCellValue(''),
+      IntCellValue(totals.count),
+      DoubleCellValue(totals.total),
+      DoubleCellValue(totals.paid),
+      DoubleCellValue(totals.balance),
+    ]);
+
+    return excel;
+  }
+
+  static Future<String?> exportPurchaseRegister({
+    required List<PurchaseDetail> rows,
+    required String filterText,
+  }) {
+    final excel =
+        buildPurchaseRegisterWorkbook(rows: rows, filterText: filterText);
+    final stamp = DateFormatter.toDbString(DateTime.now());
+    return _saveExcelFile(excel, 'Purchase_Register_$stamp.xlsx');
+  }
+}

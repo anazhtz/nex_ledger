@@ -17,11 +17,16 @@ class NavItem {
   final String path;
   final String section;
 
+  /// Other routes that belong to this item (keeps it highlighted on
+  /// sub-screens, e.g. a vendor page under Purchases).
+  final List<String> extraPrefixes;
+
   const NavItem({
     required this.icon,
     required this.label,
     required this.path,
     required this.section,
+    this.extraPrefixes = const [],
   });
 }
 
@@ -36,134 +41,148 @@ class AppShell extends ConsumerStatefulWidget {
 class _AppShellState extends ConsumerState<AppShell> {
   bool _isCollapsed = false;
 
+  /// Grouped by the job a person is doing, not by accounting term.
+  /// A section with a single item is shown without a header.
   static const List<NavItem> _navItems = [
-    // Overview & Operations
     NavItem(
       icon: Icons.dashboard_rounded,
       label: 'Dashboard',
       path: '/',
-      section: 'OVERVIEW',
+      section: 'HOME',
     ),
+
+    // Sites
     NavItem(
       icon: Icons.folder_copy_rounded,
       label: 'Projects',
       path: '/projects',
-      section: 'OVERVIEW',
-    ),
-    NavItem(
-      icon: Icons.menu_book_rounded,
-      label: 'Cash Book',
-      path: '/cash-book',
-      section: 'OVERVIEW',
-    ),
-    NavItem(
-      icon: Icons.shopping_bag_rounded,
-      label: 'Purchases',
-      path: '/purchases',
-      section: 'OVERVIEW',
-    ),
-    NavItem(
-      icon: Icons.inventory_2_rounded,
-      label: 'Material Register',
-      path: '/materials',
-      section: 'OVERVIEW',
-    ),
-    NavItem(
-      icon: Icons.business_center_rounded,
-      label: 'Client Billing',
-      path: '/client-billing',
-      section: 'OVERVIEW',
-    ),
-    NavItem(
-      icon: Icons.handshake_rounded,
-      label: 'Subcontracts',
-      path: '/subcontracts',
-      section: 'OVERVIEW',
+      section: 'SITES',
     ),
     NavItem(
       icon: Icons.pie_chart_outline_rounded,
       label: 'Project Budgets',
       path: '/budgets',
-      section: 'OVERVIEW',
+      section: 'SITES',
+    ),
+
+    // Buying & stock
+    NavItem(
+      icon: Icons.shopping_bag_rounded,
+      label: 'Purchases',
+      path: '/purchases',
+      section: 'BUY & STOCK',
+      extraPrefixes: ['/vendors'],
+    ),
+    NavItem(
+      icon: Icons.inventory_2_rounded,
+      label: 'Materials & Stock',
+      path: '/materials',
+      section: 'BUY & STOCK',
     ),
     NavItem(
       icon: Icons.precision_manufacturing_rounded,
-      label: 'Machinery & Equipment',
+      label: 'Machinery & Rental',
       path: '/equipment',
-      section: 'OVERVIEW',
-    ),
-    NavItem(
-      icon: Icons.account_balance_wallet_outlined,
-      label: 'Petty Cash & Floats',
-      path: '/petty-cash',
-      section: 'OVERVIEW',
+      section: 'BUY & STOCK',
     ),
 
-    // Labour Management
+    // Labour & subcontract
     NavItem(
       icon: Icons.assignment_turned_in_rounded,
       label: 'Attendance',
       path: '/labour/attendance',
-      section: 'LABOUR',
+      section: 'LABOUR & SUBCONTRACT',
     ),
     NavItem(
       icon: Icons.payments_rounded,
       label: 'Labour Pay',
       path: '/labour/payments',
-      section: 'LABOUR',
+      section: 'LABOUR & SUBCONTRACT',
     ),
     NavItem(
       icon: Icons.people_alt_rounded,
-      label: 'Workers Master',
+      label: 'Workers',
       path: '/labour/workers',
-      section: 'LABOUR',
+      section: 'LABOUR & SUBCONTRACT',
+    ),
+    NavItem(
+      icon: Icons.handshake_rounded,
+      label: 'Subcontracts',
+      path: '/subcontracts',
+      section: 'LABOUR & SUBCONTRACT',
     ),
 
-    // Financials & Settings
+    // Money
+    NavItem(
+      icon: Icons.menu_book_rounded,
+      label: 'Cash Book',
+      path: '/cash-book',
+      section: 'MONEY',
+    ),
+    NavItem(
+      icon: Icons.business_center_rounded,
+      label: 'Client Billing',
+      path: '/client-billing',
+      section: 'MONEY',
+    ),
     NavItem(
       icon: Icons.account_balance_outlined,
       label: 'Bank & Accounts',
       path: '/bank-accounts',
-      section: 'FINANCIALS',
+      section: 'MONEY',
     ),
     NavItem(
-      icon: Icons.account_balance_wallet_rounded,
+      icon: Icons.account_balance_wallet_outlined,
+      label: 'Petty Cash',
+      path: '/petty-cash',
+      section: 'MONEY',
+    ),
+    NavItem(
+      icon: Icons.savings_outlined,
       label: 'Deposits',
       path: '/deposits',
-      section: 'FINANCIALS',
+      section: 'MONEY',
     ),
-    NavItem(
-      icon: Icons.menu_book_rounded,
-      label: 'All Ledgers',
-      path: '/ledgers',
-      section: 'FINANCIALS',
-    ),
+
+    // One place for every report
     NavItem(
       icon: Icons.assessment_rounded,
-      label: 'Reports & P&L',
-      path: '/reports/project-pnl',
-      section: 'FINANCIALS',
+      label: 'Reports Center',
+      path: '/reports',
+      section: 'REPORTS',
+      extraPrefixes: ['/ledgers'],
     ),
-    NavItem(
-      icon: Icons.today_rounded,
-      label: 'Daily Day-Book',
-      path: '/reports/day-book',
-      section: 'FINANCIALS',
-    ),
+
     NavItem(
       icon: Icons.settings_rounded,
       label: 'Settings & Backup',
       path: '/settings',
-      section: 'FINANCIALS',
+      section: 'SETTINGS',
     ),
   ];
 
+  /// Sections the user has expanded. The section holding the current page
+  /// is opened automatically (see [_buildNavGroups]).
+  final Set<String> _openSections = {};
+  String? _lastActiveSection;
+
   int _selectedIndex(BuildContext context) {
-    final location = GoRouterState.of(context).uri.toString();
-    for (int i = _navItems.length - 1; i >= 0; i--) {
-      if (location.startsWith(_navItems[i].path)) return i;
+    final location = GoRouterState.of(context).uri.path;
+    var best = 0;
+    var bestLen = -1;
+    for (var i = 0; i < _navItems.length; i++) {
+      final item = _navItems[i];
+      for (final prefix in [item.path, ...item.extraPrefixes]) {
+        final matches = prefix == '/'
+            ? location == '/'
+            : (location == prefix || location.startsWith('$prefix/'));
+        if (matches && prefix.length > bestLen) {
+          best = i;
+          bestLen = prefix.length;
+        }
+      }
     }
-    return 0;
+    return best;
   }
 
   @override
@@ -183,26 +202,40 @@ class _AppShellState extends ConsumerState<AppShell> {
     return CallbackShortcuts(
       bindings: {
         // Quick Entry Actions
-        const SingleActivator(LogicalKeyboardKey.keyN, alt: true): () => context.go('/cash-book/new'),
-        const SingleActivator(LogicalKeyboardKey.keyN, meta: true): () => context.go('/cash-book/new'),
-        const SingleActivator(LogicalKeyboardKey.keyP, alt: true): () => context.go('/purchases/new'),
-        const SingleActivator(LogicalKeyboardKey.keyA, alt: true): () => context.go('/labour/attendance'),
-        const SingleActivator(LogicalKeyboardKey.keyW, alt: true): () => context.go('/labour/payments'),
-        const SingleActivator(LogicalKeyboardKey.keyJ, alt: true): () => context.go('/projects/new'),
+        const SingleActivator(LogicalKeyboardKey.keyN, alt: true): () =>
+            context.go('/cash-book/new'),
+        const SingleActivator(LogicalKeyboardKey.keyN, meta: true): () =>
+            context.go('/cash-book/new'),
+        const SingleActivator(LogicalKeyboardKey.keyP, alt: true): () =>
+            context.go('/purchases/new'),
+        const SingleActivator(LogicalKeyboardKey.keyA, alt: true): () =>
+            context.go('/labour/attendance'),
+        const SingleActivator(LogicalKeyboardKey.keyW, alt: true): () =>
+            context.go('/labour/payments'),
+        const SingleActivator(LogicalKeyboardKey.keyJ, alt: true): () =>
+            context.go('/projects/new'),
 
         // Gateway Navigation
-        const SingleActivator(LogicalKeyboardKey.keyD, alt: true): () => context.go('/'),
-        const SingleActivator(LogicalKeyboardKey.keyC, alt: true): () => context.go('/cash-book'),
-        const SingleActivator(LogicalKeyboardKey.keyM, alt: true): () => context.go('/materials'),
-        const SingleActivator(LogicalKeyboardKey.keyB, alt: true): () => context.go('/bank-accounts'),
-        const SingleActivator(LogicalKeyboardKey.keyR, alt: true): () => context.go('/reports/project-pnl'),
-        const SingleActivator(LogicalKeyboardKey.keyY, alt: true): () => context.go('/reports/day-book'),
-        const SingleActivator(LogicalKeyboardKey.keyS, alt: true): () => context.go('/settings'),
+        const SingleActivator(LogicalKeyboardKey.keyD, alt: true): () =>
+            context.go('/'),
+        const SingleActivator(LogicalKeyboardKey.keyC, alt: true): () =>
+            context.go('/cash-book'),
+        const SingleActivator(LogicalKeyboardKey.keyM, alt: true): () =>
+            context.go('/materials'),
+        const SingleActivator(LogicalKeyboardKey.keyB, alt: true): () =>
+            context.go('/bank-accounts'),
+        const SingleActivator(LogicalKeyboardKey.keyR, alt: true): () =>
+            context.go('/reports/project-pnl'),
+        const SingleActivator(LogicalKeyboardKey.keyY, alt: true): () =>
+            context.go('/reports/day-book'),
+        const SingleActivator(LogicalKeyboardKey.keyS, alt: true): () =>
+            context.go('/settings'),
 
         // Security & Help
         const SingleActivator(LogicalKeyboardKey.keyL, control: true): lockApp,
         const SingleActivator(LogicalKeyboardKey.keyL, meta: true): lockApp,
-        const SingleActivator(LogicalKeyboardKey.f1): () => KeyboardShortcutsDialog.show(context),
+        const SingleActivator(LogicalKeyboardKey.f1): () =>
+            KeyboardShortcutsDialog.show(context),
       },
       child: Focus(
         autofocus: true,
@@ -220,7 +253,8 @@ class _AppShellState extends ConsumerState<AppShell> {
                     // App Logo & Header
                     _buildHeader(theme, effectiveCollapsed),
 
-                    Divider(height: 1, color: Colors.white.withValues(alpha: 0.12)),
+                    Divider(
+                        height: 1, color: Colors.white.withValues(alpha: 0.12)),
 
                     // Navigation List
                     Expanded(
@@ -234,7 +268,8 @@ class _AppShellState extends ConsumerState<AppShell> {
                       ),
                     ),
 
-                    Divider(height: 1, color: Colors.white.withValues(alpha: 0.12)),
+                    Divider(
+                        height: 1, color: Colors.white.withValues(alpha: 0.12)),
 
                     // Sidebar Footer (Collapse Toggle & Status)
                     _buildFooter(theme, effectiveCollapsed),
@@ -329,7 +364,8 @@ class _AppShellState extends ConsumerState<AppShell> {
                         loading: () => SizedBox(
                           width: 16.w,
                           height: 16.h,
-                          child: const CircularProgressIndicator(strokeWidth: 2),
+                          child:
+                              const CircularProgressIndicator(strokeWidth: 2),
                         ),
                         error: (_, __) => const SizedBox.shrink(),
                         data: (projects) {
@@ -406,8 +442,11 @@ class _AppShellState extends ConsumerState<AppShell> {
                                           ),
                                           SizedBox(width: 8.w),
                                           ConstrainedBox(
-                                            constraints: BoxConstraints(maxWidth: 160.w),
-                                            child: Text(p.name, overflow: TextOverflow.ellipsis),
+                                            constraints:
+                                                BoxConstraints(maxWidth: 160.w),
+                                            child: Text(p.name,
+                                                overflow:
+                                                    TextOverflow.ellipsis),
                                           ),
                                         ],
                                       ),
@@ -421,16 +460,15 @@ class _AppShellState extends ConsumerState<AppShell> {
                       ),
                     ],
                   ),
-
                   SizedBox(width: 24.w),
-
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // Live Cash Balance Pill
                       cashBalanceAsync.when(
                         data: (bal) => Tooltip(
-                          message: 'Click to manage Bank & Cash Accounts (Alt+B)',
+                          message:
+                              'Click to manage Bank & Cash Accounts (Alt+B)',
                           child: InkWell(
                             borderRadius: BorderRadius.circular(8.r),
                             onTap: () => context.go('/bank-accounts'),
@@ -643,42 +681,46 @@ class _AppShellState extends ConsumerState<AppShell> {
     ThemeData theme,
     bool isCollapsed,
   ) {
-    final List<Widget> widgets = [];
-    String? currentSection;
+    final widgets = <Widget>[];
 
+    // Keep the section of the current page open (once per page change).
+    final activeSection = _navItems[selectedIdx].section;
+    if (_lastActiveSection != activeSection) {
+      _lastActiveSection = activeSection;
+      _openSections.add(activeSection);
+    }
+
+    final sectionSize = <String, int>{};
+    for (final item in _navItems) {
+      sectionSize[item.section] = (sectionSize[item.section] ?? 0) + 1;
+    }
+
+    String? currentSection;
     for (int i = 0; i < _navItems.length; i++) {
       final item = _navItems[i];
-      final isSelected = i == selectedIdx;
+      final isSingle = sectionSize[item.section] == 1;
 
-      // Add section header when section changes
       if (item.section != currentSection) {
         currentSection = item.section;
-        if (!isCollapsed) {
-          widgets.add(
-            Padding(
-              padding: EdgeInsets.fromLTRB(12.w, 14.h, 12.w, 6.h),
-              child: Text(
-                currentSection,
-                style: TextStyle(
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.0,
-                  color: Colors.white.withValues(alpha: 0.5),
-                ),
-              ),
-            ),
-          );
-        } else {
+        if (isCollapsed) {
+          // Icon-only rail: just a gap between groups.
           widgets.add(SizedBox(height: 8.h));
+        } else if (!isSingle) {
+          widgets.add(_buildSectionHeader(item.section));
+        } else {
+          widgets.add(SizedBox(height: 6.h));
         }
       }
 
-      // Add Nav Tile
+      final visible =
+          isCollapsed || isSingle || _openSections.contains(item.section);
+      if (!visible) continue;
+
       widgets.add(
         _buildNavTile(
           context: context,
           item: item,
-          isSelected: isSelected,
+          isSelected: i == selectedIdx,
           theme: theme,
           isCollapsed: isCollapsed,
         ),
@@ -686,6 +728,47 @@ class _AppShellState extends ConsumerState<AppShell> {
     }
 
     return widgets;
+  }
+
+  Widget _buildSectionHeader(String section) {
+    final open = _openSections.contains(section);
+    return InkWell(
+      borderRadius: BorderRadius.circular(4.r),
+      onTap: () => setState(() {
+        if (open) {
+          _openSections.remove(section);
+        } else {
+          _openSections.add(section);
+        }
+      }),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(12.w, 12.h, 8.w, 6.h),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                section,
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.0,
+                  color: Colors.white.withValues(alpha: 0.55),
+                ),
+              ),
+            ),
+            AnimatedRotation(
+              turns: open ? 0.25 : 0.0,
+              duration: const Duration(milliseconds: 150),
+              child: Icon(
+                Icons.chevron_right_rounded,
+                size: 16.sp,
+                color: Colors.white.withValues(alpha: 0.55),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildNavTile({
@@ -767,8 +850,8 @@ class _AppShellState extends ConsumerState<AppShell> {
             CircleAvatar(
               radius: 15.r,
               backgroundColor: Colors.white.withValues(alpha: 0.18),
-              child: Icon(Icons.person_rounded,
-                  size: 18.sp, color: Colors.white),
+              child:
+                  Icon(Icons.person_rounded, size: 18.sp, color: Colors.white),
             ),
             SizedBox(width: 10.w),
             Expanded(

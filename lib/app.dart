@@ -24,6 +24,8 @@ import 'package:nex_ledger/features/reports/presentation/deposit_ledger_screen.d
 import 'package:nex_ledger/features/reports/presentation/consolidated_pnl_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/day_book_screen.dart';
 import 'package:nex_ledger/features/reports/presentation/ledgers_hub_screen.dart';
+import 'package:nex_ledger/features/reports/presentation/reports_center_screen.dart';
+import 'package:nex_ledger/features/reports/presentation/purchase_register_screen.dart';
 import 'package:nex_ledger/features/bank_accounts/presentation/bank_accounts_screen.dart';
 import 'package:nex_ledger/features/settings/presentation/settings_screen.dart';
 import 'package:nex_ledger/features/maintenance/presentation/maintenance_screen.dart';
@@ -139,7 +141,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/materials',
             builder: (c, s) => MaterialRegisterScreen(
-              initialProjectId: int.tryParse(s.uri.queryParameters['projectId'] ?? ''),
+              initialProjectId:
+                  int.tryParse(s.uri.queryParameters['projectId'] ?? ''),
             ),
           ),
           GoRoute(
@@ -183,8 +186,8 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'measurement/new',
                 builder: (c, s) => MeasurementBillFormScreen(
-                  initialWorkOrderId: int.tryParse(
-                      s.uri.queryParameters['workOrderId'] ?? ''),
+                  initialWorkOrderId:
+                      int.tryParse(s.uri.queryParameters['workOrderId'] ?? ''),
                 ),
               ),
               GoRoute(
@@ -203,17 +206,17 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'ra-bills/new',
                 builder: (c, s) => ClientRaBillFormScreen(
-                  initialProjectId: int.tryParse(
-                      s.uri.queryParameters['projectId'] ?? ''),
+                  initialProjectId:
+                      int.tryParse(s.uri.queryParameters['projectId'] ?? ''),
                 ),
               ),
               GoRoute(
                 path: 'receipt/new',
                 builder: (c, s) => ClientReceiptFormScreen(
-                  initialProjectId: int.tryParse(
-                      s.uri.queryParameters['projectId'] ?? ''),
-                  initialRaBillId: int.tryParse(
-                      s.uri.queryParameters['raBillId'] ?? ''),
+                  initialProjectId:
+                      int.tryParse(s.uri.queryParameters['projectId'] ?? ''),
+                  initialRaBillId:
+                      int.tryParse(s.uri.queryParameters['raBillId'] ?? ''),
                 ),
               ),
             ],
@@ -239,10 +242,10 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'logs/new',
                 builder: (c, s) => EquipmentLogFormScreen(
-                  initialEquipmentId: int.tryParse(
-                      s.uri.queryParameters['equipmentId'] ?? ''),
-                  initialProjectId: int.tryParse(
-                      s.uri.queryParameters['projectId'] ?? ''),
+                  initialEquipmentId:
+                      int.tryParse(s.uri.queryParameters['equipmentId'] ?? ''),
+                  initialProjectId:
+                      int.tryParse(s.uri.queryParameters['projectId'] ?? ''),
                 ),
               ),
               GoRoute(
@@ -270,10 +273,10 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'vouchers/new',
                 builder: (c, s) => PettyCashVoucherFormScreen(
-                  initialWalletId: int.tryParse(
-                      s.uri.queryParameters['walletId'] ?? ''),
-                  initialProjectId: int.tryParse(
-                      s.uri.queryParameters['projectId'] ?? ''),
+                  initialWalletId:
+                      int.tryParse(s.uri.queryParameters['walletId'] ?? ''),
+                  initialProjectId:
+                      int.tryParse(s.uri.queryParameters['projectId'] ?? ''),
                 ),
               ),
             ],
@@ -287,6 +290,18 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (c, s) => const DepositEntryForm(),
               ),
             ],
+          ),
+          GoRoute(
+            path: '/reports',
+            builder: (c, s) => const ReportsCenterScreen(),
+          ),
+          GoRoute(
+            path: '/reports/purchase-register',
+            builder: (c, s) => const PurchaseRegisterScreen(),
+          ),
+          GoRoute(
+            path: '/reports/shop-wise',
+            builder: (c, s) => const PurchaseRegisterScreen(byShop: true),
           ),
           GoRoute(
             path: '/reports/project-pnl',
