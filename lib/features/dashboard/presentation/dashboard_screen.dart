@@ -23,7 +23,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    if (!Platform.environment.containsKey('FLUTTER_TEST') && !_hasCheckedUpdate) {
+    if (!Platform.environment.containsKey('FLUTTER_TEST') &&
+        !_hasCheckedUpdate) {
       _hasCheckedUpdate = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _checkUpdateInBackground();
@@ -80,66 +81,90 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ),
               SizedBox(height: 24.h),
 
-              // Stat cards row (Responsive & Interactive)
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final isNarrow = constraints.maxWidth < 600;
-
-                  final stat1 = StatCard(
-                    label: 'Cash Balance',
-                    value: CurrencyFormatter.format(summary.cashBalance),
-                    icon: Icons.account_balance_wallet_outlined,
-                    iconColor: summary.cashBalance >= 0
-                        ? Colors.green.shade700
-                        : Colors.red.shade700,
-                    valueColor: summary.cashBalance >= 0
-                        ? Colors.green.shade700
-                        : Colors.red.shade700,
-                    onTap: () => _showCashBalanceBreakdown(context, summary),
-                    tooltip: 'Click to view Project-wise Cash Balance Breakdown',
-                  );
-
-                  final stat2 = StatCard(
-                    label: 'Deposits Held',
-                    value: CurrencyFormatter.format(summary.totalDepositsHeld),
-                    icon: Icons.savings_outlined,
-                    iconColor: Colors.orange.shade700,
-                    subtitle: 'Refundable — ₹0 P&L impact',
-                    onTap: () => _showDepositsHeldBreakdown(context, summary),
-                    tooltip: 'Click to view Project-wise Security Deposits Breakdown',
-                  );
-
-                  final stat3 = StatCard(
-                    label: 'Active Projects',
-                    value: summary.activeProjects.length.toString(),
-                    icon: Icons.folder_open_outlined,
-                    onTap: () => context.go('/projects'),
-                    tooltip: 'Click to manage Projects',
-                  );
-
-                  if (isNarrow) {
-                    return Column(
-                      children: [
-                        stat1,
-                        SizedBox(height: 12.h),
-                        stat2,
-                        SizedBox(height: 12.h),
-                        stat3,
-                      ],
-                    );
-                  }
-
-                  return Row(
-                    children: [
-                      Expanded(child: stat1),
-                      SizedBox(width: 16.w),
-                      Expanded(child: stat2),
-                      SizedBox(width: 16.w),
-                      Expanded(child: stat3),
-                    ],
-                  );
-                },
+              // Quick actions
+              Wrap(
+                spacing: 10.w,
+                runSpacing: 10.h,
+                children: [
+                  _quickAction(context, Icons.add_card_rounded,
+                      'New Cash Entry', 'Alt+N', '/cash-book/new'),
+                  _quickAction(context, Icons.shopping_cart_outlined,
+                      'New Purchase', 'Alt+P', '/purchases/new'),
+                  _quickAction(context, Icons.how_to_reg_outlined,
+                      'Mark Attendance', 'Alt+A', '/labour/attendance'),
+                  _quickAction(context, Icons.payments_outlined, 'Pay Labour',
+                      'Alt+W', '/labour/payments'),
+                  _quickAction(context, Icons.create_new_folder_outlined,
+                      'New Project', 'Alt+J', '/projects/new'),
+                ],
               ),
+              SizedBox(height: 20.h),
+
+              // Money snapshot
+              _statRow([
+                StatCard(
+                  label: 'Cash Balance',
+                  value: CurrencyFormatter.format(summary.cashBalance),
+                  icon: Icons.account_balance_wallet_outlined,
+                  iconColor: summary.cashBalance >= 0
+                      ? Colors.green.shade700
+                      : Colors.red.shade700,
+                  valueColor: summary.cashBalance >= 0
+                      ? Colors.green.shade700
+                      : Colors.red.shade700,
+                  onTap: () => _showCashBalanceBreakdown(context, summary),
+                  tooltip: 'Click to view Project-wise Cash Balance Breakdown',
+                ),
+                StatCard(
+                  label: 'Money In Today',
+                  value: CurrencyFormatter.format(summary.todayIn),
+                  icon: Icons.south_west_rounded,
+                  iconColor: Colors.green.shade700,
+                  subtitle: 'Cash received today',
+                  onTap: () => context.go('/cash-book'),
+                  tooltip: 'Open Cash Book',
+                ),
+                StatCard(
+                  label: 'Money Out Today',
+                  value: CurrencyFormatter.format(summary.todayOut),
+                  icon: Icons.north_east_rounded,
+                  iconColor: Colors.red.shade700,
+                  subtitle: 'Cash paid today',
+                  onTap: () => context.go('/cash-book'),
+                  tooltip: 'Open Cash Book',
+                ),
+              ]),
+              SizedBox(height: 16.h),
+              _statRow([
+                StatCard(
+                  label: 'Vendor Bills To Pay',
+                  value: CurrencyFormatter.format(summary.accountsPayable),
+                  icon: Icons.receipt_long_outlined,
+                  iconColor: summary.accountsPayable > 0
+                      ? Colors.red.shade700
+                      : Colors.green.shade700,
+                  subtitle: 'Unpaid purchases (already in P&L)',
+                  onTap: () => context.go('/purchases'),
+                  tooltip: 'Open Purchases',
+                ),
+                StatCard(
+                  label: 'Deposits Held',
+                  value: CurrencyFormatter.format(summary.totalDepositsHeld),
+                  icon: Icons.savings_outlined,
+                  iconColor: Colors.orange.shade700,
+                  subtitle: 'Refundable — ₹0 P&L impact',
+                  onTap: () => _showDepositsHeldBreakdown(context, summary),
+                  tooltip:
+                      'Click to view Project-wise Security Deposits Breakdown',
+                ),
+                StatCard(
+                  label: 'Active Projects',
+                  value: summary.activeProjects.length.toString(),
+                  icon: Icons.folder_open_outlined,
+                  onTap: () => context.go('/projects'),
+                  tooltip: 'Click to manage Projects',
+                ),
+              ]),
               SizedBox(height: 24.h),
 
               // Active Project P&L Snapshot Table
@@ -161,9 +186,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ],
                 rows: summary.projectPnls.map((pnl) {
                   final netPositive = pnl.netPnl >= 0;
-                  final netColor = netPositive
-                      ? Colors.green.shade700
-                      : Colors.red.shade700;
+                  final netColor =
+                      netPositive ? Colors.green.shade700 : Colors.red.shade700;
                   final totalCosts =
                       pnl.expenses + pnl.purchases + pnl.labourCosts;
                   return DataRow(cells: [
@@ -251,14 +275,48 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
+  /// Lays cards out side by side, stacked on narrow windows.
+  Widget _statRow(List<Widget> cards) {
+    return LayoutBuilder(builder: (context, constraints) {
+      if (constraints.maxWidth < 600) {
+        return Column(children: [
+          for (var i = 0; i < cards.length; i++) ...[
+            if (i > 0) SizedBox(height: 12.h),
+            cards[i],
+          ],
+        ]);
+      }
+      return Row(children: [
+        for (var i = 0; i < cards.length; i++) ...[
+          if (i > 0) SizedBox(width: 16.w),
+          Expanded(child: cards[i]),
+        ],
+      ]);
+    });
+  }
+
+  Widget _quickAction(BuildContext context, IconData icon, String label,
+      String shortcut, String route) {
+    return Tooltip(
+      message: '$label ($shortcut)',
+      child: FilledButton.tonalIcon(
+        onPressed: () => context.go(route),
+        icon: Icon(icon, size: 18),
+        label: Text(label),
+      ),
+    );
+  }
+
   /// Dialog showing Project-Wise Cash Balance Breakdown
-  void _showCashBalanceBreakdown(BuildContext context, DashboardSummary summary) {
+  void _showCashBalanceBreakdown(
+      BuildContext context, DashboardSummary summary) {
     final theme = Theme.of(context);
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Row(
           children: [
             Container(
@@ -283,7 +341,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ),
                   Text(
                     'Physical Cash Inflows & Outflows by Project',
-                    style: TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B)),
+                    style: TextStyle(
+                        fontSize: 11.sp, color: const Color(0xFF64748B)),
                   ),
                 ],
               ),
@@ -313,7 +372,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     children: [
                       Text(
                         'Total Physical Cash Balance:',
-                        style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 13.sp, fontWeight: FontWeight.bold),
                       ),
                       Text(
                         CurrencyFormatter.format(summary.cashBalance),
@@ -348,7 +408,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ],
                     ),
                     ...summary.projectPnls.map((pnl) {
-                      final costs = pnl.expenses + pnl.purchases + pnl.labourCosts;
+                      final costs =
+                          pnl.expenses + pnl.purchases + pnl.labourCosts;
                       return TableRow(
                         children: [
                           Padding(
@@ -357,27 +418,33 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(pnl.project.code,
-                                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold)),
                                 Text(pnl.project.name,
                                     style: TextStyle(
-                                        fontSize: 11.sp, color: const Color(0xFF64748B))),
+                                        fontSize: 11.sp,
+                                        color: const Color(0xFF64748B))),
                               ],
                             ),
                           ),
                           Padding(
                             padding: EdgeInsets.all(8.r),
                             child: Text(CurrencyFormatter.format(pnl.income),
-                                style: const TextStyle(color: Color(0xFF15803D))),
+                                style:
+                                    const TextStyle(color: Color(0xFF15803D))),
                           ),
                           Padding(
                             padding: EdgeInsets.all(8.r),
                             child: Text(CurrencyFormatter.format(costs),
-                                style: const TextStyle(color: Color(0xFFDC2626))),
+                                style:
+                                    const TextStyle(color: Color(0xFFDC2626))),
                           ),
                           Padding(
                             padding: EdgeInsets.all(8.r),
-                            child: Text(CurrencyFormatter.format(pnl.depositsHeld),
-                                style: const TextStyle(color: Color(0xFFD97706))),
+                            child: Text(
+                                CurrencyFormatter.format(pnl.depositsHeld),
+                                style:
+                                    const TextStyle(color: Color(0xFFD97706))),
                           ),
                         ],
                       );
@@ -403,13 +470,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   /// Dialog showing Project-Wise Security Deposits Held Breakdown
-  void _showDepositsHeldBreakdown(BuildContext context, DashboardSummary summary) {
+  void _showDepositsHeldBreakdown(
+      BuildContext context, DashboardSummary summary) {
     final theme = Theme.of(context);
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Row(
           children: [
             Container(
@@ -434,7 +503,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ),
                   Text(
                     'Security Deposit Liabilities Held by Project',
-                    style: TextStyle(fontSize: 11.sp, color: const Color(0xFF64748B)),
+                    style: TextStyle(
+                        fontSize: 11.sp, color: const Color(0xFF64748B)),
                   ),
                 ],
               ),
@@ -464,7 +534,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     children: [
                       Text(
                         'Total Security Deposit Liabilities Held:',
-                        style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 13.sp, fontWeight: FontWeight.bold),
                       ),
                       Text(
                         CurrencyFormatter.format(summary.totalDepositsHeld),
@@ -503,10 +574,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(pnl.project.code,
-                                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold)),
                                 Text(pnl.project.name,
                                     style: TextStyle(
-                                        fontSize: 11.sp, color: const Color(0xFF64748B))),
+                                        fontSize: 11.sp,
+                                        color: const Color(0xFF64748B))),
                               ],
                             ),
                           ),
@@ -525,7 +598,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           Padding(
                             padding: EdgeInsets.all(8.r),
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 6.w, vertical: 2.h),
                               decoration: BoxDecoration(
                                 color: pnl.depositsHeld > 0
                                     ? const Color(0xFFFEF3C7)
@@ -533,7 +607,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 borderRadius: BorderRadius.circular(4.r),
                               ),
                               child: Text(
-                                pnl.depositsHeld > 0 ? 'Liability Held' : 'Settled',
+                                pnl.depositsHeld > 0
+                                    ? 'Liability Held'
+                                    : 'Settled',
                                 style: TextStyle(
                                   fontSize: 10.sp,
                                   fontWeight: FontWeight.bold,
